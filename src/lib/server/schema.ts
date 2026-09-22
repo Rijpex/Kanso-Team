@@ -1,6 +1,6 @@
 /** Databaseschema. Alles is idempotent: opnieuw draaien kan altijd. */
 /** Ophogen bij elke schemawijziging: de app werkt de database dan zelf bij. */
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 export const SCHEMA_SQL = `
 create extension if not exists pgcrypto;
@@ -385,6 +385,19 @@ update tasks set title = replace(replace(title,'ō','o'),'Ō','O'), description 
 update onboarding_items set title_de = replace(replace(title_de,'ō','o'),'Ō','O'), hint_de = replace(replace(hint_de,'ō','o'),'Ō','O') where title_de ~ '[ōŌ]' or hint_de ~ '[ōŌ]';
 update skills set title_de = replace(replace(title_de,'ō','o'),'Ō','O') where title_de ~ '[ōŌ]';
 update events set title = replace(replace(title,'ō','o'),'Ō','O') where title ~ '[ōŌ]';
+
+-- Versie 6: Praktikantinnen beginnen zur Öffnung (nicht 30 Minuten vorher).
+-- Einmalig: nur Standard-Startzeiten (Di/Do/Fr 10:00, Mi/Sa 09:00) ab heute um 30 Minuten verschieben; manuelle Änderungen bleiben.
+do $$
+begin
+  if not exists (select 1 from settings where key = 'mig_intern_start_at_opening') then
+    update shifts s set start_time = (s.start_time + interval '30 minutes')::time
+      from users u
+     where u.id = s.user_id and u.role = 'intern' and s.kind = 'shop' and s.date >= current_date
+       and ((extract(isodow from s.date) in (2,4,5) and s.start_time = '10:00') or (extract(isodow from s.date) in (3,6) and s.start_time = '09:00'));
+    insert into settings (key, value) values ('mig_intern_start_at_opening', 'true'::jsonb);
+  end if;
+end $$;
 
 -- Privé opslag voor bestanden (alleen op Supabase aanwezig)
 do $$

@@ -5,10 +5,10 @@ export const LEA_PAGES = [
     category: "start",
     title_de: "So arbeiten wir",
     title_nl: "Zo werken wij",
-    body_de: `KANSŌ heißt Einfachheit – befreit von allem, was nicht gebraucht wird. Was bleibt, darf richtig gut sein. Das gilt für den Laden, für Texte und für die Zusammenarbeit.
+    body_de: `KANSO heißt Einfachheit – befreit von allem, was nicht gebraucht wird. Was bleibt, darf richtig gut sein. Das gilt für den Laden, für Texte und für die Zusammenarbeit.
 
 ### Was wir tun
-KANSŌ macht Außenräume zu schönen, nutzbaren Lebensräumen. In drei Worten: **Schön draußen leben.** Ein Laden in Lüneburg für Outdoor Living, dazu das Projektgeschäft mit Outdoor-Küchen (KANSŌ Kitchens, KOALA), Pergolen und Sonnensegeln (Rijpex) und die eigene Gewürzlinie KANSŌ SPICES. Gegründet von Lea Rebstock (Gestaltung, Marke, Beratung) und Bas Rijpers (Systeme, Konstruktion, Aufbau). Der Laden ist seit dem 14. Juli 2026 offen – ihr seid in seinem ersten Jahr dabei.
+KANSO macht Außenräume zu schönen, nutzbaren Lebensräumen. In drei Worten: **Schön draußen leben.** Ein Laden in Lüneburg für Outdoor Living, dazu das Projektgeschäft mit Outdoor-Küchen (KANSO Kitchens, KOALA), Pergolen und Sonnensegeln (Rijpex) und die eigene Gewürzlinie KANSO SPICES. Gegründet von Lea Rebstock (Gestaltung, Marke, Beratung) und Bas Rijpers (Systeme, Konstruktion, Aufbau). Der Laden ist seit dem 14. Juli 2026 offen – ihr seid in seinem ersten Jahr dabei.
 
 ### Sechs Werte – jede Entscheidung muss mindestens einen davon stärken
 - **Ruhe** – Nichts muss um Aufmerksamkeit kämpfen: kein Regal, kein Post, kein Verkaufsgespräch.
@@ -90,13 +90,13 @@ Wenn dann noch Zeit ist: eine Frage für das Check-in aufschreiben – Langeweil
 Gründerin · Gestaltung, Marke, Beratung, Laden. Deine erste Ansprechpartnerin für alles. +49 1523 3836673 · hello@kanso-outdoor.com
 
 ### Bas Rijpers
-Gründer · Küchen- und Pergolasysteme, Konstruktion, Aufbau, Lager-Logistik. Bei technischen Fragen zu Produkten und Lieferungen. Wenn er als KANSŌ-Gesicht vor die Kamera geht, produziert ihr zu zweit.
+Gründer · Küchen- und Pergolasysteme, Konstruktion, Aufbau, Lager-Logistik. Bei technischen Fragen zu Produkten und Lieferungen. Wenn er als KANSO-Gesicht vor die Kamera geht, produziert ihr zu zweit.
 
 ### Ihr zwei
 Jede ist Junior Product Ownerin einer eigenen Linie und Projektpartnerin der anderen. Storepflege teilt ihr euch im Wochenwechsel, Social-Media-Konzepte und Drehs macht ihr gemeinsam, bei der Inventur zählt eine und die andere kontrolliert. Sprecht euch ab – Aufgaben verteilt ihr untereinander, der Hub zeigt, wer was hat.
 
 ### Der Laden
-KANSŌ Outdoor GmbH · Bardowicker Str. 8 · 21335 Lüneburg
+KANSO Outdoor GmbH · Bardowicker Str. 8 · 21335 Lüneburg
 Dienstag 10:30–18:30, Mittwoch 09:30–17:30, Donnerstag 10:30–18:30, Freitag 10:30–17:30, Samstag 09:30–16:00, Montag geschlossen. Wir sind jeweils 30 Minuten vor Öffnung da. Kartenzahlung: Stripe-Terminal an der Kasse.
 
 ### Im Notfall
@@ -107,10 +107,10 @@ Dienstag 10:30–18:30, Mittwoch 09:30–17:30, Donnerstag 10:30–18:30, Freita
     category: "line",
     title_de: "Eure Produktlinien: Ziel, Etappen, Freigaben",
     title_nl: "Jullie productlijnen: doel, etappes, goedkeuring",
-    body_de: `Jede von euch ist **Junior Product Ownerin** einer eigenen KANSŌ-Produktlinie – von der Recherche bis zum Prototyp beziehungsweise Launch. Das ist der Kern eures Praktikums.
+    body_de: `Jede von euch ist **Junior Product Ownerin** einer eigenen KANSO-Produktlinie – von der Recherche bis zum Prototyp beziehungsweise Launch. Das ist der Kern eures Praktikums.
 
 ### Praktikumsziel
-Jede Praktikantin übernimmt im Laufe des Praktikums eine klar abgegrenzte KANSŌ-Produktlinie. Sie begleitet diese mit regelmäßiger Anleitung von der Recherche und Konzeption über Branding, Etiketten, Packaging und Produktpräsentation bis zum Prototyp beziehungsweise Launch. Die zweite Praktikantin unterstützt als Projektpartnerin und gibt strukturiertes Feedback. Rechtliche Prüfungen, Budgets, Bestellungen und finale Produktfreigaben verbleiben bei der Geschäftsführung.
+Jede Praktikantin übernimmt im Laufe des Praktikums eine klar abgegrenzte KANSO-Produktlinie. Sie begleitet diese mit regelmäßiger Anleitung von der Recherche und Konzeption über Branding, Etiketten, Packaging und Produktpräsentation bis zum Prototyp beziehungsweise Launch. Die zweite Praktikantin unterstützt als Projektpartnerin und gibt strukturiertes Feedback. Rechtliche Prüfungen, Budgets, Bestellungen und finale Produktfreigaben verbleiben bei der Geschäftsführung.
 
 ### So teilt ihr eure Projektzeit
 70–80 % eigenes Projekt, 20–30 % Projekt der Partnerin. Zum Abschluss präsentiert ihr gemeinsam und bringt eure Produkte in einem kleinen Launch in den Laden.
@@ -182,11 +182,11 @@ export const LEA_ONBOARDING: { day: number; de: string; hint: string }[] = [
   { day: 1, de: "„So arbeiten wir“ lesen – besonders Sprache, Werkzeuge und die drei Regeln", hint: "Dauert 10 Minuten. Fragen dazu in den Hub." },
   { day: 1, de: "Arbeitslaptop erhalten und eingerichtet", hint: "Mit Lea: Anmeldung, Hub und Drive im Browser, Hub als Lesezeichen." },
   { day: 1, de: "Notfall-Kontakte gespeichert: Lea, Bas, Hausverwaltung, 112", hint: "Lea gibt dir die Nummern." },
-  { day: 2, de: "Die Welten kennenlernen: Outdoor Living, KANSŌ SPICES, Tenderflame, KOALA, KANSŌ Kitchens, Rijpex", hint: "Zu jeder Welt einen Satz sagen können: Was ist das, für wen, ab welchem Preis. Preise findest du unter „Produkte“." },
+  { day: 2, de: "Die Welten kennenlernen: Outdoor Living, KANSO SPICES, Tenderflame, KOALA, KANSO Kitchens, Rijpex", hint: "Zu jeder Welt einen Satz sagen können: Was ist das, für wen, ab welchem Preis. Preise findest du unter „Produkte“." },
   { day: 2, de: "Preisschilder und Preisleiter verstehen", hint: "Vom kleinen Mitbringsel über Leuchten und Feuerstellen bis zu den Projekten (Pergola, Outdoor-Küche). Lea oder Bas erklären die Stufen." },
   { day: 2, de: "Drei Kundengespräche von Lea mitverfolgen, danach kurz besprechen", hint: "Worauf achtest du: Wie startet sie, welche Fragen stellt sie, wie endet das Gespräch?" },
   { day: 2, de: "Ein Kundengespräch selbst führen (Lea in Hörweite)", hint: "Begrüßen, eine offene Frage stellen, zuhören, einen nächsten Schritt anbieten." },
-  { day: 2, de: "Geschenk einpacken: dreimal üben, bis es unter zwei Minuten sauber sitzt", hint: "Standard: Papier, Band, Karte. Lea zeigt den KANSŌ-Standard." },
+  { day: 2, de: "Geschenk einpacken: dreimal üben, bis es unter zwei Minuten sauber sitzt", hint: "Standard: Papier, Band, Karte. Lea zeigt den KANSO-Standard." },
   { day: 2, de: "Gewürzproben: Abfüllen, Etikett, Hygiene – einmal komplett", hint: "Wo Gläschen, Etiketten, Löffel liegen; wie viele an der Kasse liegen sollen." },
   { day: 2, de: "Storepflege kennenlernen und die Runde zum ersten Mal im Hub abhaken", hint: "Unter „Storepflege“ siehst du, welcher Bereich diese Woche deiner ist." },
   { day: 3, de: "Instagram anschauen und erste Ideen für Postings entwickeln", hint: "Der Kanal ist neu – du baust ihn mit auf. Ziel ab jetzt: jeden Tag eine Story. Erste Konzepte für Reels, Karussells und Postings in den Content-Plan eintragen." },

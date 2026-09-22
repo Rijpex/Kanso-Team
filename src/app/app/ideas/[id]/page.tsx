@@ -55,14 +55,14 @@ export default async function IdeaPage({ params, searchParams }: { params: { id:
           </>) : <p className="text-sm text-stone-500">{tr("Noch keine Preise eingetragen.", "Nog geen prijzen ingevuld.")}</p>}
         </section>
         <section className="card">
-          <h2 className="mb-2">KANSŌ-Check · {r.checks.length}/{IDEA_CHECKS.length}</h2>
+          <h2 className="mb-2">KANSO-Check · {r.checks.length}/{IDEA_CHECKS.length}</h2>
           <ul className="space-y-1.5 text-sm">{IDEA_CHECKS.map((k) => { const ok = r.checks.includes(k.key); return <li key={k.key} className={`flex items-start gap-2 ${ok ? "" : "text-stone-400"}`}><span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded text-[10px] ${ok ? "bg-emerald-600 text-white" : "bg-sand-200"}`}>{ok ? "✓" : ""}</span>{user.lang === "nl" ? k.nl : k.de}</li>; })}</ul>
           <div className="mt-3"><Row k={tr("Muster gesehen", "Sample gezien")} v={r.sample ? tr("ja", "ja") : tr("noch nicht", "nog niet")} /><Row k={tr("Lieferzeit", "Levertijd")} v={r.lead_time} /><Row k={tr("Saison", "Seizoen")} v={r.season} /></div>
         </section>
       </div>
       <section className="card mt-5 space-y-3 text-sm">
         {r.occasion && <div><div className="label">{tr("Für wen und zu welchem Anlass", "Voor wie en welke gelegenheid")}</div>{r.occasion}</div>}
-        {r.why && <div><div className="label">{tr("Warum passt es zu KANSŌ", "Waarom past het bij KANSŌ")}</div><span className="whitespace-pre-wrap">{r.why}</span></div>}
+        {r.why && <div><div className="label">{tr("Warum passt es zu KANSO", "Waarom past het bij KANSO")}</div><span className="whitespace-pre-wrap">{r.why}</span></div>}
         {r.packaging && <div><div className="label">{tr("Verpackung", "Verpakking")}</div>{r.packaging}</div>}
         {r.link && /^https?:\/\//i.test(r.link) && <a href={r.link} target="_blank" rel="noreferrer" className="block truncate text-brand underline">{r.link}</a>}
         {!r.occasion && !r.why && !r.packaging && !r.link && <span className="text-stone-500">{tr("Noch keine Beschreibung.", "Nog geen omschrijving.")}</span>}

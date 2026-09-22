@@ -17,7 +17,7 @@ export default async function LoginPage({ searchParams }: { searchParams: { erro
     <main className="flex min-h-screen items-center justify-center p-4">
       <form action={doLogin} className="card w-full max-w-sm space-y-4 !p-7">
         <div className="text-center">
-          <div className="text-xs uppercase tracking-[0.3em] text-stone-500">Kansō Outdoor</div>
+          <div className="text-xs uppercase tracking-[0.3em] text-stone-500">Kanso Outdoor</div>
           <h1 className="mt-1">Team Hub</h1>
         </div>
         {searchParams.error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">Name oder Passwort stimmt nicht. / Naam of wachtwoord klopt niet.</p>}

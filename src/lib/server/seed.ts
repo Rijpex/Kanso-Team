@@ -15,8 +15,8 @@ const PAGES: Page[] = [
   {
     slug: "willkommen",
     category: "start",
-    title_de: "Willkommen bei Kansō",
-    title_nl: "Welkom bij Kansō",
+    title_de: "Willkommen bei Kanso",
+    title_nl: "Welkom bij Kanso",
     body_de: `Schön, dass ihr da seid! Dieser Hub ist euer Platz für alles rund um euer Praktikum: Wer wann arbeitet, was zu tun ist, wie Dinge funktionieren – und vor allem: wo ihr jederzeit Fragen stellen könnt.
 
 ### Das Wichtigste zuerst
@@ -33,7 +33,7 @@ const PAGES: Page[] = [
 - **Einarbeitung**: Eure Checkliste für die erste Woche.
 
 ### Wer wir sind
-KANSŌ heißt Einfachheit. In drei Worten: Schön draußen leben. Ein Laden in der Bardowicker Straße 8 in Lüneburg, dazu das Projektgeschäft mit Outdoor-Küchen und Pergolen. Mehr dazu unter „So arbeiten wir“ – bitte an Tag 1 lesen.`,
+KANSO heißt Einfachheit. In drei Worten: Schön draußen leben. Ein Laden in der Bardowicker Straße 8 in Lüneburg, dazu das Projektgeschäft mit Outdoor-Küchen und Pergolen. Mehr dazu unter „So arbeiten wir“ – bitte an Tag 1 lesen.`,
     body_nl: `Fijn dat jullie er zijn! Deze hub is jullie plek voor alles rond de stage: wie wanneer werkt, wat er te doen is, hoe dingen werken – en vooral: waar je altijd vragen kunt stellen.
 
 ### Het belangrijkste eerst
@@ -50,7 +50,7 @@ KANSŌ heißt Einfachheit. In drei Worten: Schön draußen leben. Ein Laden in d
 - **Inwerken**: jullie checklist voor de eerste week.
 
 ### Wie wij zijn
-KANSŌ betekent eenvoud. In drie woorden: mooi buiten leven. Een winkel aan de Bardowicker Straße 8 in Lüneburg, plus het projectwerk met buitenkeukens en pergola's. Meer onder "So arbeiten wir" – graag op dag 1 lezen.`,
+KANSO betekent eenvoud. In drie woorden: mooi buiten leven. Een winkel aan de Bardowicker Straße 8 in Lüneburg, plus het projectwerk met buitenkeukens en pergola's. Meer onder "So arbeiten wir" – graag op dag 1 lezen.`,
   },
   {
     slug: "homeoffice-montag",
@@ -329,7 +329,7 @@ Kerze: EK 6,00 €, VK 16,90 €. VK netto = 16,90 ÷ 1,19 = 14,20 €. Marge = 
 - **Mindestbestellmenge (MOQ):** 200 Stück klingen billig, müssen aber erst verkauft werden.
 - **Versandkosten und Zoll** gehören zum EK dazu.
 - **Verpackung und Etikett** kosten auch Geld (eigene Verpackung = schöner, aber teurer).
-- Passt das Produkt zu KANSŌ? Stärkt es einen unserer sechs Werte, passt es in eine Welt, gibt es das schon überall?`,
+- Passt das Produkt zu KANSO? Stärkt es einen unserer sechs Werte, passt es in eine Welt, gibt es das schon überall?`,
     body_nl: `Voor productonderzoek moet je begrijpen hoe een verkoopprijs ontstaat. Onder **Productideeën** rekent de hub het automatisch voor je uit.
 
 ### De begrippen
@@ -348,7 +348,7 @@ Kaars: EK € 6,00, VK € 16,90. VK netto = 16,90 ÷ 1,19 = € 14,20. Marge = 
 - **Minimale bestelhoeveelheid (MOQ):** 200 stuks klinkt goedkoop, maar moet eerst verkocht worden.
 - **Verzendkosten en invoerrechten** horen bij de EK.
 - **Verpakking en etiket** kosten ook geld (eigen verpakking = mooier, maar duurder).
-- Past het product bij KANSŌ? Versterkt het een van onze zes waarden, past het in een wereld, is het al overal te koop?`,
+- Past het product bij KANSO? Versterkt het een van onze zes waarden, past het in een wereld, is het al overal te koop?`,
   },
 ];
 
@@ -383,17 +383,17 @@ const STAGES = (a: string, b: string, c: string, d: string, e: string) => [
 ];
 const TASKS: SeedTask[] = [
   {
-    title: "Produktlinie KANSŌ SPICES (Gewürzlinie)",
+    title: "Produktlinie KANSO SPICES (Gewürzlinie)",
     category: "line",
     home_ok: true,
-    description: "Du verantwortest KANSŌ SPICES als eigene Produktlinie – von Zielgruppe und Anlass bis zum etikettierten Produkt im Regal. Die Linie ist zunächst bewusst auf drei Sorten begrenzt: lieber drei, die sitzen, als sieben halbe.\n\nAlles Weitere steht unter Wissen → „Junior Product Owner · Gewürzlinie“ und „Eure Produktlinien“. Hake eine Etappe erst ab, wenn Lea die Entscheidung getroffen hat. Zwischenstände, Moodboards und Dateien lädst du hier hoch, Fragen kommen als Kommentar.\n\n[[Bas/Lea: Praktikantin zuweisen und Fälligkeiten je Etappe besprechen]]",
+    description: "Du verantwortest KANSO SPICES als eigene Produktlinie – von Zielgruppe und Anlass bis zum etikettierten Produkt im Regal. Die Linie ist zunächst bewusst auf drei Sorten begrenzt: lieber drei, die sitzen, als sieben halbe.\n\nAlles Weitere steht unter Wissen → „Junior Product Owner · Gewürzlinie“ und „Eure Produktlinien“. Hake eine Etappe erst ab, wenn Lea die Entscheidung getroffen hat. Zwischenstände, Moodboards und Dateien lädst du hier hoch, Fragen kommen als Kommentar.\n\n[[Bas/Lea: Praktikantin zuweisen und Fälligkeiten je Etappe besprechen]]",
     checklist: STAGES("Zielgruppe, Anlässe, Wettbewerb, gute und schlechte Beispiele sammeln", "bis zu drei Mischungen, Namen, Farbwelt, Moodboard", "Etikettenentwurf mit vorbereiteter Kennzeichnung, Einzelprodukt und Bundle, Versandverpackung", "Testdruck und Etikettierung aus der Masterdatei, Kalkulation mit Vorlage, Druckprozess dokumentiert", "Präsentation im Laden, Mindestbestand und Nachdruck-Signal, gemeinsame Abschlusspräsentation"),
   },
   {
-    title: "Produktlinie KANSŌ Raumduft",
+    title: "Produktlinie KANSO Raumduft",
     category: "line",
     home_ok: true,
-    description: "Du verantwortest den KANSŌ-Raumduft als eigene Produktlinie – von Zielgruppe, Duftwelt und Markenstory bis zu Ladenpräsentation und Launch.\n\nWichtig: Kein eigenständiges Mischen oder Abfüllen von Duftkonzentrat. Rezeptur, Sicherheitsdaten und Kennzeichnung kommen vom Hersteller bzw. von Lea und Bas.\n\nAlles Weitere steht unter Wissen → „Junior Product Owner · Raumduft“ und „Eure Produktlinien“. Hake eine Etappe erst ab, wenn Lea die Entscheidung getroffen hat.\n\n[[Bas/Lea: Praktikantin zuweisen und Fälligkeiten je Etappe besprechen]]",
+    description: "Du verantwortest den KANSO-Raumduft als eigene Produktlinie – von Zielgruppe, Duftwelt und Markenstory bis zu Ladenpräsentation und Launch.\n\nWichtig: Kein eigenständiges Mischen oder Abfüllen von Duftkonzentrat. Rezeptur, Sicherheitsdaten und Kennzeichnung kommen vom Hersteller bzw. von Lea und Bas.\n\nAlles Weitere steht unter Wissen → „Junior Product Owner · Raumduft“ und „Eure Produktlinien“. Hake eine Etappe erst ab, wenn Lea die Entscheidung getroffen hat.\n\n[[Bas/Lea: Praktikantin zuweisen und Fälligkeiten je Etappe besprechen]]",
     checklist: STAGES("Zielgruppe, Duftwelt, Wettbewerb, gute und schlechte Beispiele sammeln", "drei Duftrichtungen bzw. Namenskonzepte, Markenstory, Moodboard", "Flakon, Stäbchen, Verschluss und Verpackung verglichen, Etikett und Verpackung gemockt", "Testdruck, Transportschutz- und Unboxing-Test, Kundentest, Kalkulation mit Vorlage", "Ladenpräsentation, Produktseite, Launch-Content, Produktstory, Launch-Präsentation"),
   },
   {
@@ -413,7 +413,7 @@ const TASKS: SeedTask[] = [
     category: "social",
     home_ok: true,
     description: "Zu zweit: Pro Themenwelt mindestens drei konkrete Content-Ideen mit Format (Reel, Story, Karussell, Foto), Hook, kurzer Beschreibung, benötigten Produkten und Drehorten. Die stärkste Idee gemeinsam auswählen und in einem Satz begründen. Konzeptblatt in Drive → 04. Social Media ablegen, die ausgewählten Ideen in den Content-Plan eintragen und Lea zur Freigabe zeigen. Details unter Wissen → „Social-Media-Konzeption im Team“.",
-    checklist: ["Outdoor-Küchen", "Pergolen", "Outdoor-Teppiche", "Pflanzgefäße von Luca Lifestyle", "Terrasse gestalten", "Tisch decken und Tablescaping", "Geschenke und Geschenkideen", "Tenderflame", "Kerzen", "Alkoholfreie Spirituosen", "Lecker kochen und Outdoor-Cooking", "KANSŌ Showroom und Shop in Lüneburg als Gesamtkonzept"],
+    checklist: ["Outdoor-Küchen", "Pergolen", "Outdoor-Teppiche", "Pflanzgefäße von Luca Lifestyle", "Terrasse gestalten", "Tisch decken und Tablescaping", "Geschenke und Geschenkideen", "Tenderflame", "Kerzen", "Alkoholfreie Spirituosen", "Lecker kochen und Outdoor-Cooking", "KANSO Showroom und Shop in Lüneburg als Gesamtkonzept"],
   },
   {
     title: "Website als Kundin prüfen: fünf Beobachtungen pro Woche",
@@ -422,7 +422,7 @@ const TASKS: SeedTask[] = [
     description: "Jeden Montag: Handy und Laptop, Startseite → Shop → Produkt → Kontakt. Wo stockst du? Tote Links, Tippfehler, fehlende Bilder, unklare Texte – jeweils mit Screenshot hier als Kommentar bzw. Datei. Produkttexte gegen die Sprachregeln prüfen (No-Go-Wörter, Du, belegbare Aussagen). Nichts live ändern ohne Freigabe: beobachten, notieren, vorschlagen.",
   },
   {
-    title: "Produkt-Sourcing: Ideen sammeln, die zu KANSŌ passen und sich rechnen",
+    title: "Produkt-Sourcing: Ideen sammeln, die zu KANSO passen und sich rechnen",
     category: "research",
     home_ok: true,
     description: "Ideen sammeln (Faire, Instagram, andere Läden, Kundenwünsche – „haben Sie auch …?“ immer notieren) und unter „Produktideen“ eintragen: Lieferant, Link, Einkaufspreis, Verkaufspreis-Vorschlag, ein Satz warum. Der Hub rechnet Marge und Faktor aus. Prüfschema: Stärkt es einen unserer sechs Werte? Passt es in eine Welt? Gibt es das schon überall? Einmal im Monat stellt ihr eure Vorschläge vor, Lea und Bas entscheiden. Bestellen, Preise ändern oder Lieferanten anschreiben nur nach Freigabe. Lies vorher Wissen → „Preise & Marge verstehen“.",
@@ -431,7 +431,7 @@ const TASKS: SeedTask[] = [
     title: "Recherche: eigener Tee oder Glühwein-Gewürz als Ergänzung?",
     category: "research",
     home_ok: true,
-    description: "Wir überlegen, KANSŌ SPICES im Winter um Tee oder eine Glühwein-Gewürzmischung zu ergänzen. Findet heraus: Welche Anbieter gibt es für lose Ware bzw. Private Label? Mindestmengen? Preise pro 100 g? Was kosten vergleichbare Produkte in Lüneburg und online? Ergebnis als Kurzblatt hier hochladen. Kennzeichnung und Rezeptur bleiben bei Lea und Bas.",
+    description: "Wir überlegen, KANSO SPICES im Winter um Tee oder eine Glühwein-Gewürzmischung zu ergänzen. Findet heraus: Welche Anbieter gibt es für lose Ware bzw. Private Label? Mindestmengen? Preise pro 100 g? Was kosten vergleichbare Produkte in Lüneburg und online? Ergebnis als Kurzblatt hier hochladen. Kennzeichnung und Rezeptur bleiben bei Lea und Bas.",
   },
   {
     title: "Q4 · Oktober: Verpackungsmaterial und Geschenksets",
@@ -443,7 +443,7 @@ const TASKS: SeedTask[] = [
     title: "Winter in Lüneburg: Termine, Schaufenster, Geschenktisch",
     category: "winter",
     home_ok: true,
-    description: "Im Winter sind viele Touristen und Weihnachtsmarkt-Besucher in der Stadt – darauf wollen wir gut vorbereitet sein. 1) Termine der Lüneburger Weihnachtsmärkte und verkaufsoffenen Tage heraussuchen und in den Kalender eintragen. 2) Konzept für das Weihnachts-Schaufenster ab November: drei Sätze plus Moodboard, erst Konzept mit Lea, dann bauen. 3) Welche Welten stellen wir nach vorne (Tenderflame-Geschenksets, Kerzen, KANSŌ SPICES)? Nichts kaufen ohne Freigabe.",
+    description: "Im Winter sind viele Touristen und Weihnachtsmarkt-Besucher in der Stadt – darauf wollen wir gut vorbereitet sein. 1) Termine der Lüneburger Weihnachtsmärkte und verkaufsoffenen Tage heraussuchen und in den Kalender eintragen. 2) Konzept für das Weihnachts-Schaufenster ab November: drei Sätze plus Moodboard, erst Konzept mit Lea, dann bauen. 3) Welche Welten stellen wir nach vorne (Tenderflame-Geschenksets, Kerzen, KANSO SPICES)? Nichts kaufen ohne Freigabe.",
     checklist: ["Termine im Kalender eingetragen", "Schaufenster-Konzept (drei Sätze + Moodboard)", "Vorschlag Geschenktisch", "Zeitplan: Was muss bis wann fertig sein?"],
   },
   {
@@ -455,9 +455,9 @@ const TASKS: SeedTask[] = [
 
 
 const SKILLS: [string, string[]][] = [
-  ["Im Laden", ["Kundinnen begrüßen und mit einer offenen Frage beraten", "Kasse: Bar- und Kartenzahlung, Bon", "Kasse zählen und Kassenbuch führen", "Geschenk im KANSŌ-Standard einpacken (unter zwei Minuten)", "Projektanfrage aufnehmen: Kontaktdaten, Anliegen, Termin anbieten", "Lieferung annehmen, zählen, Schäden dokumentieren", "Reklamation ruhig aufnehmen und weitergeben"]],
+  ["Im Laden", ["Kundinnen begrüßen und mit einer offenen Frage beraten", "Kasse: Bar- und Kartenzahlung, Bon", "Kasse zählen und Kassenbuch führen", "Geschenk im KANSO-Standard einpacken (unter zwei Minuten)", "Projektanfrage aufnehmen: Kontaktdaten, Anliegen, Termin anbieten", "Lieferung annehmen, zählen, Schäden dokumentieren", "Reklamation ruhig aufnehmen und weitergeben"]],
   ["Store & Schaufenster", ["Laden selbstständig öffnen und schließen", "Warenpräsentation: Regale, Fronten, Preisschilder", "Schaufenster-Konzept entwickeln und umsetzen", "Inventur: zählen, dokumentieren, Abweichungen prüfen"]],
-  ["Digital", ["Story planen und erstellen", "Reel drehen und schneiden", "Caption in der KANSŌ-Stimme schreiben", "Insights lesen und daraus etwas ableiten", "Produktfoto machen, das zur Serie passt", "Produkt im Shop als Entwurf anlegen"]],
+  ["Digital", ["Story planen und erstellen", "Reel drehen und schneiden", "Caption in der KANSO-Stimme schreiben", "Insights lesen und daraus etwas ableiten", "Produktfoto machen, das zur Serie passt", "Produkt im Shop als Entwurf anlegen"]],
   ["Produkt & Zahlen", ["Marge, Faktor und Einstandspreis berechnen", "Lieferanten recherchieren und Angebote vergleichen", "Etiketten aus der freigegebenen Masterdatei drucken", "Moodboard und Konzept vor Lea und Bas präsentieren"]],
   ["Arbeitsweise", ["Eigene Woche in der Agenda planen", "Feedback annehmen und einarbeiten", "Sich mit der Projektpartnerin abstimmen und Aufgaben verteilen", "Rechtzeitig Bescheid geben, wenn etwas nicht klappt", "Nachfragen, bevor man rät"]],
 ];

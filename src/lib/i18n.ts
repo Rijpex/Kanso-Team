@@ -34,6 +34,13 @@ export const EVENT_KIND: Record<string, L> = {
   school: { de: "Schule / Ferien", nl: "School / vakantie", color: "bg-violet-100 text-violet-800" },
   meeting: { de: "Gespräch", nl: "Gesprek", color: "bg-sky-100 text-sky-800" },
   closed: { de: "Geschlossen / Feiertag", nl: "Gesloten / feestdag", color: "bg-red-100 text-red-800" },
+  shop: { de: "Verkaufsoffener Sonntag", nl: "Open zondag", color: "bg-emerald-100 text-emerald-900" },
+};
+export const REQUEST_KIND: Record<string, L> = {
+  question: { de: "Frage", nl: "Vraag", color: "bg-sky-100 text-sky-900" },
+  wish: { de: "Wunsch / gesucht", nl: "Wens / gezocht", color: "bg-amber-100 text-amber-900" },
+  complaint: { de: "Beschwerde", nl: "Klacht", color: "bg-rose-100 text-rose-900" },
+  quote: { de: "Kundensatz", nl: "Klantzin", color: "bg-stone-100 text-stone-700" },
 };
 export const IDEA_STATUS: Record<string, L> = {
   idea: { de: "Idee", nl: "Idee", color: "bg-stone-100 text-stone-700" },
@@ -60,7 +67,7 @@ export const KB_CATEGORY: Record<string, L> = {
   produkte: { de: "Produktwissen", nl: "Productkennis" },
   anleitungen: { de: "Anleitungen", nl: "Handleidingen" },
 };
-export const PILLARS = ["Vorher/Nachher", "Building KANSŌ", "Gastgeber-Ideen", "Outdoor Cooking", "Design & Materialien", "Kundenprojekte"];
+export const PILLARS = ["Vorher/Nachher", "Building KANSO", "Gastgeber-Ideen", "Outdoor Cooking", "Design & Materialien", "Kundenprojekte"];
 export const URGENCY: Record<string, L> = {
   checkin: { de: "Bis zum Check-in", nl: "Tot de check-in", color: "bg-stone-100 text-stone-600" },
   today: { de: "Heute noch", nl: "Vandaag nog", color: "bg-amber-100 text-amber-800" },
@@ -68,4 +75,4 @@ export const URGENCY: Record<string, L> = {
 };
 export const lbl = (lang: Lang, l?: L) => (l ? (lang === "nl" ? l.nl : l.de) : "");
 
-export const BRANDS = ["Tenderflame", "KANSŌ SPICES", "KANSŌ Raumduft", "Luca Lifestyle", "Archief", "Grain by Grain", "Kerzen", "Lapuan Kankurit", "Alkoholfreie Spirituosen", "Outdoor-Teppiche", "Kamado-Grills", "KOALA Kitchens", "KANSŌ Kitchens", "Rijpex Pergola", "Laden & Schaufenster", "Lüneburg"];
+export const BRANDS = ["Tenderflame", "KANSO SPICES", "KANSO Raumduft", "Luca Lifestyle", "Archief", "Grain by Grain", "Kerzen", "Lapuan Kankurit", "Alkoholfreie Spirituosen", "Outdoor-Teppiche", "Kamado-Grills", "KOALA Kitchens", "KANSO Kitchens", "Rijpex Pergola", "Laden & Schaufenster", "Lüneburg"];

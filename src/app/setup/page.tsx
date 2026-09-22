@@ -27,7 +27,7 @@ export default async function SetupPage({ searchParams }: { searchParams: { erro
     <main className="flex min-h-screen items-center justify-center p-4">
       <div className="card w-full max-w-md space-y-4 !p-7">
         <div>
-          <div className="text-xs uppercase tracking-[0.3em] text-stone-500">Kansō Team Hub</div>
+          <div className="text-xs uppercase tracking-[0.3em] text-stone-500">Kanso Team Hub</div>
           <h1 className="mt-1">Installatie</h1>
         </div>
         {state === "nodb" && (

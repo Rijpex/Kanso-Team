@@ -67,11 +67,11 @@ export async function saveShift(fd: FormData) {
   } else {
     const timed = kind === "shop" || kind === "home";
     await q(
-      `insert into shifts (user_id, date, kind, start_time, end_time, break_start, break_end, note)
-       values ($1,$2,$3,$4,$5,$6,$7,$8)
+      `insert into shifts (user_id, date, kind, start_time, end_time, break_start, break_end, break2_start, break2_end, note)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
        on conflict (user_id, date) do update set kind=excluded.kind, start_time=excluded.start_time, end_time=excluded.end_time,
-         break_start=excluded.break_start, break_end=excluded.break_end, note=excluded.note`,
-      [userId, date, kind, timed ? opt(fd, "start_time") : null, timed ? opt(fd, "end_time") : null, timed ? opt(fd, "break_start") : null, timed ? opt(fd, "break_end") : null, opt(fd, "note")],
+         break_start=excluded.break_start, break_end=excluded.break_end, break2_start=excluded.break2_start, break2_end=excluded.break2_end, note=excluded.note`,
+      [userId, date, kind, timed ? opt(fd, "start_time") : null, timed ? opt(fd, "end_time") : null, timed ? opt(fd, "break_start") : null, timed ? opt(fd, "break_end") : null, timed ? opt(fd, "break2_start") : null, timed ? opt(fd, "break2_end") : null, opt(fd, "note")],
     );
   }
   revalidatePath("/app", "layout");
@@ -117,29 +117,38 @@ export async function generateRoster(fd: FormData) {
 
     for (let i = 0; i < interns.length; i++) {
       const it = interns[i];
-      const brk: [string, string] = i % 2 === 0 ? [t("break_a_start", "12:30"), t("break_a_end", "13:30")] : [t("break_b_start", "13:30"), t("break_b_end", "14:30")];
+      // Twee pauzes van 30 min: één gezamenlijk (allebei tegelijk) en één wisselend – de "vroege" en "late" wisselen per week.
+      const shared: [string, string] = [t("break_shared_start", "13:00"), t("break_shared_end", "13:30")];
+      const early: [string, string] = [t("break_early_start", "11:00"), t("break_early_end", "11:30")];
+      const late: [string, string] = [t("break_late_start", "15:30"), t("break_late_end", "16:00")];
+      const takesEarly = (i + w) % 2 === 0;
+      const own = takesEarly ? early : late;
+      // In volgorde van de dag opslaan: pauze 1 = de vroegste
+      const brk: [string, string, string, string] = own[0] < shared[0] ? [own[0], own[1], shared[0], shared[1]] : [shared[0], shared[1], own[0], own[1]];
       const worksSat = satWorker?.id === it.id;
       // Zelfde week: wie zaterdag niet werkt, heeft maandag thuiswerk
       const mondayHome = s(fd, "monday_home") === "on" && interns.length > 1 && !!satWorker && !worksSat;
       for (let wd = 1; wd <= 6; wd++) {
         const date = addDays(mon, wd - 1);
         if (date < from) continue;
-        let row: [string, string | null, string | null, string | null, string | null] | null = null;
+        type Row = [string, string | null, string | null, string | null, string | null, string | null, string | null];
+        const none: Row = ["off", null, null, null, null, null, null];
+        let row: Row | null = null;
         if (wd === 1) {
-          row = mondayHome ? ["home", t("home_start", "10:00"), t("home_end", "14:30"), null, null] : ["off", null, null, null, null];
+          row = mondayHome ? ["home", t("home_start", "10:00"), t("home_end", "14:30"), null, null, null, null] : none;
         } else if (wd === 6) {
-          row = worksSat ? ["shop", shiftFor(6)!.start, shiftFor(6)!.end, brk[0], brk[1]] : ["off", null, null, null, null];
+          row = worksSat ? ["shop", shiftFor(6)!.start, shiftFor(6)!.end, ...brk] : none;
         } else {
           const choice = s(fd, `d_${it.id}_${wd}`) || "shop";
-          if (choice === "shop") row = ["shop", shiftFor(wd)!.start, shiftFor(wd)!.end, brk[0], brk[1]];
-          else if (choice === "school") row = ["school", null, null, null, null];
-          else if (choice === "off") row = ["off", null, null, null, null];
+          if (choice === "shop") row = ["shop", shiftFor(wd)!.start, shiftFor(wd)!.end, ...brk];
+          else if (choice === "school") row = ["school", null, null, null, null, null, null];
+          else if (choice === "off") row = none;
           // "skip" = deze dag niet vullen
         }
         if (!row) continue;
         await q(
-          `insert into shifts (user_id, date, kind, start_time, end_time, break_start, break_end) values ($1,$2,$3,$4,$5,$6,$7)
-           on conflict (user_id, date) do ${overwrite ? "update set kind=excluded.kind, start_time=excluded.start_time, end_time=excluded.end_time, break_start=excluded.break_start, break_end=excluded.break_end" : "nothing"}`,
+          `insert into shifts (user_id, date, kind, start_time, end_time, break_start, break_end, break2_start, break2_end) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+           on conflict (user_id, date) do ${overwrite ? "update set kind=excluded.kind, start_time=excluded.start_time, end_time=excluded.end_time, break_start=excluded.break_start, break_end=excluded.break_end, break2_start=excluded.break2_start, break2_end=excluded.break2_end" : "nothing"}`,
           [it.id, date, ...row],
         );
       }
@@ -156,7 +165,7 @@ export async function generateRoster(fd: FormData) {
         for (const a of admins) {
           await q(
             `insert into shifts (user_id, date, kind, start_time, end_time) values ($1,$2,'shop',$3,$4)
-             on conflict (user_id, date) do ${overwrite ? "update set kind='shop', start_time=excluded.start_time, end_time=excluded.end_time, break_start=null, break_end=null" : "nothing"}`,
+             on conflict (user_id, date) do ${overwrite ? "update set kind='shop', start_time=excluded.start_time, end_time=excluded.end_time, break_start=null, break_end=null, break2_start=null, break2_end=null" : "nothing"}`,
             [a.id, date, sh.start, sh.end],
           );
         }
@@ -165,6 +174,40 @@ export async function generateRoster(fd: FormData) {
   }
   revalidatePath("/app", "layout");
   redirect(`/app/roster?w=${startMonday}`);
+}
+
+/**
+ * Verkaufsoffener Sonntag: Bas & Lea werden eingetragen, die Praktikantinnen nicht (das wird im Laden besprochen).
+ * Zusätzlich ein Agenda-Eintrag, damit alle es sehen.
+ */
+export async function addOpenSunday(fd: FormData) {
+  const u = await requireAdmin();
+  const date = s(fd, "date");
+  if (!isDate(date) || weekday(date) !== 7) return;
+  const start = opt(fd, "start_time") || "13:00";
+  const end = opt(fd, "end_time") || "18:00";
+  const note = opt(fd, "note");
+  const admins = await q<{ id: string }>("select id from users where role = 'admin' and active");
+  for (const a of admins) {
+    await q(
+      `insert into shifts (user_id, date, kind, start_time, end_time, note) values ($1,$2,'shop',$3,$4,$5)
+       on conflict (user_id, date) do update set kind='shop', start_time=excluded.start_time, end_time=excluded.end_time, note=excluded.note`,
+      [a.id, date, start, end, "Verkaufsoffener Sonntag"],
+    );
+  }
+  const exists = await q1("select 1 from events where date = $1 and kind = 'shop' and title like 'Verkaufsoffener Sonntag%'", [date]);
+  if (!exists) await q("insert into events (title, note, date, start_time, end_time, kind, created_by) values ($1,$2,$3,$4,$5,'shop',$6)", ["Verkaufsoffener Sonntag", note || "Bas und Lea sind da. Wer von euch mit dabei ist, besprechen wir im Laden.", date, start, end, u.id]);
+  revalidatePath("/app", "layout");
+  redirect(`/app/roster?w=${addDays(date, -6)}`);
+}
+export async function removeOpenSunday(fd: FormData) {
+  await requireAdmin();
+  const date = s(fd, "date");
+  if (!isDate(date) || weekday(date) !== 7) return;
+  await q("delete from shifts where date = $1", [date]);
+  await q("delete from events where date = $1 and kind = 'shop' and title like 'Verkaufsoffener Sonntag%'", [date]);
+  revalidatePath("/app", "layout");
+  redirect(`/app/roster?w=${addDays(date, -6)}`);
 }
 
 /* ───────── Putzplan ───────── */
@@ -514,17 +557,30 @@ export async function countOnline(fd: FormData) {
   await q("insert into journal (date, kind, user_id) values ($1,'online',$2)", [date, u.id]);
   revalidatePath("/app", "layout");
 }
-export async function addQuote(fd: FormData) {
+export async function saveCustomerRequest(fd: FormData) {
   const u = await requireUser();
   const text = s(fd, "text");
-  const date = s(fd, "date");
-  if (!text || !isDate(date)) return;
-  await q("insert into journal (date, kind, text, user_id) values ($1,'quote',$2,$3)", [date, text, u.id]);
+  const date = isDate(s(fd, "date")) ? s(fd, "date") : null;
+  if (!text || !date) return;
+  const kind = ["question", "wish", "complaint", "quote"].includes(s(fd, "kind")) ? s(fd, "kind") : "question";
+  // Schnell-Eingabe auf "Heute" hat kein Häkchen: Fragen/Wünsche bleiben dann offen, Kundensätze nicht
+  const action = fd.has("action_needed") || fd.has("id") ? s(fd, "action_needed") === "on" : kind !== "quote";
+  const id = opt(fd, "id");
+  const vals = [date, kind, text, opt(fd, "product"), opt(fd, "answer"), action, opt(fd, "action_note")];
+  if (id) await q("update customer_requests set date=$1, kind=$2, text=$3, product=$4, answer=$5, action_needed=$6, action_note=$7 where id=$8", [...vals, id]);
+  else await q("insert into customer_requests (date, kind, text, product, answer, action_needed, action_note, status, user_id) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)", [...vals, action ? "open" : "done", u.id]);
+  revalidatePath("/app", "layout");
+  redirect(back(fd, "/app/journal"));
+}
+export async function toggleCustomerRequest(fd: FormData) {
+  const u = await requireUser();
+  const id = s(fd, "id");
+  await q("update customer_requests set status = case when status = 'open' then 'done' else 'open' end, done_by = $2, done_at = now() where id = $1", [id, u.id]);
   revalidatePath("/app", "layout");
 }
-export async function deleteJournal(fd: FormData) {
+export async function deleteCustomerRequest(fd: FormData) {
   await requireAdmin();
-  await q("delete from journal where id = $1", [s(fd, "id")]);
+  await q("delete from customer_requests where id = $1", [s(fd, "id")]);
   revalidatePath("/app", "layout");
 }
 
@@ -637,7 +693,7 @@ async function applyAbsence(id: string) {
     if (weekday(d) === 7) continue;
     await q(
       `insert into shifts (user_id, date, kind, note) values ($1,$2,$3,$4)
-       on conflict (user_id, date) do update set kind=excluded.kind, start_time=null, end_time=null, break_start=null, break_end=null, note=excluded.note`,
+       on conflict (user_id, date) do update set kind=excluded.kind, start_time=null, end_time=null, break_start=null, break_end=null, break2_start=null, break2_end=null, note=excluded.note`,
       [a.user_id, d, a.kind === "school" ? "school" : "off", a.note ? `${label}: ${a.note}` : label],
     );
   }

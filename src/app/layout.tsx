@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-export const metadata: Metadata = { title: "Kansō Team Hub", description: "Team-Hub für Kansō Outdoor Lüneburg", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Kanso Team Hub", description: "Team-Hub für Kanso Outdoor Lüneburg", robots: { index: false, follow: false } };
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#faf8f4" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

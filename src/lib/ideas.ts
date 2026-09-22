@@ -6,7 +6,7 @@ export const IDEA_CHECKS: { key: string; de: string; nl: string }[] = [
   { key: "story", de: "Material und Herkunft kann ich in zwei Sätzen erklären", nl: "Materiaal en herkomst kan ik in twee zinnen uitleggen" },
   { key: "supply", de: "Lieferant liefert nach Deutschland, Nachbestellen ist möglich", nl: "Leverancier levert in Duitsland, nabestellen kan" },
 ];
-export const WORLDS = ["Tisch & Gastgeben", "Feuer & Licht", "Geschenk", "KANSŌ SPICES", "Duft", "Pflanzen & Gefäße", "Textil", "Outdoor Cooking", "Terrasse & Möbel"];
+export const WORLDS = ["Tisch & Gastgeben", "Feuer & Licht", "Geschenk", "KANSO SPICES", "Duft", "Pflanzen & Gefäße", "Textil", "Outdoor Cooking", "Terrasse & Möbel"];
 
 export type Calc = { landed: number; net: number; margin: number; pct: number; factor: number; invest: number | null; breakEven: number | null; profitAll: number | null };
 export function calc(ek?: number | null, vk?: number | null, vat = 19, extra?: number | null, moq?: number | null): Calc | null {

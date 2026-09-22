@@ -6,13 +6,15 @@ import { SHIFT_KIND, T, lbl } from "@/lib/i18n";
 import { OPENING_TEXT_DE, shiftFor } from "@/lib/hours";
 import { addDays, dayName, hm, isoWeek, longDate, monday, monthName, today, weekday } from "@/lib/dates";
 import { Avatar, PageHeader } from "@/components/ui";
-import { Submit } from "@/components/client";
-import { generateRoster, saveShift } from "../actions";
+import { ConfirmSubmit, Submit } from "@/components/client";
+import { addOpenSunday, generateRoster, removeOpenSunday, saveShift } from "../actions";
 
-type Sh = { user_id: string; date: string; kind: string; start_time: string | null; end_time: string | null; break_start: string | null; break_end: string | null; note: string | null };
-const WDN = { de: ["", "Mo", "Di", "Mi", "Do", "Fr", "Sa"], nl: ["", "ma", "di", "wo", "do", "vr", "za"] };
+type Sh = { user_id: string; date: string; kind: string; start_time: string | null; end_time: string | null; break_start: string | null; break_end: string | null; break2_start: string | null; break2_end: string | null; note: string | null };
+const WDN = { de: ["", "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"], nl: ["", "ma", "di", "wo", "do", "vr", "za", "zo"] };
 const mins = (t: string | null) => (t ? Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5)) : 0);
-const worked = (s: Sh) => (s.start_time && s.end_time ? Math.max(0, mins(s.end_time) - mins(s.start_time) - (s.break_start && s.break_end ? mins(s.break_end) - mins(s.break_start) : 0)) : 0);
+const span = (a: string | null, b: string | null) => (a && b ? Math.max(0, mins(b) - mins(a)) : 0);
+const worked = (s: Sh) => (s.start_time && s.end_time ? Math.max(0, mins(s.end_time) - mins(s.start_time) - span(s.break_start, s.break_end) - span(s.break2_start, s.break2_end)) : 0);
+const nextSunday = (d: string) => addDays(d, 7 - weekday(d) || 7);
 const hours = (m: number) => `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`;
 
 export default async function Roster({ searchParams }: { searchParams: { w?: string; edit?: string } }) {
@@ -21,15 +23,18 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
   const isAdmin = user.role === "admin";
   const now = today();
   const mon = monday(/^\d{4}-\d{2}-\d{2}$/.test(searchParams.w || "") ? searchParams.w! : now);
-  const days = [0, 1, 2, 3, 4, 5].map((i) => addDays(mon, i));
-  const monthStart = `${days[5].slice(0, 7)}-01`;
+  const sun = addDays(mon, 6);
+  const monthStart = `${addDays(mon, 5).slice(0, 7)}-01`;
   const [users, shifts, sats] = await Promise.all([
     team(),
-    q<Sh>("select * from shifts where date between $1 and $2", [mon, days[5]]),
+    q<Sh>("select * from shifts where date between $1 and $2", [mon, sun]),
     q<{ user_id: string; n: number }>(
       "select user_id, count(*)::int as n from shifts where kind = 'shop' and extract(isodow from date) = 6 and date >= $1::date and date < ($1::date + interval '1 month') group by user_id", [monthStart]),
   ]);
   const get = (uid: string, d: string) => shifts.find((s) => s.user_id === uid && s.date === d);
+  // Zondag alleen tonen als er die dag iets staat (verkaufsoffener Sonntag)
+  const openSunday = shifts.some((s) => s.date === sun && s.kind === "shop");
+  const days = [0, 1, 2, 3, 4, 5, ...(openSunday ? [6] : [])].map((i) => addDays(mon, i));
   const [editUser, editDate] = (searchParams.edit || "").split("_");
   const editing = isAdmin && editUser && days.includes(editDate) ? { user: users.find((u) => u.id === editUser), date: editDate, shift: get(editUser, editDate) } : null;
   const interns = users.filter((u) => u.role === "intern");
@@ -37,7 +42,7 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
 
   return (
     <div>
-      <PageHeader title={tr("Dienstplan", "Rooster")} sub={`${tr("KW", "Week")} ${isoWeek(mon)} · ${longDate(mon, user.lang)} – ${longDate(days[5], user.lang)}`}>
+      <PageHeader title={tr("Dienstplan", "Rooster")} sub={`${tr("KW", "Week")} ${isoWeek(mon)} · ${longDate(mon, user.lang)} – ${longDate(days[days.length - 1], user.lang)}`}>
         <Link className="btn-ghost btn-sm" href={`/app/roster?w=${addDays(mon, -7)}`}>←</Link>
         <Link className="btn-ghost btn-sm" href="/app/roster">{tr("Diese Woche", "Deze week")}</Link>
         <Link className="btn-ghost btn-sm" href={`/app/roster?w=${addDays(mon, 7)}`}>→</Link>
@@ -67,7 +72,7 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
                       <div className={`rounded-lg p-1.5 text-xs leading-tight ${SHIFT_KIND[s.kind]?.color} ${long ? "ring-2 ring-red-400" : ""}`}>
                         <div className="font-semibold">{lbl(user.lang, SHIFT_KIND[s.kind])}</div>
                         {s.start_time && <div>{hm(s.start_time)}–{hm(s.end_time)}</div>}
-                        {s.break_start && <div className="opacity-70">{tr("Pause", "Pauze")} {hm(s.break_start)}–{hm(s.break_end)}</div>}
+                        {s.break_start && <div className="opacity-70">{tr("Pause", "Pauze")} {hm(s.break_start)}–{hm(s.break_end)}{s.break2_start && <> · {hm(s.break2_start)}–{hm(s.break2_end)}</>}</div>}
                         {s.note && <div className="opacity-70">{s.note}</div>}
                       </div>
                     ) : <div className="rounded-lg border border-dashed border-sand-200 p-1.5 text-center text-xs text-stone-300">{isAdmin ? "+" : "–"}</div>;
@@ -108,11 +113,32 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
               <div><label className="label">{tr("bis", "tot")}</label><input type="time" name="end_time" className="input" defaultValue={hm(editing.shift?.end_time) || shiftFor(weekday(editing.date))?.end || "18:30"} /></div>
               <div><label className="label">{tr("Pause von", "Pauze van")}</label><input type="time" name="break_start" className="input" defaultValue={hm(editing.shift?.break_start)} /></div>
               <div><label className="label">{tr("Pause bis", "Pauze tot")}</label><input type="time" name="break_end" className="input" defaultValue={hm(editing.shift?.break_end)} /></div>
+              <div><label className="label">{tr("2. Pause von", "2e pauze van")}</label><input type="time" name="break2_start" className="input" defaultValue={hm(editing.shift?.break2_start)} /></div>
+              <div><label className="label">{tr("2. Pause bis", "2e pauze tot")}</label><input type="time" name="break2_end" className="input" defaultValue={hm(editing.shift?.break2_end)} /></div>
             </div>
             <div><label className="label">{tr("Notiz", "Notitie")}</label><input name="note" className="input" defaultValue={editing.shift?.note || ""} /></div>
             <div className="flex gap-2"><Submit>{tr("Speichern", "Opslaan")}</Submit><Link href={base} className="btn-ghost">{tr("Abbrechen", "Annuleren")}</Link></div>
           </form>
         </section>
+      )}
+
+      {isAdmin && (
+        <details className="card mt-5" open={openSunday}>
+          <summary className="cursor-pointer font-semibold">{tr("Verkaufsoffener Sonntag", "Open zondag")}</summary>
+          <p className="muted mt-2">{tr("Ein paar Mal im Jahr ist in Lüneburg sonntags geöffnet. Bas und Lea werden eingetragen und es kommt ein Eintrag in die Agenda. Ob eine Praktikantin mit dabei ist, besprecht ihr im Laden – dann einfach im Plan auf das Feld klicken.", "Een paar keer per jaar is Lüneburg op zondag open. Bas en Lea worden ingepland en het komt in de agenda. Of een stagiair meedoet, bespreken jullie in de winkel – dan gewoon in het rooster op het vakje klikken.")}</p>
+          {openSunday && (
+            <form action={removeOpenSunday} className="mt-3 flex items-center gap-3 text-sm"><input type="hidden" name="date" value={sun} />
+              <span>{tr("Diese Woche", "Deze week")}: <span className="capitalize">{longDate(sun, user.lang)}</span></span>
+              <ConfirmSubmit className="btn-ghost btn-sm" confirm={tr("Sonntag wieder entfernen?", "Zondag weer verwijderen?")}>{tr("Entfernen", "Verwijderen")}</ConfirmSubmit>
+            </form>
+          )}
+          <form action={addOpenSunday} className="mt-3 grid gap-3 text-sm sm:grid-cols-[1fr_auto_auto_auto] sm:items-end">
+            <div><label className="label">{tr("Sonntag", "Zondag")}</label><input type="date" name="date" className="input" defaultValue={nextSunday(now)} required /></div>
+            <div><label className="label">{tr("von", "van")}</label><input type="time" name="start_time" className="input" defaultValue="13:00" /></div>
+            <div><label className="label">{tr("bis", "tot")}</label><input type="time" name="end_time" className="input" defaultValue="18:00" /></div>
+            <Submit>{tr("Eintragen", "Toevoegen")}</Submit>
+          </form>
+        </details>
       )}
 
       {isAdmin && interns.length > 0 && (
@@ -140,9 +166,11 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
               </table>
             </div>
             <p className="rounded-lg bg-sand-100 p-3 text-xs text-stone-600">{tr("Arbeitszeiten = 30 Minuten vor Öffnung bis Ladenschluss", "Werktijden = 30 minuten voor opening tot sluiting")}: {OPENING_TEXT_DE}</p>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <div><label className="label">{tr("Pause 1. Praktikantin", "Pauze 1e stagiair")}</label><div className="flex gap-1"><input type="time" name="break_a_start" className="input" defaultValue="12:30" /><input type="time" name="break_a_end" className="input" defaultValue="13:30" /></div></div>
-              <div><label className="label">{tr("Pause 2. Praktikantin", "Pauze 2e stagiair")}</label><div className="flex gap-1"><input type="time" name="break_b_start" className="input" defaultValue="13:30" /><input type="time" name="break_b_end" className="input" defaultValue="14:30" /></div></div>
+            <p className="text-xs text-stone-500">{tr("Pausen: zwei Mal 30 Minuten. Eine gemeinsame Pause (beide zusammen) und eine, die wechselt – wer diese Woche früh Pause hat, hat nächste Woche spät.", "Pauzes: twee keer 30 minuten. Eén gezamenlijke pauze (samen) en één die wisselt – wie deze week vroeg pauze heeft, heeft volgende week laat.")}</p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div><label className="label">{tr("Gemeinsame Pause", "Gezamenlijke pauze")}</label><div className="flex gap-1"><input type="time" name="break_shared_start" className="input" defaultValue="13:00" /><input type="time" name="break_shared_end" className="input" defaultValue="13:30" /></div></div>
+              <div><label className="label">{tr("Wechselpause früh", "Wisselpauze vroeg")}</label><div className="flex gap-1"><input type="time" name="break_early_start" className="input" defaultValue="11:00" /><input type="time" name="break_early_end" className="input" defaultValue="11:30" /></div></div>
+              <div><label className="label">{tr("Wechselpause spät", "Wisselpauze laat")}</label><div className="flex gap-1"><input type="time" name="break_late_start" className="input" defaultValue="15:30" /><input type="time" name="break_late_end" className="input" defaultValue="16:00" /></div></div>
               <div><label className="label">{tr("Homeoffice Mo von", "Thuiswerk ma van")}</label><input type="time" name="home_start" className="input" defaultValue="10:00" /></div>
               <div><label className="label">{tr("Homeoffice Mo bis", "Thuiswerk ma tot")}</label><input type="time" name="home_end" className="input" defaultValue="14:30" /></div>
             </div>

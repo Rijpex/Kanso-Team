@@ -14,7 +14,7 @@ export default async function Ideas({ searchParams }: { searchParams: { new?: st
   const rows = await q<Row>("select i.*, u.name as uname, u.color, (select count(*)::int from comments c where c.idea_id = i.id) as n from ideas i left join users u on u.id = i.user_id order by (i.status in ('approved','rejected')), i.created_at desc");
   return (
     <div>
-      <PageHeader title={tr("Produktideen", "Productideeën")} sub={tr("Neue Dinge finden, die zu KANSŌ passen und sich rechnen – und beides belegen können. Einmal im Monat stellt ihr eure Vorschläge vor.", "Nieuwe dingen vinden die bij KANSŌ passen én renderen – en dat allebei kunnen onderbouwen. Eén keer per maand presenteren jullie de voorstellen.")}>
+      <PageHeader title={tr("Produktideen", "Productideeën")} sub={tr("Neue Dinge finden, die zu KANSO passen und sich rechnen – und beides belegen können. Einmal im Monat stellt ihr eure Vorschläge vor.", "Nieuwe dingen vinden die bij KANSO passen én renderen – en dat allebei kunnen onderbouwen. Eén keer per maand presenteren jullie de voorstellen.")}>
         <Link href="/app/kb/preise-kalkulieren" className="btn-ghost btn-sm">{tr("Wie rechnet man Marge?", "Hoe reken je marge uit?")}</Link>
       </PageHeader>
       <div className="grid gap-5 lg:grid-cols-[1fr_24rem]">
@@ -35,7 +35,7 @@ export default async function Ideas({ searchParams }: { searchParams: { new?: st
                   {r.vk != null && <span>VK {eur(r.vk)}</span>}
                   {c && <span className={`font-semibold ${c.margin > 0 ? "" : "text-red-700"}`}>{tr("Marge", "Marge")} {eur(c.margin)} · {c.pct.toFixed(0)} % · {tr("Faktor", "factor")} {c.factor.toFixed(1)}</span>}
                   {c?.invest != null && <span>{tr("Erste Bestellung", "Eerste bestelling")} {eur(c.invest)}</span>}
-                  <span>KANSŌ-Check {r.checks.length}/{IDEA_CHECKS.length}</span>
+                  <span>KANSO-Check {r.checks.length}/{IDEA_CHECKS.length}</span>
                   {r.n > 0 && <span>{r.n} {tr("Kommentare", "reacties")}</span>}
                 </div>
                 {r.why && <p className="mt-1.5 line-clamp-2 text-sm text-stone-700">{r.why}</p>}

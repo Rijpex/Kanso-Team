@@ -1,6 +1,6 @@
 /** Databaseschema. Alles is idempotent: opnieuw draaien kan altijd. */
 /** Ophogen bij elke schemawijziging: de app werkt de database dan zelf bij. */
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 export const SCHEMA_SQL = `
 create extension if not exists pgcrypto;
@@ -351,6 +351,40 @@ alter table daily_checks enable row level security;
 -- Versie 4: Öffnungszeiten in den Wissen-Seiten korrigieren (nur wenn der alte Text noch drinsteht)
 update kb_pages set body_de = replace(body_de, 'Dienstag–Freitag 10:30–18:30, Samstag 10:30–17:00, Montag geschlossen.', 'Dienstag 10:30–18:30, Mittwoch 09:30–17:30, Donnerstag 10:30–18:30, Freitag 10:30–17:30, Samstag 09:30–16:00, Montag geschlossen. Wir sind jeweils 30 Minuten vor Öffnung da.'), updated_at = now() where body_de like '%Dienstag–Freitag 10:30–18:30, Samstag 10:30–17:00%';
 update kb_pages set body_de = replace(replace(body_de, '- **10:00** – Ankommen, Licht, Musik leise', '- **30 Minuten vor Öffnung** – Ankommen, Licht, Musik leise'), '- **10:30** – Tür auf.', '- **Öffnung** (Di/Do 10:30, Mi/Sa 09:30, Fr 10:30) – Tür auf.'), updated_at = now() where body_de like '%- **10:00** – Ankommen%';
+
+
+-- Versie 5: zweite Pause, Kundenfragen (ersetzt "Kundenstimmen"), Öffnungszeiten-Sonntage
+alter table shifts add column if not exists break2_start time;
+alter table shifts add column if not exists break2_end time;
+
+create table if not exists customer_requests (
+  id            uuid primary key default gen_random_uuid(),
+  date          date not null,
+  kind          text not null default 'question' check (kind in ('question','wish','complaint','quote')),
+  text          text not null,
+  product       text,
+  answer        text,
+  action_needed boolean not null default false,
+  action_note   text,
+  status        text not null default 'open' check (status in ('open','done')),
+  user_id       uuid references users(id) on delete set null,
+  done_by       uuid references users(id) on delete set null,
+  done_at       timestamptz,
+  created_at    timestamptz not null default now()
+);
+create index if not exists customer_requests_date_idx on customer_requests (date);
+alter table customer_requests enable row level security;
+-- Alte Kundensätze übernehmen (einmalig)
+insert into customer_requests (id, date, kind, text, user_id, status, created_at)
+  select id, date, 'quote', text, user_id, 'done', created_at from journal where kind = 'quote' and text is not null
+  on conflict (id) do nothing;
+
+-- Versie 5: Schreibweise "Kanso" ohne Makron, auch in bereits gespeicherten Texten
+update kb_pages set title_de = replace(replace(title_de,'ō','o'),'Ō','O'), body_de = replace(replace(body_de,'ō','o'),'Ō','O'), title_nl = replace(replace(title_nl,'ō','o'),'Ō','O'), body_nl = replace(replace(body_nl,'ō','o'),'Ō','O') where title_de ~ '[ōŌ]' or body_de ~ '[ōŌ]' or title_nl ~ '[ōŌ]' or body_nl ~ '[ōŌ]';
+update tasks set title = replace(replace(title,'ō','o'),'Ō','O'), description = replace(replace(description,'ō','o'),'Ō','O') where title ~ '[ōŌ]' or description ~ '[ōŌ]';
+update onboarding_items set title_de = replace(replace(title_de,'ō','o'),'Ō','O'), hint_de = replace(replace(hint_de,'ō','o'),'Ō','O') where title_de ~ '[ōŌ]' or hint_de ~ '[ōŌ]';
+update skills set title_de = replace(replace(title_de,'ō','o'),'Ō','O') where title_de ~ '[ōŌ]';
+update events set title = replace(replace(title,'ō','o'),'Ō','O') where title ~ '[ōŌ]';
 
 -- Privé opslag voor bestanden (alleen op Supabase aanwezig)
 do $$

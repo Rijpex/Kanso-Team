@@ -24,10 +24,10 @@ export function IdeaForm({ lang, idea }: { lang: Lang; idea?: Idea }) {
         <div><label className="label">{tr("Lieferzeit", "Levertijd")}</label><input name="lead_time" className="input" placeholder={tr("z. B. 2 Wochen", "bijv. 2 weken")} defaultValue={idea?.lead_time || ""} /></div>
         <div><label className="label">{tr("Saison", "Seizoen")}</label><input name="season" list="seasons" className="input" defaultValue={idea?.season || ""} autoComplete="off" /><datalist id="seasons">{["Ganzjährig", "Frühling / Sommer", "Herbst", "Weihnachten / Winter"].map((w) => <option key={w} value={w} />)}</datalist></div>
       </div>
-      <div><label className="label">{tr("Warum passt es zu KANSŌ? (ein, zwei Sätze)", "Waarom past het bij KANSŌ? (één, twee zinnen)")}</label><textarea name="why" className="input" rows={3} defaultValue={idea?.why || ""} /></div>
+      <div><label className="label">{tr("Warum passt es zu KANSO? (ein, zwei Sätze)", "Waarom past het bij KANSO? (één, twee zinnen)")}</label><textarea name="why" className="input" rows={3} defaultValue={idea?.why || ""} /></div>
       <div><label className="label">{tr("Verpackung / eigenes Label möglich?", "Verpakking / eigen label mogelijk?")}</label><input name="packaging" className="input" defaultValue={idea?.packaging || ""} /></div>
       <fieldset>
-        <legend className="label">{tr("KANSŌ-Check – nur ankreuzen, was wirklich stimmt", "KANSŌ-check – alleen aanvinken wat echt klopt")}</legend>
+        <legend className="label">{tr("KANSO-Check – nur ankreuzen, was wirklich stimmt", "KANSO-check – alleen aanvinken wat echt klopt")}</legend>
         <div className="space-y-1">{IDEA_CHECKS.map((c) => <label key={c.key} className="flex items-start gap-2 text-sm"><input type="checkbox" name="checks" value={c.key} defaultChecked={idea?.checks?.includes(c.key)} className="mt-1" />{lang === "nl" ? c.nl : c.de}</label>)}</div>
       </fieldset>
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="sample" defaultChecked={idea?.sample} /> {tr("Muster ist da – wir haben es in der Hand gehabt", "Sample is binnen – we hebben het in handen gehad")}</label>

@@ -5,7 +5,7 @@ import { cleaningFor, MINE, tasksQuery, zoneOwners } from "@/lib/server/queries"
 import { EVENT_KIND, SHIFT_KIND, T, lbl } from "@/lib/i18n";
 import { addDays, dateTime, hm, longDate, monday, shortDate, today, weekday } from "@/lib/dates";
 import { ConfirmSubmit } from "@/components/client";
-import { addFocus, addQuote, countOnline, deleteFocus, toggleFocus } from "./actions";
+import { addFocus, countOnline, deleteFocus, saveCustomerRequest, toggleFocus } from "./actions";
 import { Avatar, Badge } from "@/components/ui";
 import { TaskCard } from "@/components/TaskCard";
 import { DayChecklist, type PlanRow } from "@/components/DayChecklist";
@@ -18,7 +18,7 @@ export default async function Today() {
 
   const week = monday(d);
   const [shifts, cleaning, myTasks, events, recent, onb, openQuestions, focus, journal, zones] = await Promise.all([
-    q<{ user_id: string; name: string; color: string; kind: string; start_time: string; end_time: string; break_start: string; break_end: string; note: string | null }>(
+    q<{ user_id: string; name: string; color: string; kind: string; start_time: string; end_time: string; break_start: string; break_end: string; break2_start: string | null; break2_end: string | null; note: string | null }>(
       "select s.*, u.name, u.color from shifts s join users u on u.id = s.user_id where s.date = $1 and u.active order by u.created_at", [d]),
     cleaningFor(d),
     isAdmin ? tasksQuery("t.status in ('review','doing')") : tasksQuery(`t.status <> 'done' and ${MINE}`, [user.id]),
@@ -33,7 +33,7 @@ export default async function Today() {
       "select (select count(*)::int from onboarding_checks where user_id = $1) as done, (select count(*)::int from onboarding_items) as total", [user.id]),
     isAdmin ? q<{ id: string; title: string; name: string }>("select qu.id, qu.title, u.name from questions qu left join users u on u.id = qu.user_id where qu.status = 'open' order by qu.created_at") : [],
     q<{ id: string; text: string; done_by: string | null; done_name: string | null }>("select f.id, f.text, f.done_by, u.name as done_name from focus f left join users u on u.id = f.done_by where f.week = $1 order by f.created_at", [week]),
-    q<{ id: string; date: string; kind: string; text: string | null }>("select id, date, kind, text from journal where date = $1 or (kind = 'quote' and date > $2) order by created_at desc", [d, addDays(d, -7)]),
+    q<{ id: string; date: string; kind: string; text: string | null }>("select id, date, kind, text from (select id, date, 'online' as kind, null::text as text, created_at from journal where kind = 'online' and date = $1 union all select id, date, kind, text, created_at from customer_requests where date > $2) x order by created_at desc", [d, addDays(d, -7)]),
     zoneOwners(d),
   ]);
   const [plansToday, hasReflection, dailyChecks, storyPosted] = await Promise.all([
@@ -48,7 +48,7 @@ export default async function Today() {
   const wd = new Date(`${d}T12:00:00Z`).getUTCDay();
   const remindReflect = !isAdmin && !hasReflection && (wd === 5 || wd === 6);
   const onlineToday = journal.filter((j) => j.kind === "online" && j.date === d).length;
-  const quotes = journal.filter((j) => j.kind === "quote").slice(0, 4);
+  const quotes = journal.filter((j) => j.kind !== "online").slice(0, 4);
   const mine = shifts.find((s) => s.user_id === user.id);
   const hour = Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hour12: false, timeZone: "Europe/Berlin" }).format(new Date()));
   const greet = hour < 11 ? tr("Guten Morgen", "Goedemorgen") : hour < 17 ? tr("Hallo", "Hoi") : tr("Guten Abend", "Goedenavond");
@@ -115,7 +115,7 @@ export default async function Today() {
               {mine && (mine.kind === "shop" || mine.kind === "home") ? (
                 <>
                   <div className="font-medium">{tr("Deine Schicht", "Jouw dienst")}: {hm(mine.start_time)}–{hm(mine.end_time)} · {lbl(user.lang, SHIFT_KIND[mine.kind])}</div>
-                  {mine.break_start && <div className="text-stone-600">{tr("Pause", "Pauze")}: {hm(mine.break_start)}–{hm(mine.break_end)}</div>}
+                  {mine.break_start && <div className="text-stone-600">{tr("Pause", "Pauze")}: {hm(mine.break_start)}–{hm(mine.break_end)}{mine.break2_start && <> · {hm(mine.break2_start)}–{hm(mine.break2_end)}</>}</div>}
                   {mine.note && <div className="text-stone-600">{mine.note}</div>}
                 </>
               ) : mine ? (
@@ -130,7 +130,7 @@ export default async function Today() {
               <li key={s.user_id} className="flex items-center gap-2">
                 <Avatar name={s.name} color={s.color} /> <span className="font-medium">{s.name}</span>
                 <Badge l={SHIFT_KIND[s.kind]} lang={user.lang} />
-                <span className="ml-auto text-stone-500">{s.start_time ? `${hm(s.start_time)}–${hm(s.end_time)}` : ""}{s.break_start ? ` · ${tr("Pause", "pauze")} ${hm(s.break_start)}` : ""}</span>
+                <span className="ml-auto text-stone-500">{s.start_time ? `${hm(s.start_time)}–${hm(s.end_time)}` : ""}{s.break_start ? ` · ${tr("Pause", "pauze")} ${hm(s.break_start)}${s.break2_start ? " + " + hm(s.break2_start) : ""}` : ""}</span>
               </li>
             ))}
             {!shifts.filter((s) => s.kind !== "off").length && <li className="text-stone-500">{tr("Niemand eingetragen.", "Niemand ingepland.")}</li>}
@@ -167,7 +167,7 @@ export default async function Today() {
 
 
       <section className="card">
-        <div className="mb-3 flex items-center justify-between"><h2>{tr("Heute im Laden", "Vandaag in de winkel")}</h2><Link href="/app/journal" className="text-sm text-brand hover:underline">{tr("Kundenstimmen", "Klantstemmen")} →</Link></div>
+        <div className="mb-3 flex items-center justify-between"><h2>{tr("Heute im Laden", "Vandaag in de winkel")}</h2><Link href="/app/journal" className="text-sm text-brand hover:underline">{tr("Kundenfragen", "Klantvragen")} →</Link></div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <div className="text-sm font-medium">{tr("Online-Anfragen heute", "Online-aanvragen vandaag")}</div>
@@ -175,10 +175,10 @@ export default async function Today() {
             <form action={countOnline} className="mt-2 flex items-center gap-3"><input type="hidden" name="date" value={d} /><span className="text-3xl font-semibold tabular-nums">{onlineToday}</span><button className="btn-ghost">+1</button></form>
           </div>
           <div>
-            <div className="text-sm font-medium">{tr("Kundensatz des Tages", "Klantzin van de dag")}</div>
-            <p className="text-xs text-stone-500">{tr("Was hat jemand heute gesagt, das hängen blieb?", "Wat zei iemand vandaag dat bleef hangen?")}</p>
-            <form action={addQuote} className="mt-2 flex gap-2" key={quotes.length}><input type="hidden" name="date" value={d} /><input name="text" className="input" placeholder="„…“" required /><button className="btn-ghost">{tr("Merken", "Bewaar")}</button></form>
-            <ul className="mt-2 space-y-1 text-sm text-stone-600">{quotes.map((x) => <li key={x.id}>„{x.text}“ <span className="text-xs text-stone-400">{x.date === d ? tr("heute", "vandaag") : shortDate(x.date, user.lang)}</span></li>)}</ul>
+            <div className="text-sm font-medium">{tr("Kundenfrage oder Kundensatz", "Klantvraag of klantzin")}</div>
+            <p className="text-xs text-stone-500">{tr("Was hat jemand heute gefragt oder gesagt? Kurz notieren – Details später unter Kundenfragen.", "Wat vroeg of zei iemand vandaag? Kort noteren – details later bij Klantvragen.")}</p>
+            <form action={saveCustomerRequest} className="mt-2 flex gap-2" key={quotes.length}><input type="hidden" name="date" value={d} /><input type="hidden" name="back" value="/app" /><select name="kind" className="input !w-auto" defaultValue="question"><option value="question">{tr("Frage", "Vraag")}</option><option value="wish">{tr("Wunsch", "Wens")}</option><option value="quote">{tr("Satz", "Zin")}</option></select><input name="text" className="input" placeholder="„…“" required /><button className="btn-ghost">{tr("Merken", "Bewaar")}</button></form>
+            <ul className="mt-2 space-y-1 text-sm text-stone-600">{quotes.map((x) => <li key={x.id}>{x.kind === "quote" ? `„${x.text}“` : x.text} <span className="text-xs text-stone-400">{x.date === d ? tr("heute", "vandaag") : shortDate(x.date, user.lang)}</span></li>)}</ul>
           </div>
         </div>
       </section>

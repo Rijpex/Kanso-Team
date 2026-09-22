@@ -11,7 +11,7 @@ import { CleaningList } from "@/components/CleaningList";
 import { deleteEvent, deletePlan, saveEvent, savePlan, saveShift, togglePlan } from "../actions";
 
 type Ev = { id: string; title: string; note: string | null; date: string; end_date: string | null; start_time: string | null; end_time: string | null; kind: string; created_by: string | null };
-type Sh = { user_id: string; date: string; kind: string; start_time: string | null; end_time: string | null; break_start: string | null; break_end: string | null; note: string | null; name: string; color: string };
+type Sh = { user_id: string; date: string; kind: string; start_time: string | null; end_time: string | null; break_start: string | null; break_end: string | null; break2_start: string | null; break2_end: string | null; note: string | null; name: string; color: string };
 type Plan = { id: string; task_id: string; user_id: string; date: string; start_time: string | null; end_time: string | null; note: string | null; done: boolean; title: string; name: string; color: string };
 
 const isD = (v?: string) => !!v && /^\d{4}-\d{2}-\d{2}$/.test(v);
@@ -58,7 +58,10 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
   const base = view === "month" ? `/app/calendar?view=month&m=${month}` : `/app/calendar?d=${sel}`;
   const backUrl = view === "month" ? `${base}&d=${sel}` : base;
   const dayUrl = (d: string) => (view === "month" ? `/app/calendar?view=month&m=${month}&d=${d}` : `/app/calendar?d=${d}`);
-  const closed = (d: string) => weekday(d) === 7 || weekday(d) === 1;
+  // Zondag is dicht, tenzij er een verkaufsoffener Sonntag in de agenda staat
+  const openSun = (d: string) => weekday(d) === 7 && evOn(d).some((e) => e.kind === "shop");
+  const closed = (d: string) => (weekday(d) === 7 && !openSun(d)) || weekday(d) === 1;
+  const weekDays = view === "week" ? days.filter((d, i) => i < 6 || openSun(d)) : days;
   const shiftUser = isAdmin && searchParams.shift ? users.find((u) => u.id === searchParams.shift) : undefined;
   const shiftOfSel = (uid: string) => shifts.find((s) => s.date === sel && s.user_id === uid);
 
@@ -70,7 +73,7 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
         <span className="font-semibold" style={{ color: s.color }}>{s.name}{me ? ` · ${tr("du", "jij")}` : ""}</span>
         {!compact && s.kind !== "shop" && <span className="text-stone-600"> · {lbl(user.lang, SHIFT_KIND[s.kind])}</span>}
         {s.start_time && <span className="block text-stone-700">{hm(s.start_time)}–{hm(s.end_time)}</span>}
-        {!compact && s.break_start && <span className="block text-stone-500">{tr("Pause", "Pauze")} {hm(s.break_start)}–{hm(s.break_end)}</span>}
+        {!compact && s.break_start && <span className="block text-stone-500">{tr("Pause", "Pauze")} {hm(s.break_start)}–{hm(s.break_end)}{s.break2_start && <> · {hm(s.break2_start)}–{hm(s.break2_end)}</>}</span>}
         {compact && s.kind !== "shop" && <span className="block text-stone-500">{lbl(user.lang, SHIFT_KIND[s.kind])}</span>}
       </div>
     );
@@ -90,7 +93,7 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
 
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <Link className="btn-ghost btn-sm" href={prevUrl}>←</Link>
-        <div className="min-w-[11rem] text-center font-semibold capitalize">{view === "month" ? monthName(`${month}-01`, user.lang) : `${tr("KW", "Week")} ${isoWeek(start)} · ${Number(start.slice(8))}.–${Number(addDays(start, 5).slice(8))}. ${monthName(addDays(start, 5), user.lang)}`}</div>
+        <div className="min-w-[11rem] text-center font-semibold capitalize">{view === "month" ? monthName(`${month}-01`, user.lang) : `${tr("KW", "Week")} ${isoWeek(start)} · ${Number(start.slice(8))}.–${Number(weekDays[weekDays.length - 1].slice(8))}. ${monthName(weekDays[weekDays.length - 1], user.lang)}`}</div>
         <Link className="btn-ghost btn-sm" href={nextUrl}>→</Link>
         <Link className="btn-ghost btn-sm" href={view === "month" ? "/app/calendar?view=month" : "/app/calendar"}>{tr("Heute", "Vandaag")}</Link>
         <div className="ml-auto flex flex-wrap items-center gap-2 text-xs text-stone-600">
@@ -99,8 +102,8 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
       </div>
 
       {view === "week" ? (
-        <div className="grid gap-2 md:grid-cols-3 xl:grid-cols-6">
-          {days.slice(0, 6).map((d) => {
+        <div className={`grid gap-2 md:grid-cols-3 ${weekDays.length > 6 ? "xl:grid-cols-7" : "xl:grid-cols-6"}`}>
+          {weekDays.map((d) => {
             const cp = cleanProgress.find((c) => c.date === d)?.n || 0;
             const mine = mineOn(d);
             return (
@@ -161,7 +164,7 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
                   <Avatar name={u.name} color={u.color} size="h-6 w-6 text-[10px]" />
                   <span className="font-medium">{u.name}</span>
                   <span className="whitespace-nowrap text-stone-600">{s ? `${lbl(user.lang, SHIFT_KIND[s.kind])}${s.start_time ? ` ${hm(s.start_time)}–${hm(s.end_time)}` : ""}` : "–"}</span>
-                  {s?.break_start && <span className="text-xs text-stone-400">{tr("Pause", "pauze")} {hm(s.break_start)}</span>}
+                  {s?.break_start && <span className="text-xs text-stone-400">{tr("Pause", "pauze")} {hm(s.break_start)}{s.break2_start ? ` + ${hm(s.break2_start)}` : ""}</span>}
                   {isAdmin && <Link href={`${backUrl}&shift=${u.id}`} scroll={false} className="ml-auto text-xs text-brand hover:underline">{tr("Ändern", "Wijzig")}</Link>}
                 </li>
               );
@@ -180,6 +183,8 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
                 <div><label className="label">{tr("bis", "tot")}</label><input type="time" name="end_time" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.end_time) || shiftFor(weekday(sel))?.end || "18:30"} /></div>
                 <div><label className="label">{tr("Pause von", "pauze van")}</label><input type="time" name="break_start" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.break_start)} /></div>
                 <div><label className="label">{tr("Pause bis", "pauze tot")}</label><input type="time" name="break_end" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.break_end)} /></div>
+                <div><label className="label">{tr("2. Pause von", "2e pauze van")}</label><input type="time" name="break2_start" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.break2_start)} /></div>
+                <div><label className="label">{tr("2. Pause bis", "2e pauze tot")}</label><input type="time" name="break2_end" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.break2_end)} /></div>
               </div>
               <input name="note" className="input" placeholder={tr("Notiz", "Notitie")} defaultValue={shiftOfSel(shiftUser.id)?.note || ""} />
               <div className="flex gap-2"><Submit>{tr("Speichern", "Opslaan")}</Submit><Link href={backUrl} scroll={false} className="btn-ghost">{tr("Abbrechen", "Annuleren")}</Link></div>

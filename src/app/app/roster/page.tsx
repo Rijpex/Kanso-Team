@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/server/auth";
 import { q } from "@/lib/server/db";
 import { team } from "@/lib/server/queries";
 import { SHIFT_KIND, T, lbl } from "@/lib/i18n";
-import { OPENING_TEXT_DE, shiftFor } from "@/lib/hours";
+import { OPENING_TEXT_DE, shiftForRole } from "@/lib/hours";
 import { addDays, dayName, hm, isoWeek, longDate, monday, monthName, today, weekday } from "@/lib/dates";
 import { Avatar, PageHeader } from "@/components/ui";
 import { ConfirmSubmit, Submit } from "@/components/client";
@@ -109,8 +109,8 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
               </select>
             </div>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <div><label className="label">{tr("von", "van")}</label><input type="time" name="start_time" className="input" defaultValue={hm(editing.shift?.start_time) || shiftFor(weekday(editing.date))?.start || "10:00"} /></div>
-              <div><label className="label">{tr("bis", "tot")}</label><input type="time" name="end_time" className="input" defaultValue={hm(editing.shift?.end_time) || shiftFor(weekday(editing.date))?.end || "18:30"} /></div>
+              <div><label className="label">{tr("von", "van")}</label><input type="time" name="start_time" className="input" defaultValue={hm(editing.shift?.start_time) || shiftForRole(weekday(editing.date), editing.user?.role)?.start || "10:00"} /></div>
+              <div><label className="label">{tr("bis", "tot")}</label><input type="time" name="end_time" className="input" defaultValue={hm(editing.shift?.end_time) || shiftForRole(weekday(editing.date), editing.user?.role)?.end || "18:30"} /></div>
               <div><label className="label">{tr("Pause von", "Pauze van")}</label><input type="time" name="break_start" className="input" defaultValue={hm(editing.shift?.break_start)} /></div>
               <div><label className="label">{tr("Pause bis", "Pauze tot")}</label><input type="time" name="break_end" className="input" defaultValue={hm(editing.shift?.break_end)} /></div>
               <div><label className="label">{tr("2. Pause von", "2e pauze van")}</label><input type="time" name="break2_start" className="input" defaultValue={hm(editing.shift?.break2_start)} /></div>
@@ -165,7 +165,7 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
                 </tbody>
               </table>
             </div>
-            <p className="rounded-lg bg-sand-100 p-3 text-xs text-stone-600">{tr("Arbeitszeiten = 30 Minuten vor Öffnung bis Ladenschluss", "Werktijden = 30 minuten voor opening tot sluiting")}: {OPENING_TEXT_DE}</p>
+            <p className="rounded-lg bg-sand-100 p-3 text-xs text-stone-600">{tr("Arbeitszeiten Praktikantinnen = Öffnung bis Ladenschluss (Bas und Lea 30 Minuten früher)", "Werktijden stagiaires = opening tot sluiting (Bas en Lea 30 minuten eerder)")}: {OPENING_TEXT_DE}</p>
             <p className="text-xs text-stone-500">{tr("Pausen: zwei Mal 30 Minuten. Eine gemeinsame Pause (beide zusammen) und eine, die wechselt – wer diese Woche früh Pause hat, hat nächste Woche spät.", "Pauzes: twee keer 30 minuten. Eén gezamenlijke pauze (samen) en één die wisselt – wie deze week vroeg pauze heeft, heeft volgende week laat.")}</p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               <div><label className="label">{tr("Gemeinsame Pause", "Gezamenlijke pauze")}</label><div className="flex gap-1"><input type="time" name="break_shared_start" className="input" defaultValue="13:00" /><input type="time" name="break_shared_end" className="input" defaultValue="13:30" /></div></div>

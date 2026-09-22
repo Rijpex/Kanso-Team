@@ -5,7 +5,7 @@ import { cleaningFor, MINE, tasksQuery, team, zoneOwners } from "@/lib/server/qu
 import { EVENT_KIND, SHIFT_KIND, T, lbl } from "@/lib/i18n";
 import { addDays, dayName, fmt, hm, isoWeek, longDate, monday, monthName, parse, today, weekday } from "@/lib/dates";
 import { Avatar, PageHeader } from "@/components/ui";
-import { shiftFor } from "@/lib/hours";
+import { shiftForRole } from "@/lib/hours";
 import { ConfirmSubmit, Submit } from "@/components/client";
 import { CleaningList } from "@/components/CleaningList";
 import { deleteEvent, deletePlan, saveEvent, savePlan, saveShift, togglePlan } from "../actions";
@@ -179,8 +179,8 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
                 {Object.entries(SHIFT_KIND).map(([k, l]) => <option key={k} value={k}>{lbl(user.lang, l)}</option>)}<option value="none">{tr("– Eintrag entfernen –", "– Invoer verwijderen –")}</option>
               </select>
               <div className="grid grid-cols-2 gap-2">
-                <div><label className="label">{tr("von", "van")}</label><input type="time" name="start_time" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.start_time) || shiftFor(weekday(sel))?.start || "10:00"} /></div>
-                <div><label className="label">{tr("bis", "tot")}</label><input type="time" name="end_time" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.end_time) || shiftFor(weekday(sel))?.end || "18:30"} /></div>
+                <div><label className="label">{tr("von", "van")}</label><input type="time" name="start_time" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.start_time) || shiftForRole(weekday(sel), shiftUser.role)?.start || "10:00"} /></div>
+                <div><label className="label">{tr("bis", "tot")}</label><input type="time" name="end_time" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.end_time) || shiftForRole(weekday(sel), shiftUser.role)?.end || "18:30"} /></div>
                 <div><label className="label">{tr("Pause von", "pauze van")}</label><input type="time" name="break_start" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.break_start)} /></div>
                 <div><label className="label">{tr("Pause bis", "pauze tot")}</label><input type="time" name="break_end" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.break_end)} /></div>
                 <div><label className="label">{tr("2. Pause von", "2e pauze van")}</label><input type="time" name="break2_start" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.break2_start)} /></div>

@@ -7,7 +7,7 @@ import { q, q1 } from "@/lib/server/db";
 import { hashPassword, logout, requireAdmin, requireUser } from "@/lib/server/auth";
 import { migrate } from "@/lib/server/setup";
 import { addDays, weekday } from "@/lib/dates";
-import { shiftFor } from "@/lib/hours";
+import { internShiftFor, shiftFor } from "@/lib/hours";
 import { BUCKET, supabaseAdmin, supabaseConfigured } from "@/lib/server/storage";
 
 const s = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
@@ -137,10 +137,10 @@ export async function generateRoster(fd: FormData) {
         if (wd === 1) {
           row = mondayHome ? ["home", t("home_start", "10:00"), t("home_end", "14:30"), null, null, null, null] : none;
         } else if (wd === 6) {
-          row = worksSat ? ["shop", shiftFor(6)!.start, shiftFor(6)!.end, ...brk] : none;
+          row = worksSat ? ["shop", internShiftFor(6)!.start, internShiftFor(6)!.end, ...brk] : none;
         } else {
           const choice = s(fd, `d_${it.id}_${wd}`) || "shop";
-          if (choice === "shop") row = ["shop", shiftFor(wd)!.start, shiftFor(wd)!.end, ...brk];
+          if (choice === "shop") row = ["shop", internShiftFor(wd)!.start, internShiftFor(wd)!.end, ...brk];
           else if (choice === "school") row = ["school", null, null, null, null, null, null];
           else if (choice === "off") row = none;
           // "skip" = deze dag niet vullen

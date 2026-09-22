@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
 import { q, q1 } from "./db";
+import { ensureSchema } from "./setup";
 
 export const COOKIE = "hub_session";
 export type User = { id: string; username: string; name: string; role: "admin" | "intern"; lang: "de" | "nl"; color: string; active: boolean };
@@ -49,6 +50,7 @@ export async function currentUser(): Promise<User | null> {
 export async function requireUser(): Promise<User> {
   const u = await currentUser();
   if (!u) redirect("/login");
+  await ensureSchema();
   return u;
 }
 

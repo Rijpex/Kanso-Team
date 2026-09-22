@@ -16,6 +16,7 @@ export function TaskCard({ t, lang, showStatus = false }: { t: TaskRow; lang: La
       <div className="text-sm font-medium leading-snug">{t.title}</div>
       <div className="mt-2 flex items-center gap-3 text-xs text-stone-500">
         {t.due && <span className={overdue ? "font-semibold text-red-600" : ""}>{shortDate(t.due, lang)}</span>}
+        {t.next_plan && <span className="rounded bg-sand-100 px-1">{lang === "nl" ? "gepland" : "geplant"} {shortDate(t.next_plan, lang)}</span>}
         {t.check_total > 0 && <span>{t.check_done}/{t.check_total} ✓</span>}
         {t.comments > 0 && <span>{t.comments} {lang === "nl" ? "reacties" : "Kommentare"}</span>}
         {t.files > 0 && <span>{t.files} {lang === "nl" ? "bestanden" : "Dateien"}</span>}

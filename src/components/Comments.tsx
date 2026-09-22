@@ -6,7 +6,7 @@ import { ConfirmSubmit, Submit } from "./client";
 
 export type CommentRow = { id: string; body: string; created_at: string; user_id: string | null; name: string | null; color: string | null; role: string | null };
 
-export function Comments({ rows, lang, me, target, placeholder }: { rows: CommentRow[]; lang: Lang; me: { id: string; role: string }; target: { task_id?: string; question_id?: string }; placeholder?: string }) {
+export function Comments({ rows, lang, me, target, placeholder }: { rows: CommentRow[]; lang: Lang; me: { id: string; role: string }; target: { task_id?: string; question_id?: string; idea_id?: string }; placeholder?: string }) {
   const tr = T(lang);
   return (
     <div>
@@ -30,6 +30,7 @@ export function Comments({ rows, lang, me, target, placeholder }: { rows: Commen
       </ul>
       <form action={addComment} className="mt-4 space-y-2">
         {target.task_id && <input type="hidden" name="task_id" value={target.task_id} />}
+        {target.idea_id && <input type="hidden" name="idea_id" value={target.idea_id} />}
         {target.question_id && <input type="hidden" name="question_id" value={target.question_id} />}
         <textarea name="body" className="input" rows={3} required placeholder={placeholder || tr("Frage, Anmerkung oder Update schreiben …", "Schrijf een vraag, opmerking of update …")} key={rows.length} />
         <Submit>{tr("Senden", "Versturen")}</Submit>

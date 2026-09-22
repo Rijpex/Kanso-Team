@@ -52,24 +52,24 @@ export default async function Cleaning({ searchParams }: { searchParams: { d?: s
 
       {user.role === "admin" && (
         <details className="card mt-5">
-          <summary className="cursor-pointer font-semibold">Taken beheren</summary>
+          <summary className="cursor-pointer font-semibold">{tr("Aufgaben verwalten", "Taken beheren")}</summary>
           <ul className="mt-3 divide-y divide-sand-200 text-sm">
             {all.map((t) => (
               <li key={t.id} className="flex items-center gap-2 py-1.5">
                 <span className="flex-1">{pick(user.lang, t.title_de, t.title_nl)}</span>
-                <span className="text-xs text-stone-400">{t.freq === "daily" ? "dagelijks" : `wekelijks ${WD.nl[t.weekday || 0]}`} · {t.moment}</span>
+                <span className="text-xs text-stone-400">{t.freq === "daily" ? tr("täglich", "dagelijks") : `${tr("wöchentlich", "wekelijks")} ${WD[user.lang][t.weekday || 0]}`}</span>
                 <form action={deleteCleaningTask}><input type="hidden" name="id" value={t.id} /><ConfirmSubmit className="px-1 text-stone-300 hover:text-red-600" confirm="?">×</ConfirmSubmit></form>
               </li>
             ))}
           </ul>
           <form action={saveCleaningTask} className="mt-4 grid gap-2 sm:grid-cols-2" key={all.length}>
-            <input name="title_de" className="input" placeholder="Taak (Duits)" required />
-            <input name="title_nl" className="input" placeholder="Taak (Nederlands, optioneel)" />
-            <select name="freq" className="input"><option value="daily">Dagelijks</option><option value="weekly">Wekelijks</option></select>
-            <select name="weekday" className="input">{[2, 3, 4, 5, 6].map((d) => <option key={d} value={d}>Wekelijks op: {WD.nl[d]}</option>)}</select>
-            <select name="zone" className="input"><option value="">Voor allebei</option><option value="a">Zone A · ingang, etalage, vloeren</option><option value="b">Zone B · keukens, oppervlakken, schappen</option></select>
-            <select name="moment" className="input"><option value="open">Voor opening</option><option value="day">Overdag</option><option value="close">Bij sluiten</option></select>
-            <Submit>Toevoegen</Submit>
+            <input name="title_de" className="input" placeholder={tr("Aufgabe (Deutsch)", "Taak (Duits)")} required />
+            <input name="title_nl" className="input" placeholder={tr("Aufgabe (Niederländisch, optional)", "Taak (Nederlands, optioneel)")} />
+            <select name="freq" className="input"><option value="daily">{tr("Täglich", "Dagelijks")}</option><option value="weekly">{tr("Wöchentlich", "Wekelijks")}</option></select>
+            <select name="weekday" className="input">{[2, 3, 4, 5, 6].map((d) => <option key={d} value={d}>{tr("Wöchentlich am", "Wekelijks op")}: {WD[user.lang][d]}</option>)}</select>
+            <select name="zone" className="input"><option value="">{tr("Für beide", "Voor allebei")}</option><option value="a">{tr("Bereich A · Eingang, Schaufenster, Böden", "Zone A · ingang, etalage, vloeren")}</option><option value="b">{tr("Bereich B · Küchen, Oberflächen, Regale", "Zone B · keukens, oppervlakken, schappen")}</option></select>
+            <select name="moment" className="input"><option value="open">{tr("Vor dem Öffnen", "Voor opening")}</option><option value="day">{tr("Tagsüber", "Overdag")}</option><option value="close">{tr("Zum Feierabend", "Bij sluiten")}</option></select>
+            <Submit>{tr("Hinzufügen", "Toevoegen")}</Submit>
           </form>
         </details>
       )}

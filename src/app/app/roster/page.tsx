@@ -3,12 +3,14 @@ import { requireUser } from "@/lib/server/auth";
 import { q } from "@/lib/server/db";
 import { team } from "@/lib/server/queries";
 import { SHIFT_KIND, T, lbl } from "@/lib/i18n";
-import { addDays, dayName, hm, isoWeek, longDate, monday, monthName, today } from "@/lib/dates";
+import { OPENING_TEXT_DE, shiftFor } from "@/lib/hours";
+import { addDays, dayName, hm, isoWeek, longDate, monday, monthName, today, weekday } from "@/lib/dates";
 import { Avatar, PageHeader } from "@/components/ui";
 import { Submit } from "@/components/client";
 import { generateRoster, saveShift } from "../actions";
 
 type Sh = { user_id: string; date: string; kind: string; start_time: string | null; end_time: string | null; break_start: string | null; break_end: string | null; note: string | null };
+const WDN = { de: ["", "Mo", "Di", "Mi", "Do", "Fr", "Sa"], nl: ["", "ma", "di", "wo", "do", "vr", "za"] };
 const mins = (t: string | null) => (t ? Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5)) : 0);
 const worked = (s: Sh) => (s.start_time && s.end_time ? Math.max(0, mins(s.end_time) - mins(s.start_time) - (s.break_start && s.break_end ? mins(s.break_end) - mins(s.break_start) : 0)) : 0);
 const hours = (m: number) => `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`;
@@ -95,15 +97,15 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
           <h2 className="mb-3">{editing.user.name} · <span className="capitalize">{longDate(editing.date, user.lang)}</span></h2>
           <form action={saveShift} className="space-y-3" key={searchParams.edit}>
             <input type="hidden" name="user_id" value={editing.user.id} /><input type="hidden" name="date" value={editing.date} /><input type="hidden" name="back" value={base} />
-            <div><label className="label">Soort</label>
+            <div><label className="label">{tr("Art", "Soort")}</label>
               <select name="kind" className="input" defaultValue={editing.shift?.kind || "shop"}>
                 {Object.entries(SHIFT_KIND).map(([k, l]) => <option key={k} value={k}>{lbl(user.lang, l)}</option>)}
                 <option value="none">{tr("– Eintrag entfernen –", "– Invoer verwijderen –")}</option>
               </select>
             </div>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <div><label className="label">{tr("von", "van")}</label><input type="time" name="start_time" className="input" defaultValue={hm(editing.shift?.start_time) || "10:00"} /></div>
-              <div><label className="label">{tr("bis", "tot")}</label><input type="time" name="end_time" className="input" defaultValue={hm(editing.shift?.end_time) || "18:30"} /></div>
+              <div><label className="label">{tr("von", "van")}</label><input type="time" name="start_time" className="input" defaultValue={hm(editing.shift?.start_time) || shiftFor(weekday(editing.date))?.start || "10:00"} /></div>
+              <div><label className="label">{tr("bis", "tot")}</label><input type="time" name="end_time" className="input" defaultValue={hm(editing.shift?.end_time) || shiftFor(weekday(editing.date))?.end || "18:30"} /></div>
               <div><label className="label">{tr("Pause von", "Pauze van")}</label><input type="time" name="break_start" className="input" defaultValue={hm(editing.shift?.break_start)} /></div>
               <div><label className="label">{tr("Pause bis", "Pauze tot")}</label><input type="time" name="break_end" className="input" defaultValue={hm(editing.shift?.break_end)} /></div>
             </div>
@@ -115,44 +117,40 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
 
       {isAdmin && interns.length > 0 && (
         <details className="card mt-5">
-          <summary className="cursor-pointer font-semibold">Rooster automatisch vullen</summary>
+          <summary className="cursor-pointer font-semibold">{tr("Dienstplan automatisch füllen", "Rooster automatisch vullen")}</summary>
           <form action={generateRoster} className="mt-4 space-y-4 text-sm">
-            <p className="muted">Vult het rooster voor de stagiairs. De zaterdagen wisselen af, met maximaal 2 per persoon per kalendermaand (in een maand met 5 zaterdagen blijft er dus één onbezet voor de stagiairs). Wie zaterdag niet werkt, krijgt de maandag erna thuiswerk. Bestaande invoer blijft staan, tenzij je "overschrijven" aanvinkt.</p>
+            <p className="muted">{tr("Füllt den Dienstplan der Praktikantinnen. Woche A: eine arbeitet Samstag, die andere hat Montag Homeoffice – in der Woche danach andersherum. Maximal 2 Samstage pro Person und Kalendermonat. Bestehende Einträge bleiben, außer du hakst „überschreiben“ an.", "Vult het rooster voor de stagiairs. Week A: de ene werkt zaterdag, de andere heeft maandag thuiswerk – de week erna andersom. Maximaal 2 zaterdagen per persoon per kalendermaand. Bestaande invoer blijft staan, tenzij je \"overschrijven\" aanvinkt.")}</p>
             <div className="grid gap-3 sm:grid-cols-3">
-              <div><label className="label">Vanaf</label><input type="date" name="from" className="input" defaultValue={now} required /></div>
-              <div><label className="label">Aantal weken</label><input type="number" name="weeks" className="input" defaultValue={8} min={1} max={26} /></div>
-              <div><label className="label">Wie werkt de eerste zaterdag?</label><select name="first_saturday" className="input">{interns.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}</select></div>
+              <div><label className="label">{tr("Ab", "Vanaf")}</label><input type="date" name="from" className="input" defaultValue={now} required /></div>
+              <div><label className="label">{tr("Anzahl Wochen", "Aantal weken")}</label><input type="number" name="weeks" className="input" defaultValue={8} min={1} max={26} /></div>
+              <div><label className="label">{tr("Wer arbeitet den ersten Samstag?", "Wie werkt de eerste zaterdag?")}</label><select name="first_saturday" className="input">{interns.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}</select></div>
             </div>
             <div className="overflow-x-auto">
               <table className="text-sm">
-                <thead><tr className="text-xs text-stone-500"><th></th>{["di", "wo", "do", "vr"].map((d) => <th key={d} className="px-1 pb-1 font-medium">{d}</th>)}</tr></thead>
+                <thead><tr className="text-xs text-stone-500"><th></th>{[2, 3, 4, 5].map((wd) => <th key={wd} className="px-1 pb-1 font-medium">{WDN[user.lang][wd]}</th>)}</tr></thead>
                 <tbody>
                   {interns.map((u) => (
                     <tr key={u.id}><td className="pr-3 font-medium">{u.name}</td>
                       {[2, 3, 4, 5].map((wd) => (
-                        <td key={wd} className="p-1"><select name={`d_${u.id}_${wd}`} className="input !w-28" defaultValue="shop"><option value="shop">Winkel</option><option value="school">School</option><option value="off">Vrij</option><option value="skip">Niet vullen</option></select></td>
+                        <td key={wd} className="p-1"><select name={`d_${u.id}_${wd}`} className="input !w-32" defaultValue={wd >= 4 ? "school" : "shop"}><option value="shop">{tr("Laden", "Winkel")}</option><option value="school">{tr("Schule", "School")}</option><option value="off">{tr("Frei", "Vrij")}</option><option value="skip">{tr("Nicht füllen", "Niet vullen")}</option></select></td>
                       ))}
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+            <p className="rounded-lg bg-sand-100 p-3 text-xs text-stone-600">{tr("Arbeitszeiten = 30 Minuten vor Öffnung bis Ladenschluss", "Werktijden = 30 minuten voor opening tot sluiting")}: {OPENING_TEXT_DE}</p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <div><label className="label">Di–vr van</label><input type="time" name="week_start" className="input" defaultValue="10:00" /></div>
-              <div><label className="label">Di–vr tot</label><input type="time" name="week_end" className="input" defaultValue="18:30" /></div>
-              <div><label className="label">Za van</label><input type="time" name="sat_start" className="input" defaultValue="10:00" /></div>
-              <div><label className="label">Za tot</label><input type="time" name="sat_end" className="input" defaultValue="17:00" /></div>
-              <div><label className="label">Pauze 1e stagiair</label><div className="flex gap-1"><input type="time" name="break_a_start" className="input" defaultValue="12:30" /><input type="time" name="break_a_end" className="input" defaultValue="13:30" /></div></div>
-              <div><label className="label">Pauze 2e stagiair</label><div className="flex gap-1"><input type="time" name="break_b_start" className="input" defaultValue="13:30" /><input type="time" name="break_b_end" className="input" defaultValue="14:30" /></div></div>
-              <div><label className="label">Thuiswerk ma van</label><input type="time" name="home_start" className="input" defaultValue="10:00" /></div>
-              <div><label className="label">Thuiswerk ma tot</label><input type="time" name="home_end" className="input" defaultValue="14:30" /></div>
+              <div><label className="label">{tr("Pause 1. Praktikantin", "Pauze 1e stagiair")}</label><div className="flex gap-1"><input type="time" name="break_a_start" className="input" defaultValue="12:30" /><input type="time" name="break_a_end" className="input" defaultValue="13:30" /></div></div>
+              <div><label className="label">{tr("Pause 2. Praktikantin", "Pauze 2e stagiair")}</label><div className="flex gap-1"><input type="time" name="break_b_start" className="input" defaultValue="13:30" /><input type="time" name="break_b_end" className="input" defaultValue="14:30" /></div></div>
+              <div><label className="label">{tr("Homeoffice Mo von", "Thuiswerk ma van")}</label><input type="time" name="home_start" className="input" defaultValue="10:00" /></div>
+              <div><label className="label">{tr("Homeoffice Mo bis", "Thuiswerk ma tot")}</label><input type="time" name="home_end" className="input" defaultValue="14:30" /></div>
             </div>
-            <label className="flex items-center gap-2"><input type="checkbox" name="monday_home" defaultChecked /> Maandag thuiswerk voor wie zaterdag niet werkte</label>
-            <div className="max-w-md"><label className="label">Wie maandag thuiswerkt én die zaterdag werkt, komt op 6 dagen. Vrije dag in zo'n week:</label>
-              <select name="six_day_off" className="input" defaultValue="0"><option value="0">Geen (ik pas het zelf aan)</option><option value="2">Dinsdag vrij</option><option value="3">Woensdag vrij</option><option value="4">Donderdag vrij</option><option value="5">Vrijdag vrij</option></select></div>
-            <label className="flex items-center gap-2"><input type="checkbox" name="overwrite" /> Bestaande invoer overschrijven</label>
-            <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">Let op (Duitse Jugendarbeitsschutzgesetz, voor onder de 18): max. 8 uur per dag en 40 uur per week, 5 dagen per week, en bij meer dan 6 uur werk 60 minuten pauze. Thuiswerk tot 4,5 uur kan zonder pauze. Het rooster kleurt rood als een dag boven 8 uur, een week boven 40 uur of boven 5 dagen komt. Schooldagen tellen mee als werkdag. Check de exacte afspraken met school.</p>
-            <Submit>Rooster vullen</Submit>
+            <label className="flex items-center gap-2"><input type="checkbox" name="monday_home" defaultChecked /> {tr("Wer nicht Samstag arbeitet, hat Montag Homeoffice", "Wie zaterdag niet werkt, heeft maandag thuiswerk")}</label>
+            <label className="flex items-center gap-2"><input type="checkbox" name="admins" defaultChecked /> {tr("Bas und Lea an jedem Ladentag eintragen (frei nehmen geht danach über Agenda oder Abwesenheit)", "Bas en Lea elke winkeldag inplannen (vrij nemen kan daarna via agenda of afwezigheid)")}</label>
+            <label className="flex items-center gap-2"><input type="checkbox" name="overwrite" /> {tr("Bestehende Einträge überschreiben", "Bestaande invoer overschrijven")}</label>
+            <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">{tr("Jugendarbeitsschutz (unter 18): max. 8 Stunden am Tag, 40 pro Woche, 5 Tage pro Woche; bei mehr als 6 Stunden 60 Minuten Pause. Schultage zählen als Arbeitstage. Der Plan färbt sich rot, wenn ein Tag oder eine Woche darüber liegt.", "Jugendarbeitsschutzgesetz (onder 18): max. 8 uur per dag, 40 per week, 5 dagen per week; bij meer dan 6 uur werk 60 minuten pauze. Schooldagen tellen als werkdag. Het rooster kleurt rood als een dag of week daarboven komt.")}</p>
+            <Submit>{tr("Dienstplan füllen", "Rooster vullen")}</Submit>
           </form>
         </details>
       )}

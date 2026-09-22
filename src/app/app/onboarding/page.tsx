@@ -68,12 +68,12 @@ export default async function Onboarding() {
         ))}
       </div>
       {isAdmin && (
-        <details className="card mt-5"><summary className="cursor-pointer font-semibold">Punt toevoegen</summary>
+        <details className="card mt-5"><summary className="cursor-pointer font-semibold">{tr("Punkt hinzufügen", "Punt toevoegen")}</summary>
           <form action={saveOnboardingItem} className="mt-3 grid gap-2 sm:grid-cols-[6rem_1fr]" key={items.length}>
-            <select name="day" className="input">{[1, 2, 3, 4].map((d) => <option key={d} value={d}>Dag {d}</option>)}</select>
-            <input name="title_de" className="input" placeholder="Punt (Duits)" required />
-            <span /><input name="hint_de" className="input" placeholder="Toelichting (Duits, optioneel)" />
-            <span /><Submit>Toevoegen</Submit>
+            <select name="day" className="input">{[1, 2, 3, 4].map((d) => <option key={d} value={d}>{tr("Tag", "Dag")} {d}</option>)}</select>
+            <input name="title_de" className="input" placeholder={tr("Punkt", "Punt (Duits)")} required />
+            <span /><input name="hint_de" className="input" placeholder={tr("Erklärung (optional)", "Toelichting (Duits, optioneel)")} />
+            <span /><Submit>{tr("Hinzufügen", "Toevoegen")}</Submit>
           </form>
         </details>
       )}

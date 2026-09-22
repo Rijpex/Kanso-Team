@@ -16,7 +16,7 @@ export default async function Kb({ searchParams }: { searchParams: { q?: string 
   return (
     <div>
       <PageHeader title={tr("Wissen", "Kennis")} sub={tr("Alles zum Nachlesen. Fehlt etwas? Stell eine Frage – dann ergänzen wir es hier.", "Alles om na te lezen. Mis je iets? Stel een vraag – dan vullen we het hier aan.")}>
-        {user.role === "admin" && <Link href="/app/kb/new" className="btn-primary">+ Nieuwe pagina</Link>}
+        {user.role === "admin" && <Link href="/app/kb/new" className="btn-primary">+ {tr("Neue Seite", "Nieuwe pagina")}</Link>}
       </PageHeader>
       <form className="mb-5 flex gap-2"><input name="q" className="input" placeholder={tr("Suchen …", "Zoeken …")} defaultValue={term} /><button className="btn-ghost">{tr("Suchen", "Zoeken")}</button></form>
       <div className="space-y-6">
@@ -30,7 +30,7 @@ export default async function Kb({ searchParams }: { searchParams: { q?: string 
                 {list.map((p) => (
                   <Link key={p.slug} href={`/app/kb/${p.slug}`} className="flex items-center justify-between gap-2 rounded-xl bg-white p-3 text-sm font-medium ring-1 ring-sand-200 hover:ring-brand">
                     {pick(user.lang, p.title_de, p.title_nl)}
-                    {user.role === "admin" && p.todo && <span className="badge shrink-0 bg-amber-100 text-amber-800">nog invullen</span>}
+                    {user.role === "admin" && p.todo && <span className="badge shrink-0 bg-amber-100 text-amber-800">{tr("noch ausfüllen", "nog invullen")}</span>}
                   </Link>
                 ))}
               </div>

@@ -6,15 +6,18 @@ De hub voor de stagiairs van Kansō Outdoor Lüneburg. Alles op één plek: wie 
 
 | Onderdeel | Wat het doet |
 |---|---|
-| **Vandaag** | Weekfocus (max. 3), wie werkt vandaag, eigen dienst en pauze, afspraken, eigen opdrachten, Storepflege van vandaag, teller online-aanvragen, klantzin van de dag, laatste reacties |
-| **Agenda** | Gezamenlijke maandkalender met afspraken, markten, school, leveringen. Stipjes laten zien wie werkt |
-| **Rooster** | Weekrooster met diensten, pauzes, thuiswerk en school. Automatisch vullen: zaterdagen wisselen af (max. 2 per maand per persoon), wie zaterdag niet werkte doet maandag thuiswerk. Waarschuwt bij meer dan 8 uur per dag, 40 uur of 5 dagen per week |
+| **Vandaag** | Weekfocus (max. 3), dagchecklist "Dein Tag" (Storepflege, dag gepland, ingeplande opdrachten, story gepost, afsluiten), wie werkt vandaag met pauze, afspraken, eigen opdrachten, teller online-aanvragen, klantzin van de dag, laatste reacties |
+| **Agenda** | Week- en maandweergave in één: diensten per persoon als gekleurde banden, afspraken, ingeplande opdrachten (werkblokken met afvinken) en de Storepflege van de gekozen dag. Beheerders passen diensten direct in de agenda aan |
+| **Rooster vullen** (beheer) | Weekrooster met diensten, pauzes, thuiswerk en school. Automatisch vullen: zaterdagen wisselen af (max. 2 per maand per persoon), wie zaterdag niet werkte doet maandag thuiswerk. Waarschuwt bij meer dan 8 uur per dag, 40 uur of 5 dagen per week |
 | **Opdrachten** | Bord met Te doen / Bezig / Ter controle / Klaar. Per opdracht: omschrijving, checklist, bestanden, vragen en reacties, deadline, voor wie, "kan ook thuis" |
-| **Vragen** | Laagdrempelig vragen stellen, met urgentie. Open vragen staan bij de beheerders bovenaan |
+| **Vragen** | Laagdrempelig vragen stellen, met urgentie; plus een blokje "Urlaub & Frei" om vrij of een toets aan te vragen. Open vragen staan bij de beheerders bovenaan |
 | **Storepflege** | Dagelijkse en wekelijkse ronde om af te vinken. De twee zones wisselen elke week van persoon |
 | **Contentplan** | Reels, stories en posts plannen per pijler. Alleen een beheerder kan goedkeuren; posten kan pas daarna |
 | **Productideeën** | Sourcing met automatische marge- en factorberekening (19 % of 7 % btw) |
-| **Merkdagboek** | Klantzinnen en online-aanvragen per week |
+| **Klantstemmen** | Klantzinnen en online-aanvragen per week |
+| **Weekboek** | Wekelijkse terugblik per stagiair (geleerd, leuk, lastig, volgende stap, stemming). Alleen zichtbaar voor de schrijfster en de beheerders, die kunnen reageren |
+| **Leerdoelen** | Competenties per gebied met vier niveaus; stagiair schat zichzelf in, beheerder bevestigt |
+| **Afwezigheid** | Vrij, school/toets of ziek aanvragen; na goedkeuring staat het automatisch in het rooster |
 | **Producten** | Live uit de webshop (WooCommerce), zoeken en filteren op categorie. Geen sleutels nodig |
 | **Kennis** | So arbeiten wir, Was tun wenn, alle takengebieden, productlijnen, kassa, labelprinter, marge. Beheerders bewerken alles in de hub; geel gemarkeerde stukken moeten nog ingevuld worden |
 | **Inwerken** | Checklist eerste week per stagiair; beheerders zien de voortgang van beiden |
@@ -33,7 +36,7 @@ Rollen: **beheerder** (Bas, Lea) en **stagiair**. Taal per persoon: Duits of Ned
 
 Optioneel: eigen adres zoals `team.kanso-outdoor.com` via Vercel → *Settings → Domains*.
 
-**Nieuwe versie van de code geüpload?** Na de deploy in de hub onder *Team → Systeem* op **Database bijwerken** klikken.
+**Nieuwe versie van de code geüpload?** De hub werkt de database zelf bij zodra iemand na de deploy inlogt. Bestaande gegevens blijven staan.
 
 ## Techniek
 

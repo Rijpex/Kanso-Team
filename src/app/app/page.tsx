@@ -3,12 +3,12 @@ import { requireUser } from "@/lib/server/auth";
 import { q, q1 } from "@/lib/server/db";
 import { cleaningFor, MINE, tasksQuery, zoneOwners } from "@/lib/server/queries";
 import { EVENT_KIND, SHIFT_KIND, T, lbl } from "@/lib/i18n";
-import { addDays, dateTime, hm, longDate, monday, shortDate, today } from "@/lib/dates";
+import { addDays, dateTime, hm, longDate, monday, shortDate, today, weekday } from "@/lib/dates";
 import { ConfirmSubmit } from "@/components/client";
 import { addFocus, addQuote, countOnline, deleteFocus, toggleFocus } from "./actions";
 import { Avatar, Badge } from "@/components/ui";
 import { TaskCard } from "@/components/TaskCard";
-import { CleaningList } from "@/components/CleaningList";
+import { DayChecklist, type PlanRow } from "@/components/DayChecklist";
 
 export default async function Today() {
   const user = await requireUser();
@@ -24,10 +24,10 @@ export default async function Today() {
     isAdmin ? tasksQuery("t.status in ('review','doing')") : tasksQuery(`t.status <> 'done' and ${MINE}`, [user.id]),
     q<{ id: string; title: string; date: string; end_date: string | null; start_time: string | null; kind: string }>(
       "select id, title, date, end_date, start_time, kind from events where coalesce(end_date, date) >= $1 and date <= $2 order by date, start_time nulls first limit 8", [d, addDays(d, 14)]),
-    q<{ id: string; body: string; created_at: string; name: string; color: string; task_id: string | null; question_id: string | null; ref: string }>(
-      `select c.id, c.body, c.created_at, u.name, u.color, c.task_id, c.question_id, coalesce(t.title, qu.title) as ref
+    q<{ id: string; body: string; created_at: string; name: string; color: string; task_id: string | null; question_id: string | null; idea_id: string | null; ref: string }>(
+      `select c.id, c.body, c.created_at, u.name, u.color, c.task_id, c.question_id, c.idea_id, coalesce(t.title, qu.title, i.name) as ref
          from comments c join users u on u.id = c.user_id
-         left join tasks t on t.id = c.task_id left join questions qu on qu.id = c.question_id
+         left join tasks t on t.id = c.task_id left join questions qu on qu.id = c.question_id left join ideas i on i.id = c.idea_id
         where c.user_id <> $1 order by c.created_at desc limit 5`, [user.id]),
     isAdmin ? null : q1<{ done: number; total: number }>(
       "select (select count(*)::int from onboarding_checks where user_id = $1) as done, (select count(*)::int from onboarding_items) as total", [user.id]),
@@ -36,6 +36,17 @@ export default async function Today() {
     q<{ id: string; date: string; kind: string; text: string | null }>("select id, date, kind, text from journal where date = $1 or (kind = 'quote' and date > $2) order by created_at desc", [d, addDays(d, -7)]),
     zoneOwners(d),
   ]);
+  const [plansToday, hasReflection, dailyChecks, storyPosted] = await Promise.all([
+    q<PlanRow>(
+      `select p.id, p.task_id, t.title, p.start_time, p.end_time, p.done, u.name, u.color, p.user_id from task_plans p join tasks t on t.id = p.task_id join users u on u.id = p.user_id
+        where p.date = $1 ${isAdmin ? "" : "and p.user_id = $2"} order by p.start_time nulls last`, isAdmin ? [d] : [d, user.id]),
+    isAdmin ? Promise.resolve(true) : q1("select 1 from reflections where user_id = $1 and week = $2", [user.id, week]).then(Boolean),
+    q<{ key: string; name: string | null }>("select c.key, u.name from daily_checks c left join users u on u.id = c.user_id where c.date = $1", [d]),
+    q1("select 1 from content_items where kind = 'story' and status = 'posted' and date = $1", [d]).then(Boolean),
+  ]);
+  const shopClosed = weekday(d) === 1 || weekday(d) === 7;
+  const wd = new Date(`${d}T12:00:00Z`).getUTCDay();
+  const remindReflect = !isAdmin && !hasReflection && (wd === 5 || wd === 6);
   const onlineToday = journal.filter((j) => j.kind === "online" && j.date === d).length;
   const quotes = journal.filter((j) => j.kind === "quote").slice(0, 4);
   const mine = shifts.find((s) => s.user_id === user.id);
@@ -57,6 +68,10 @@ export default async function Today() {
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-brand" style={{ width: `${(onb.done / onb.total) * 100}%` }} /></div>
         </Link>
+      )}
+
+      {remindReflect && (
+        <Link href="/app/reflect" className="card block !bg-brand-light hover:ring-brand"><div className="text-sm font-medium">{tr("Fünf Minuten für deinen Wochenrückblick?", "Vijf minuten voor je weekboek?")}</div><div className="text-sm text-stone-600">{tr("Was hast du gelernt, was war gut, was war schwierig – nur Lea und Bas lesen mit.", "Wat heb je geleerd, wat ging goed, wat was lastig – alleen Lea en Bas lezen mee.")}</div></Link>
       )}
 
       {isAdmin && openQuestions.length > 0 && (
@@ -84,16 +99,17 @@ export default async function Today() {
               {isAdmin && <form action={deleteFocus}><input type="hidden" name="id" value={f.id} /><ConfirmSubmit className="px-1 text-stone-300 hover:text-red-600" confirm="?">×</ConfirmSubmit></form>}
             </li>
           ))}
-          {!focus.length && <li className="text-sm text-stone-500">{isAdmin ? "Nog geen focus voor deze week. Zet er maximaal drie punten in." : tr("Noch kein Fokus eingetragen – kommt nach dem Check-in.", "Nog geen focus – komt na de check-in.")}</li>}
+          {!focus.length && <li className="text-sm text-stone-500">{isAdmin ? tr("Noch kein Fokus für diese Woche. Trag bis zu drei Punkte ein.", "Nog geen focus voor deze week. Zet er maximaal drie punten in.") : tr("Noch kein Fokus eingetragen – kommt nach dem Check-in.", "Nog geen focus – komt na de check-in.")}</li>}
         </ul>
         {isAdmin && focus.length < 3 && (
-          <form action={addFocus} className="mt-2 flex gap-2" key={focus.length}><input type="hidden" name="week" value={week} /><input name="text" className="input" placeholder="Fokuspunkt (auf Deutsch, für die Praktikantinnen)" required /><button className="btn-ghost">+</button></form>
+          <form action={addFocus} className="mt-2 flex gap-2" key={focus.length}><input type="hidden" name="week" value={week} /><input name="text" className="input" placeholder={tr("Fokuspunkt", "Fokuspunkt (auf Deutsch, für de stagiairs)")} required /><button className="btn-ghost">+</button></form>
         )}
       </section>
 
       <div className="grid gap-5 lg:grid-cols-2">
+        <DayChecklist date={d} lang={user.lang} cleaning={cleaning} plans={plansToday} daily={dailyChecks} storyPosted={storyPosted} zones={zones} me={user} isAdmin={isAdmin} closed={shopClosed} />
         <section className="card">
-          <div className="mb-3 flex items-center justify-between"><h2>{tr("Wer arbeitet heute", "Wie werkt vandaag")}</h2><Link href="/app/roster" className="text-sm text-brand hover:underline">{tr("Dienstplan", "Rooster")} →</Link></div>
+          <div className="mb-3 flex items-center justify-between"><h2>{tr("Wer arbeitet heute", "Wie werkt vandaag")}</h2><Link href="/app/calendar" className="text-sm text-brand hover:underline">{tr("Agenda", "Agenda")} →</Link></div>
           {!isAdmin && (
             <div className="mb-3 rounded-xl bg-sand-100 p-3 text-sm">
               {mine && (mine.kind === "shop" || mine.kind === "home") ? (
@@ -147,15 +163,11 @@ export default async function Today() {
           </div>
         </section>
 
-        <section className="card">
-          <div className="mb-3 flex items-center justify-between"><h2><Link href="/app/cleaning" className="hover:underline">{tr("Storepflege heute", "Winkelverzorging vandaag")}</Link></h2><span className="text-sm text-stone-500">{cleaning.filter((c) => c.done_by).length}/{cleaning.length}</span></div>
-          {cleaning.length ? <CleaningList rows={cleaning} date={d} lang={user.lang} zones={zones} /> : <p className="text-sm text-stone-500">{tr("Heute ist der Laden geschlossen.", "Vandaag is de winkel dicht.")}</p>}
-        </section>
       </div>
 
 
       <section className="card">
-        <div className="mb-3 flex items-center justify-between"><h2>{tr("Heute im Laden", "Vandaag in de winkel")}</h2><Link href="/app/journal" className="text-sm text-brand hover:underline">{tr("Markentagebuch", "Merkdagboek")} →</Link></div>
+        <div className="mb-3 flex items-center justify-between"><h2>{tr("Heute im Laden", "Vandaag in de winkel")}</h2><Link href="/app/journal" className="text-sm text-brand hover:underline">{tr("Kundenstimmen", "Klantstemmen")} →</Link></div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <div className="text-sm font-medium">{tr("Online-Anfragen heute", "Online-aanvragen vandaag")}</div>
@@ -177,7 +189,7 @@ export default async function Today() {
           <ul className="space-y-3 text-sm">
             {recent.map((c) => (
               <li key={c.id}>
-                <Link href={c.task_id ? `/app/tasks/${c.task_id}` : `/app/questions/${c.question_id}`} className="flex gap-2 hover:opacity-80">
+                <Link href={c.task_id ? `/app/tasks/${c.task_id}` : c.idea_id ? `/app/ideas/${c.idea_id}` : `/app/questions/${c.question_id}`} className="flex gap-2 hover:opacity-80">
                   <Avatar name={c.name} color={c.color} />
                   <span className="min-w-0 flex-1">
                     <span className="block text-xs text-stone-500">{c.name} · {c.ref} · {dateTime(c.created_at, user.lang)}</span>

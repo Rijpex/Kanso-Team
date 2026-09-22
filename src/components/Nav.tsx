@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export type NavItem = { href: string; label: string; icon: string; badge?: number; main?: boolean };
+export type NavItem = { href: string; label: string; icon: string; badge?: number; main?: boolean; group?: string };
 
 const ICONS: Record<string, string> = {
   home: "M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z",
@@ -36,12 +36,15 @@ export function SideNav({ items }: { items: NavItem[] }) {
   const path = usePathname();
   return (
     <nav className="space-y-0.5">
-      {items.map((it) => (
-        <Link key={it.href} href={it.href} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${isActive(path, it.href) ? "bg-ink text-white" : "text-ink-soft hover:bg-sand-200"}`}>
+      {items.map((it, i) => (
+        <div key={it.href}>
+        {it.group && it.group !== items[i - 1]?.group && <div className="px-3 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-stone-400">{it.group}</div>}
+        <Link href={it.href} className={`flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm transition ${isActive(path, it.href) ? "bg-ink text-white" : "text-ink-soft hover:bg-sand-200"}`}>
           <Icon name={it.icon} />
           <span className="flex-1">{it.label}</span>
           {!!it.badge && <span className="rounded-full bg-amber-400 px-1.5 text-xs font-semibold text-ink">{it.badge}</span>}
         </Link>
+        </div>
       ))}
     </nav>
   );

@@ -22,7 +22,7 @@ export async function cleaningFor(date: string): Promise<CleaningRow[]> {
 
 export type TaskRow = {
   id: string; title: string; description: string | null; category: string; status: string; due: string | null; home_ok: boolean;
-  updated_at: string; assignees: { id: string; name: string; color: string }[]; comments: number; files: number; check_done: number; check_total: number;
+  updated_at: string; assignees: { id: string; name: string; color: string }[]; comments: number; files: number; check_done: number; check_total: number; next_plan: string | null;
 };
 export function tasksQuery(where = "true", params: unknown[] = []) {
   return q<TaskRow>(
@@ -32,7 +32,8 @@ export function tasksQuery(where = "true", params: unknown[] = []) {
         (select count(*)::int from comments c where c.task_id = t.id) as comments,
         (select count(*)::int from files f where f.task_id = t.id) as files,
         (select count(*)::int from task_checklist k where k.task_id = t.id and k.done) as check_done,
-        (select count(*)::int from task_checklist k where k.task_id = t.id) as check_total
+        (select count(*)::int from task_checklist k where k.task_id = t.id) as check_total,
+        (select min(p.date)::text from task_plans p where p.task_id = t.id and not p.done and p.date >= current_date) as next_plan
        from tasks t
       where ${where}
       order by t.due nulls last, t.created_at`,

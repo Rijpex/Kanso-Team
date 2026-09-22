@@ -16,7 +16,7 @@ export default async function Journal() {
   const max = Math.max(1, ...online.map((o) => o.n));
   return (
     <div className="max-w-3xl">
-      <PageHeader title={tr("Markentagebuch", "Merkdagboek")} sub={tr("Kundensätze und Online-Anfragen – sie entscheiden mit, wie KANSŌ sich positioniert und wie der Onlineshop aussieht.", "Klantzinnen en online-aanvragen – ze bepalen mee hoe KANSŌ zich positioneert en hoe de webshop eruitziet.")} />
+      <PageHeader title={tr("Kundenstimmen", "Klantstemmen")} sub={tr("Kundensätze und Online-Anfragen – sie entscheiden mit, wie KANSŌ sich positioniert und wie der Onlineshop aussieht.", "Klantzinnen en online-aanvragen – ze bepalen mee hoe KANSŌ zich positioneert en hoe de webshop eruitziet.")} />
       <section className="card mb-5">
         <h2 className="mb-3">{tr("Online-Anfragen pro Woche", "Online-aanvragen per week")}</h2>
         {!online.length && <p className="text-sm text-stone-500">{tr("Noch keine gezählt.", "Nog geen geteld.")}</p>}

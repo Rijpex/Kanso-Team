@@ -18,7 +18,7 @@ export default async function KbPage({ params }: { params: { slug: string } }) {
       <BackLink href="/app/kb" label={tr("Wissen", "Kennis")} />
       <div className="flex items-start justify-between gap-3">
         <h1>{pick(user.lang, p.title_de, p.title_nl)}</h1>
-        {user.role === "admin" && <Link href={`/app/kb/${p.slug}/edit`} className="btn-ghost btn-sm shrink-0">Bewerken</Link>}
+        {user.role === "admin" && <Link href={`/app/kb/${p.slug}/edit`} className="btn-ghost btn-sm shrink-0">{tr("Bearbeiten", "Bewerken")}</Link>}
       </div>
       {onlyGerman && <p className="mt-1 text-xs text-stone-400">Deze pagina is er alleen in het Duits.</p>}
       <div className="card mt-4"><Markdown text={pick(user.lang, p.body_de, p.body_nl)} /></div>

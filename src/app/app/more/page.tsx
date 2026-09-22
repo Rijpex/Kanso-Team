@@ -12,14 +12,21 @@ export default async function More() {
   return (
     <div>
       <h1 className="mb-4">{tr("Mehr", "Meer")}</h1>
+      {[...new Set(items.map((i) => i.group || ""))].map((g) => (
+      <div key={g} className="mb-5">
+      {g && <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-400">{g}</div>}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {items.map((i) => (
+        {items.filter((i) => (i.group || "") === g).map((i) => (
           <Link key={i.href} href={i.href} className="card flex flex-col items-start gap-2 hover:bg-sand-100">
             <Icon name={i.icon} className="h-6 w-6 text-brand" />
             <span className="text-sm font-medium">{i.label}</span>
             {!!i.badge && <span className="badge bg-amber-100 text-amber-800">{i.badge}</span>}
           </Link>
         ))}
+      </div>
+      </div>
+      ))}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Link href="/app/profile" className="card flex flex-col items-start gap-2 hover:bg-sand-100">
           <Icon name="users" className="h-6 w-6 text-brand" />
           <span className="text-sm font-medium">{tr("Mein Profil", "Mijn profiel")}</span>

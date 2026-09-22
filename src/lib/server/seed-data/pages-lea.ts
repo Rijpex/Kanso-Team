@@ -39,8 +39,8 @@ Immer **Du**. Keine Emojis, keine Ausrufezeichen-Ketten, kein Rabatt-Geschrei, k
 - **Anruf** – Wenn ein Mensch wartet oder etwas kaputt ist. Sonst nicht.
 
 ### Ein Ladentag
-- **10:00** – Ankommen, Licht, Musik leise, Öffnungsrunde: Boden, Flächen, Glas, Eingang, Schaufenster von innen. Kasse und Stripe-Terminal an. Im Hub: Was steht heute an?
-- **10:30** – Tür auf. Kundinnen haben Vorrang vor allem anderen – immer.
+- **30 Minuten vor Öffnung** – Ankommen, Licht, Musik leise, Öffnungsrunde: Boden, Flächen, Glas, Eingang, Schaufenster von innen. Kasse und Stripe-Terminal an. Im Hub: Was steht heute an?
+- **Öffnung** (Di/Do 10:30, Mi/Sa 09:30, Fr 10:30) – Tür auf. Kundinnen haben Vorrang vor allem anderen – immer.
 - **Zwischendurch** – Storepflege nach Wochenaufteilung, Produkte nach Kundenbesuchen wieder ausrichten, Preisschilder prüfen, Counter frei halten, Gewürzproben nachfüllen, Content sammeln (Fotos, Reel-Material, ein Kundensatz fürs Markentagebuch).
 - **Ruhige Stunde** – Eure Produktlinie (Gewürze bzw. Raumduft) und Wochenfokus-Aufgaben: Bundles, Preisschild-Konzept, Recherche, Website prüfen, Captions vorbereiten – und, wenn ihr beide da seid, Social-Media-Konzepte zusammen ausarbeiten.
 - **Vor Schluss** – Kurzer Rundgang, dann Kasse zählen: Bargeld zählen, Betrag ins Kassenbuch eintragen, mit dem Kassenbericht vergleichen – jede Abweichung noch am selben Abend an Lea. Müll, Licht aus. Aufgaben im Hub aktualisieren, offene Fragen eintragen.
@@ -97,7 +97,7 @@ Jede ist Junior Product Ownerin einer eigenen Linie und Projektpartnerin der and
 
 ### Der Laden
 KANSŌ Outdoor GmbH · Bardowicker Str. 8 · 21335 Lüneburg
-Dienstag–Freitag 10:30–18:30, Samstag 10:30–17:00, Montag geschlossen. Kartenzahlung: Stripe-Terminal an der Kasse.
+Dienstag 10:30–18:30, Mittwoch 09:30–17:30, Donnerstag 10:30–18:30, Freitag 10:30–17:30, Samstag 09:30–16:00, Montag geschlossen. Wir sind jeweils 30 Minuten vor Öffnung da. Kartenzahlung: Stripe-Terminal an der Kasse.
 
 ### Im Notfall
 **112** Feuerwehr und Rettungsdienst, **110** Polizei. Erste-Hilfe-Kasten und Sicherungskasten zeigt dir Lea beim Rundgang. [[Hausverwaltung: Nummer eintragen]]`,

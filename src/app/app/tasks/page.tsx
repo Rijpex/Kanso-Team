@@ -41,8 +41,10 @@ export default async function Tasks({ searchParams }: { searchParams: { who?: st
         {Object.entries(TASK_STATUS).map(([k, l]) => {
           const col = tasks.filter((t) => t.status === k);
           if (!tasks.length) return null;
+          // Op de telefoon eerst wat in beweging is (bezig, ter controle), daarna open, dan klaar
+          const order = { doing: "order-1", review: "order-2", todo: "order-3", done: "order-4" }[k];
           return (
-            <section key={k} className={`rounded-2xl bg-sand-100 p-2.5 ${col.length ? "" : "hidden lg:block"}`}>
+            <section key={k} className={`rounded-2xl bg-sand-100 p-2.5 lg:order-none ${order} ${col.length ? "" : "hidden lg:block"}`}>
               <div className="mb-2 flex items-center justify-between px-1 text-sm font-semibold"><span>{lbl(user.lang, l)}</span><span className="text-stone-400">{col.length}</span></div>
               <div className="space-y-2">{col.map((t) => <TaskCard key={t.id} t={t} lang={user.lang} />)}</div>
             </section>

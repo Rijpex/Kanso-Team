@@ -453,6 +453,15 @@ const TASKS: SeedTask[] = [
   },
 ];
 
+
+const SKILLS: [string, string[]][] = [
+  ["Im Laden", ["Kundinnen begrüßen und mit einer offenen Frage beraten", "Kasse: Bar- und Kartenzahlung, Bon", "Kasse zählen und Kassenbuch führen", "Geschenk im KANSŌ-Standard einpacken (unter zwei Minuten)", "Projektanfrage aufnehmen: Kontaktdaten, Anliegen, Termin anbieten", "Lieferung annehmen, zählen, Schäden dokumentieren", "Reklamation ruhig aufnehmen und weitergeben"]],
+  ["Store & Schaufenster", ["Laden selbstständig öffnen und schließen", "Warenpräsentation: Regale, Fronten, Preisschilder", "Schaufenster-Konzept entwickeln und umsetzen", "Inventur: zählen, dokumentieren, Abweichungen prüfen"]],
+  ["Digital", ["Story planen und erstellen", "Reel drehen und schneiden", "Caption in der KANSŌ-Stimme schreiben", "Insights lesen und daraus etwas ableiten", "Produktfoto machen, das zur Serie passt", "Produkt im Shop als Entwurf anlegen"]],
+  ["Produkt & Zahlen", ["Marge, Faktor und Einstandspreis berechnen", "Lieferanten recherchieren und Angebote vergleichen", "Etiketten aus der freigegebenen Masterdatei drucken", "Moodboard und Konzept vor Lea und Bas präsentieren"]],
+  ["Arbeitsweise", ["Eigene Woche in der Agenda planen", "Feedback annehmen und einarbeiten", "Sich mit der Projektpartnerin abstimmen und Aufgaben verteilen", "Rechtzeitig Bescheid geben, wenn etwas nicht klappt", "Nachfragen, bevor man rät"]],
+];
+
 export async function runSeed() {
   if (!(await q1("select 1 from kb_pages limit 1"))) {
     let pos = 0;
@@ -483,5 +492,9 @@ export async function runSeed() {
       let pos = 0;
       for (const c of t.checklist ?? []) await q("insert into task_checklist (task_id, text, position) values ($1,$2,$3)", [row!.id, c, pos++]);
     }
+  }
+  if (!(await q1("select 1 from skills limit 1"))) {
+    let pos = 0;
+    for (const [area, list] of SKILLS) for (const s of list) await q("insert into skills (area, title_de, position) values ($1,$2,$3)", [area, s, pos++]);
   }
 }

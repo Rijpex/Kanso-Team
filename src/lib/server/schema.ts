@@ -1,4 +1,7 @@
 /** Databaseschema. Alles is idempotent: opnieuw draaien kan altijd. */
+/** Ophogen bij elke schemawijziging: de app werkt de database dan zelf bij. */
+export const SCHEMA_VERSION = 4;
+
 export const SCHEMA_SQL = `
 create extension if not exists pgcrypto;
 
@@ -227,6 +230,127 @@ begin
     execute format('alter table %I enable row level security', t);
   end loop;
 end $$;
+
+-- ───────── Versie 2 ─────────
+-- Werkblokken: een opdracht ingepland in de agenda
+create table if not exists task_plans (
+  id          uuid primary key default gen_random_uuid(),
+  task_id     uuid not null references tasks(id) on delete cascade,
+  user_id     uuid not null references users(id) on delete cascade,
+  date        date not null,
+  start_time  time,
+  end_time    time,
+  note        text,
+  done        boolean not null default false,
+  created_at  timestamptz not null default now()
+);
+create index if not exists task_plans_date_idx on task_plans (date);
+create index if not exists task_plans_task_idx on task_plans (task_id);
+
+alter table content_items add column if not exists brand text;
+
+-- Instagram-cijfers (handmatig ingevuld) en maanddoelen
+create table if not exists social_stats (
+  id            uuid primary key default gen_random_uuid(),
+  date          date not null unique,
+  followers     int,
+  reach         int,
+  interactions  int,
+  profile_visits int,
+  note          text,
+  user_id       uuid references users(id) on delete set null,
+  created_at    timestamptz not null default now()
+);
+create table if not exists social_goals (
+  month         date primary key,
+  followers     int,
+  reach         int,
+  interactions  int,
+  posts         int,
+  stories       int,
+  note          text,
+  updated_by    uuid references users(id) on delete set null
+);
+
+alter table ideas add column if not exists world text;
+alter table ideas add column if not exists occasion text;
+alter table ideas add column if not exists extra_cost numeric(10,2);
+alter table ideas add column if not exists online_price numeric(10,2);
+alter table ideas add column if not exists lead_time text;
+alter table ideas add column if not exists season text;
+alter table ideas add column if not exists checks text[] not null default '{}';
+alter table ideas add column if not exists sample boolean not null default false;
+create index if not exists comments_idea_idx on comments (idea_id, created_at);
+
+-- Wochenrückblick (Lerntagebuch): nur für die Autorin und die Admins sichtbar
+create table if not exists reflections (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references users(id) on delete cascade,
+  week        date not null,
+  learned     text,
+  liked       text,
+  hard        text,
+  next        text,
+  mood        int check (mood between 1 and 5),
+  feedback    text,
+  feedback_by uuid references users(id) on delete set null,
+  feedback_at timestamptz,
+  updated_at  timestamptz not null default now(),
+  unique (user_id, week)
+);
+
+-- Lernziele / Kompetenzen
+create table if not exists skills (
+  id        uuid primary key default gen_random_uuid(),
+  area      text not null,
+  title_de  text not null,
+  title_nl  text,
+  position  int not null default 0
+);
+create table if not exists skill_levels (
+  skill_id     uuid not null references skills(id) on delete cascade,
+  user_id      uuid not null references users(id) on delete cascade,
+  level        int not null default 0 check (level between 0 and 3),
+  confirmed    int not null default 0 check (confirmed between 0 and 3),
+  confirmed_by uuid references users(id) on delete set null,
+  updated_at   timestamptz not null default now(),
+  primary key (skill_id, user_id)
+);
+
+-- Abwesenheit: frei, Schule/Prüfung, krank
+create table if not exists absences (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references users(id) on delete cascade,
+  date        date not null,
+  end_date    date,
+  kind        text not null default 'free' check (kind in ('free','school','sick','other')),
+  note        text,
+  status      text not null default 'requested' check (status in ('requested','approved','declined')),
+  decided_by  uuid references users(id) on delete set null,
+  created_at  timestamptz not null default now()
+);
+
+do $$
+declare t text;
+begin
+  foreach t in array array['task_plans','social_stats','social_goals','reflections','skills','skill_levels','absences'] loop
+    execute format('alter table %I enable row level security', t);
+  end loop;
+end $$;
+
+-- Versie 3: vaste dagpunten (Tag geplant, Story gepostet …), gedeeld per dag
+create table if not exists daily_checks (
+  date        date not null,
+  key         text not null,
+  user_id     uuid references users(id) on delete set null,
+  created_at  timestamptz not null default now(),
+  primary key (date, key)
+);
+alter table daily_checks enable row level security;
+
+-- Versie 4: Öffnungszeiten in den Wissen-Seiten korrigieren (nur wenn der alte Text noch drinsteht)
+update kb_pages set body_de = replace(body_de, 'Dienstag–Freitag 10:30–18:30, Samstag 10:30–17:00, Montag geschlossen.', 'Dienstag 10:30–18:30, Mittwoch 09:30–17:30, Donnerstag 10:30–18:30, Freitag 10:30–17:30, Samstag 09:30–16:00, Montag geschlossen. Wir sind jeweils 30 Minuten vor Öffnung da.'), updated_at = now() where body_de like '%Dienstag–Freitag 10:30–18:30, Samstag 10:30–17:00%';
+update kb_pages set body_de = replace(replace(body_de, '- **10:00** – Ankommen, Licht, Musik leise', '- **30 Minuten vor Öffnung** – Ankommen, Licht, Musik leise'), '- **10:30** – Tür auf.', '- **Öffnung** (Di/Do 10:30, Mi/Sa 09:30, Fr 10:30) – Tür auf.'), updated_at = now() where body_de like '%- **10:00** – Ankommen%';
 
 -- Privé opslag voor bestanden (alleen op Supabase aanwezig)
 do $$

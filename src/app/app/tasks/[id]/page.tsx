@@ -4,13 +4,15 @@ import { requireUser } from "@/lib/server/auth";
 import { q } from "@/lib/server/db";
 import { tasksQuery } from "@/lib/server/queries";
 import { TASK_CATEGORY, TASK_STATUS, T, lbl } from "@/lib/i18n";
-import { dateTime, longDate, today } from "@/lib/dates";
+import { dateTime, hm, longDate, shortDate, today } from "@/lib/dates";
+import { team } from "@/lib/server/queries";
+import { Submit } from "@/components/client";
 import { Avatar, BackLink, Badge } from "@/components/ui";
 import { Markdown } from "@/components/Markdown";
 import { Comments, type CommentRow } from "@/components/Comments";
 import { FileUpload } from "@/components/FileUpload";
 import { ConfirmSubmit } from "@/components/client";
-import { addChecklistItem, deleteChecklistItem, deleteFile, deleteTask, setTaskStatus, toggleChecklistItem } from "../../actions";
+import { addChecklistItem, deleteChecklistItem, deleteFile, deletePlan, deleteTask, savePlan, setTaskStatus, toggleChecklistItem, togglePlan } from "../../actions";
 
 const size = (n: number) => (n > 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
@@ -19,7 +21,9 @@ export default async function TaskPage({ params }: { params: { id: string } }) {
   const tr = T(user.lang);
   const [task] = await tasksQuery("t.id = $1", [params.id]).catch(() => []);
   if (!task) notFound();
-  const [checklist, files, comments] = await Promise.all([
+  const [plans, users, checklist, files, comments] = await Promise.all([
+    q<{ id: string; user_id: string; date: string; start_time: string | null; end_time: string | null; note: string | null; done: boolean; name: string; color: string }>("select p.*, u.name, u.color from task_plans p join users u on u.id = p.user_id where p.task_id = $1 order by p.date, p.start_time nulls last", [task.id]),
+    team(),
     q<{ id: string; text: string; done: boolean }>("select id, text, done from task_checklist where task_id = $1 order by position", [task.id]),
     q<{ id: string; name: string; size: number; mime_type: string | null; created_at: string; uploaded_by: string | null; uploader: string | null }>(
       "select f.id, f.name, f.size, f.mime_type, f.created_at, f.uploaded_by, u.name as uploader from files f left join users u on u.id = f.uploaded_by where f.task_id = $1 order by f.created_at", [task.id]),
@@ -51,6 +55,36 @@ export default async function TaskPage({ params }: { params: { id: string } }) {
       </form>
 
       {task.description && <section className="card mt-5"><Markdown text={task.description} /></section>}
+
+
+      <section className="card mt-5">
+        <h2 className="mb-1">{tr("In der Agenda", "In de agenda")}</h2>
+        <p className="muted mb-2">{tr("Wann wird an dieser Aufgabe gearbeitet? Hier siehst du alle Blöcke – auch im Rückblick.", "Wanneer wordt aan deze opdracht gewerkt? Hier zie je alle blokken – ook achteraf.")}</p>
+        <ul className="divide-y divide-sand-200">
+          {plans.map((p) => (
+            <li key={p.id} className="flex items-center gap-2 py-1.5">
+              <form action={togglePlan} className="flex-1"><input type="hidden" name="id" value={p.id} />
+                <button className="flex w-full items-center gap-3 text-left text-sm" disabled={user.role !== "admin" && p.user_id !== user.id}>
+                  <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-xs ${p.done ? "border-emerald-600 bg-emerald-600 text-white" : "border-sand-400 bg-white"}`}>{p.done ? "✓" : ""}</span>
+                  <span className={p.done ? "text-stone-400" : ""}><span className="font-medium capitalize">{shortDate(p.date, user.lang)}</span>{p.start_time ? ` · ${hm(p.start_time)}${p.end_time ? "–" + hm(p.end_time) : ""}` : ""} · <span style={{ color: p.color }} className="font-semibold">{p.name}</span>{p.note ? ` · ${p.note}` : ""}</span>
+                </button>
+              </form>
+              <Link href={`/app/calendar?d=${p.date}`} className="text-xs text-brand hover:underline">{tr("Agenda", "agenda")}</Link>
+              {(user.role === "admin" || p.user_id === user.id) && <form action={deletePlan}><input type="hidden" name="id" value={p.id} /><button className="px-1 text-stone-300 hover:text-red-600" aria-label="x">×</button></form>}
+            </li>
+          ))}
+          {!plans.length && <li className="py-1.5 text-sm text-stone-500">{tr("Noch nicht eingeplant.", "Nog niet ingepland.")}</li>}
+        </ul>
+        <form action={savePlan} className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]" key={plans.length}>
+          <input type="hidden" name="task_id" value={task.id} /><input type="hidden" name="back" value={`/app/tasks/${task.id}`} />
+          <input type="date" name="date" className="input" defaultValue={today()} required />
+          <input type="time" name="start_time" className="input" aria-label="von" />
+          <input type="time" name="end_time" className="input" aria-label="bis" />
+          {user.role === "admin" && <select name="user_id" className="input" defaultValue=""><option value="">{tr("Für mich", "Voor mezelf")}</option>{users.filter((u) => u.id !== user.id).map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}</select>}
+          <input name="note" className="input sm:col-span-2" placeholder={tr("Was genau? (optional)", "Wat precies? (optioneel)")} />
+          <Submit className="btn-ghost">{tr("Einplanen", "Inplannen")}</Submit>
+        </form>
+      </section>
 
       <section className="card mt-5">
         <h2 className="mb-2">{tr("Checkliste", "Checklist")}</h2>

@@ -1,79 +1,51 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/server/auth";
 import { q } from "@/lib/server/db";
-import { IDEA_STATUS, T, lbl } from "@/lib/i18n";
+import { IDEA_STATUS, T } from "@/lib/i18n";
+import { calc, eur, IDEA_CHECKS } from "@/lib/ideas";
 import { Avatar, Badge, Empty, PageHeader } from "@/components/ui";
-import { AutoSubmitSelect, ConfirmSubmit, Submit } from "@/components/client";
-import { MarginFields } from "@/components/MarginCalc";
-import { deleteIdea, saveIdea, setIdeaStatus } from "../actions";
+import { IdeaForm, type Idea } from "@/components/IdeaForm";
 
-type Row = { id: string; user_id: string | null; name: string; supplier: string | null; link: string | null; ek: number | null; vk: number | null; vat: number; moq: number | null; packaging: string | null; why: string | null; status: string; uname: string | null; color: string | null };
-const eur = (x: number) => x.toLocaleString("de-DE", { style: "currency", currency: "EUR" });
+type Row = Idea & { uname: string | null; color: string | null; n: number };
 
-export default async function Ideas({ searchParams }: { searchParams: { edit?: string } }) {
+export default async function Ideas({ searchParams }: { searchParams: { new?: string } }) {
   const user = await requireUser();
   const tr = T(user.lang);
-  const rows = await q<Row>("select i.*, u.name as uname, u.color from ideas i left join users u on u.id = i.user_id order by i.created_at desc");
-  const editing = rows.find((r) => r.id === searchParams.edit);
-  const statuses = Object.keys(IDEA_STATUS).filter((k) => user.role === "admin" || !["approved", "rejected"].includes(k));
-
+  const rows = await q<Row>("select i.*, u.name as uname, u.color, (select count(*)::int from comments c where c.idea_id = i.id) as n from ideas i left join users u on u.id = i.user_id order by (i.status in ('approved','rejected')), i.created_at desc");
   return (
     <div>
-      <PageHeader title={tr("Produktideen", "Productideeën")} sub={tr("Was würde gut zu Kansō passen? Trag Ideen ein – der Hub rechnet die Marge aus, dann besprechen wir sie zusammen.", "Wat zou goed bij Kansō passen? Zet ideeën erin – de hub rekent de marge uit, daarna bespreken we ze samen.")}>
+      <PageHeader title={tr("Produktideen", "Productideeën")} sub={tr("Neue Dinge finden, die zu KANSŌ passen und sich rechnen – und beides belegen können. Einmal im Monat stellt ihr eure Vorschläge vor.", "Nieuwe dingen vinden die bij KANSŌ passen én renderen – en dat allebei kunnen onderbouwen. Eén keer per maand presenteren jullie de voorstellen.")}>
         <Link href="/app/kb/preise-kalkulieren" className="btn-ghost btn-sm">{tr("Wie rechnet man Marge?", "Hoe reken je marge uit?")}</Link>
       </PageHeader>
-      <div className="grid gap-5 lg:grid-cols-[1fr_22rem]">
+      <div className="grid gap-5 lg:grid-cols-[1fr_24rem]">
         <section className="space-y-2">
-          {!rows.length && <Empty>{tr("Noch keine Ideen. Trag rechts die erste ein!", "Nog geen ideeën. Zet rechts de eerste erin!")}</Empty>}
+          {!rows.length && <Empty>{tr("Noch keine Ideen. Trag die erste ein.", "Nog geen ideeën. Zet de eerste erin.")}</Empty>}
           {rows.map((r) => {
-            const net = r.vk ? r.vk / (1 + r.vat / 100) : null;
-            const m = net && r.ek ? net - r.ek : null;
-            const pct = m && net ? (m / net) * 100 : null;
+            const c = calc(r.ek, r.vk, r.vat, r.extra_cost, r.moq);
             return (
-              <div key={r.id} className="rounded-xl bg-white p-3 ring-1 ring-sand-200">
+              <Link key={r.id} href={`/app/ideas/${r.id}`} className="block rounded-xl bg-white p-3 ring-1 ring-sand-200 hover:ring-brand">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-sm font-semibold">{r.name}</span>
                   <Badge l={IDEA_STATUS[r.status]} lang={user.lang} />
+                  {r.world && <span className="badge bg-sand-100 text-stone-600">{r.world}</span>}
                   {r.uname && <span className="ml-auto"><Avatar name={r.uname} color={r.color} size="h-6 w-6 text-[10px]" /></span>}
                 </div>
                 <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-stone-600">
-                  {r.supplier && <span>{tr("Lieferant", "Leverancier")}: {r.supplier}</span>}
-                  {r.ek != null && <span>EK {eur(r.ek)}</span>}
+                  {r.supplier && <span>{r.supplier}</span>}
                   {r.vk != null && <span>VK {eur(r.vk)}</span>}
-                  {pct != null && m != null && <span className="font-semibold">{tr("Marge", "Marge")} {eur(m)} · {pct.toFixed(0)} % · {tr("Faktor", "factor")} {(r.vk! / r.ek!).toFixed(1)}</span>}
-                  {r.moq != null && <span>MOQ {r.moq}{r.ek != null ? ` (= ${eur(r.moq * r.ek)})` : ""}</span>}
+                  {c && <span className={`font-semibold ${c.margin > 0 ? "" : "text-red-700"}`}>{tr("Marge", "Marge")} {eur(c.margin)} · {c.pct.toFixed(0)} % · {tr("Faktor", "factor")} {c.factor.toFixed(1)}</span>}
+                  {c?.invest != null && <span>{tr("Erste Bestellung", "Eerste bestelling")} {eur(c.invest)}</span>}
+                  <span>KANSŌ-Check {r.checks.length}/{IDEA_CHECKS.length}</span>
+                  {r.n > 0 && <span>{r.n} {tr("Kommentare", "reacties")}</span>}
                 </div>
-                {r.why && <p className="mt-1.5 whitespace-pre-wrap text-sm text-stone-700">{r.why}</p>}
-                {r.packaging && <p className="mt-1 text-sm text-stone-500">{tr("Verpackung", "Verpakking")}: {r.packaging}</p>}
-                {r.link && /^https?:\/\//i.test(r.link) && <a href={r.link} target="_blank" rel="noreferrer" className="mt-1 block truncate text-sm text-brand underline">{r.link}</a>}
-                <div className="mt-2 flex items-center gap-2">
-                  <form action={setIdeaStatus}><input type="hidden" name="id" value={r.id} />
-                    <AutoSubmitSelect name="status" defaultValue={r.status} key={r.status} className="input !w-auto !py-1 text-xs">
-                      {[...new Set([...statuses, r.status])].map((k) => <option key={k} value={k}>{lbl(user.lang, IDEA_STATUS[k])}</option>)}
-                    </AutoSubmitSelect>
-                  </form>
-                  {(user.role === "admin" || r.user_id === user.id) && <Link href={`/app/ideas?edit=${r.id}`} className="text-xs text-brand hover:underline">{tr("Bearbeiten", "Bewerken")}</Link>}
-                </div>
-              </div>
+                {r.why && <p className="mt-1.5 line-clamp-2 text-sm text-stone-700">{r.why}</p>}
+              </Link>
             );
           })}
         </section>
         <aside className="card h-fit">
-          <h2 className="mb-3">{editing ? tr("Idee bearbeiten", "Idee bewerken") : tr("Neue Produktidee", "Nieuw productidee")}</h2>
-          <form action={saveIdea} className="space-y-3" key={editing?.id || "new"}>
-            <input type="hidden" name="id" value={editing?.id || ""} />
-            <div><label className="label">{tr("Produkt", "Product")}</label><input name="name" className="input" defaultValue={editing?.name} required /></div>
-            <div className="grid grid-cols-2 gap-2">
-              <div><label className="label">{tr("Lieferant / Marke", "Leverancier / merk")}</label><input name="supplier" className="input" defaultValue={editing?.supplier || ""} /></div>
-              <div><label className="label">{tr("Mindestmenge (MOQ)", "Min. afname (MOQ)")}</label><input name="moq" inputMode="numeric" className="input" defaultValue={editing?.moq ?? ""} /></div>
-            </div>
-            <div><label className="label">Link</label><input name="link" className="input" placeholder="https://…" defaultValue={editing?.link || ""} /></div>
-            <MarginFields lang={user.lang} ek={editing?.ek} vk={editing?.vk} vat={editing?.vat} />
-            <div><label className="label">{tr("Warum passt es zu uns?", "Waarom past het bij ons?")}</label><textarea name="why" className="input" rows={3} defaultValue={editing?.why || ""} /></div>
-            <div><label className="label">{tr("Verpackung / eigenes Label möglich?", "Verpakking / eigen label mogelijk?")}</label><input name="packaging" className="input" defaultValue={editing?.packaging || ""} /></div>
-            <div className="flex gap-2"><Submit>{tr("Speichern", "Opslaan")}</Submit>{editing && <Link href="/app/ideas" className="btn-ghost">{tr("Abbrechen", "Annuleren")}</Link>}</div>
-          </form>
-          {editing && <form action={deleteIdea} className="mt-3"><input type="hidden" name="id" value={editing.id} /><ConfirmSubmit confirm={tr("Wirklich löschen?", "Echt verwijderen?")}>{tr("Löschen", "Verwijderen")}</ConfirmSubmit></form>}
+          <h2 className="mb-3">{tr("Neue Produktidee", "Nieuw productidee")}</h2>
+          <IdeaForm lang={user.lang} key={rows.length} />
         </aside>
       </div>
     </div>

@@ -67,3 +67,5 @@ export const URGENCY: Record<string, L> = {
   now: { de: "Jetzt (Kunde wartet)", nl: "Nu (klant wacht)", color: "bg-red-100 text-red-700" },
 };
 export const lbl = (lang: Lang, l?: L) => (l ? (lang === "nl" ? l.nl : l.de) : "");
+
+export const BRANDS = ["Tenderflame", "KANSŌ SPICES", "KANSŌ Raumduft", "Luca Lifestyle", "Archief", "Grain by Grain", "Kerzen", "Lapuan Kankurit", "Alkoholfreie Spirituosen", "Outdoor-Teppiche", "Kamado-Grills", "KOALA Kitchens", "KANSŌ Kitchens", "Rijpex Pergola", "Laden & Schaufenster", "Lüneburg"];

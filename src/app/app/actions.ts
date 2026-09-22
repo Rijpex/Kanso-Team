@@ -7,6 +7,7 @@ import { q, q1 } from "@/lib/server/db";
 import { hashPassword, logout, requireAdmin, requireUser } from "@/lib/server/auth";
 import { migrate } from "@/lib/server/setup";
 import { addDays, weekday } from "@/lib/dates";
+import { shiftFor } from "@/lib/hours";
 import { BUCKET, supabaseAdmin, supabaseConfigured } from "@/lib/server/storage";
 
 const s = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
@@ -79,7 +80,7 @@ export async function saveShift(fd: FormData) {
 
 /**
  * Vult het rooster voor een aantal weken. Per stagiair: vaste winkeldagen (di–vr) en schooldagen.
- * Zaterdagen wisselen af; wie zaterdag NIET werkt, doet maandag thuiswerk.
+ * Zaterdagen wisselen af; wie die week zaterdag NIET werkt, doet die maandag thuiswerk.
  */
 export async function generateRoster(fd: FormData) {
   await requireAdmin();
@@ -94,7 +95,6 @@ export async function generateRoster(fd: FormData) {
   const order = [...interns.filter((i) => i.id === firstSat), ...interns.filter((i) => i.id !== firstSat)];
   const t = (k: string, d: string) => opt(fd, k) || d;
 
-  const dayOff = Number(s(fd, "six_day_off")) || 0; // vrije dag (2–5) als iemand anders 6 dagen zou werken
   // Zaterdagen per kalendermaand tellen (school: max. 2 per maand), inclusief wat al in het rooster staat
   const satCount = new Map<string, number>();
   const key = (uid: string, d: string) => `${uid}_${d.slice(0, 7)}`;
@@ -102,9 +102,6 @@ export async function generateRoster(fd: FormData) {
   const horizonEnd = addDays(startMonday, weeks * 7);
   for (const e of existing) if (overwrite ? e.date < from || e.date >= horizonEnd : true) satCount.set(key(e.user_id, e.date), (satCount.get(key(e.user_id, e.date)) || 0) + 1);
 
-  let prevSat: string | null = null; // wie werkte de vorige zaterdag
-  const before = await q1<{ user_id: string }>("select user_id from shifts where kind = 'shop' and date = $1", [addDays(startMonday, -2)]);
-  prevSat = before?.user_id ?? null;
   let turn = 0;
 
   for (let w = 0; w < weeks; w++) {
@@ -121,8 +118,9 @@ export async function generateRoster(fd: FormData) {
     for (let i = 0; i < interns.length; i++) {
       const it = interns[i];
       const brk: [string, string] = i % 2 === 0 ? [t("break_a_start", "12:30"), t("break_a_end", "13:30")] : [t("break_b_start", "13:30"), t("break_b_end", "14:30")];
-      const mondayHome = s(fd, "monday_home") === "on" && interns.length > 1 && prevSat !== null && prevSat !== it.id;
       const worksSat = satWorker?.id === it.id;
+      // Zelfde week: wie zaterdag niet werkt, heeft maandag thuiswerk
+      const mondayHome = s(fd, "monday_home") === "on" && interns.length > 1 && !!satWorker && !worksSat;
       for (let wd = 1; wd <= 6; wd++) {
         const date = addDays(mon, wd - 1);
         if (date < from) continue;
@@ -130,14 +128,13 @@ export async function generateRoster(fd: FormData) {
         if (wd === 1) {
           row = mondayHome ? ["home", t("home_start", "10:00"), t("home_end", "14:30"), null, null] : ["off", null, null, null, null];
         } else if (wd === 6) {
-          row = worksSat ? ["shop", t("sat_start", "10:00"), t("sat_end", "17:00"), brk[0], brk[1]] : ["off", null, null, null, null];
+          row = worksSat ? ["shop", shiftFor(6)!.start, shiftFor(6)!.end, brk[0], brk[1]] : ["off", null, null, null, null];
         } else {
           const choice = s(fd, `d_${it.id}_${wd}`) || "shop";
-          if (choice === "shop") row = ["shop", t("week_start", "10:00"), t("week_end", "18:30"), brk[0], brk[1]];
+          if (choice === "shop") row = ["shop", shiftFor(wd)!.start, shiftFor(wd)!.end, brk[0], brk[1]];
           else if (choice === "school") row = ["school", null, null, null, null];
           else if (choice === "off") row = ["off", null, null, null, null];
           // "skip" = deze dag niet vullen
-          if (choice === "shop" && mondayHome && worksSat && dayOff === wd) row = ["off", null, null, null, null];
         }
         if (!row) continue;
         await q(
@@ -147,7 +144,24 @@ export async function generateRoster(fd: FormData) {
         );
       }
     }
-    prevSat = satWorker?.id ?? null;
+  }
+  // Bas en Lea: elke winkeldag aanwezig (zonder vaste pauze). Afwezigheid regel je via de agenda of "Abwesenheid".
+  if (s(fd, "admins") === "on") {
+    const admins = await q<{ id: string }>("select id from users where role = 'admin' and active");
+    for (let w = 0; w < weeks; w++) {
+      for (let wd = 2; wd <= 6; wd++) {
+        const date = addDays(startMonday, w * 7 + wd - 1);
+        if (date < from) continue;
+        const sh = shiftFor(wd)!;
+        for (const a of admins) {
+          await q(
+            `insert into shifts (user_id, date, kind, start_time, end_time) values ($1,$2,'shop',$3,$4)
+             on conflict (user_id, date) do ${overwrite ? "update set kind='shop', start_time=excluded.start_time, end_time=excluded.end_time, break_start=null, break_end=null" : "nothing"}`,
+            [a.id, date, sh.start, sh.end],
+          );
+        }
+      }
+    }
   }
   revalidatePath("/app", "layout");
   redirect(`/app/roster?w=${startMonday}`);
@@ -248,8 +262,9 @@ export async function addComment(fd: FormData) {
   if (!body) return;
   const taskId = opt(fd, "task_id");
   const questionId = opt(fd, "question_id");
-  if (!taskId && !questionId) return;
-  await q("insert into comments (task_id, question_id, user_id, body) values ($1,$2,$3,$4)", [taskId, questionId, u.id, body]);
+  const ideaId = opt(fd, "idea_id");
+  if (!taskId && !questionId && !ideaId) return;
+  await q("insert into comments (task_id, question_id, idea_id, user_id, body) values ($1,$2,$3,$4,$5)", [taskId, questionId, ideaId, u.id, body]);
   if (taskId) await q("update tasks set updated_at = now() where id = $1", [taskId]);
   if (questionId && u.role === "admin") await q("update questions set status = 'answered' where id = $1", [questionId]);
   if (questionId && u.role !== "admin") await q("update questions set status = 'open' where id = $1", [questionId]);
@@ -346,11 +361,20 @@ export async function saveIdea(fd: FormData) {
   const id = opt(fd, "id");
   const name = s(fd, "name");
   if (!name) return;
-  const vals = [name, opt(fd, "supplier"), opt(fd, "link"), num(fd, "ek"), num(fd, "vk"), num(fd, "vat") ?? 19, num(fd, "moq"), opt(fd, "packaging"), opt(fd, "why")];
-  if (id) await q("update ideas set name=$1, supplier=$2, link=$3, ek=$4, vk=$5, vat=$6, moq=$7, packaging=$8, why=$9 where id=$10", [...vals, id]);
-  else await q("insert into ideas (name, supplier, link, ek, vk, vat, moq, packaging, why, user_id) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)", [...vals, u.id]);
+  const checks = fd.getAll("checks").map(String).filter(Boolean);
+  const vals = [name, opt(fd, "supplier"), opt(fd, "link"), num(fd, "ek"), num(fd, "vk"), num(fd, "vat") ?? 19, num(fd, "moq"), opt(fd, "packaging"), opt(fd, "why"),
+    opt(fd, "world"), opt(fd, "occasion"), num(fd, "extra_cost"), num(fd, "online_price"), opt(fd, "lead_time"), opt(fd, "season"), checks, s(fd, "sample") === "on"];
+  let ideaId = id;
+  if (id) {
+    const own = await q1<{ user_id: string }>("select user_id from ideas where id = $1", [id]);
+    if (!own || (u.role !== "admin" && own.user_id !== u.id)) return;
+    await q("update ideas set name=$1, supplier=$2, link=$3, ek=$4, vk=$5, vat=$6, moq=$7, packaging=$8, why=$9, world=$10, occasion=$11, extra_cost=$12, online_price=$13, lead_time=$14, season=$15, checks=$16, sample=$17 where id=$18", [...vals, id]);
+  } else {
+    const row = await q1<{ id: string }>("insert into ideas (name, supplier, link, ek, vk, vat, moq, packaging, why, world, occasion, extra_cost, online_price, lead_time, season, checks, sample, user_id) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) returning id", [...vals, u.id]);
+    ideaId = row!.id;
+  }
   revalidatePath("/app", "layout");
-  redirect("/app/ideas");
+  redirect(`/app/ideas/${ideaId}`);
 }
 export async function setIdeaStatus(fd: FormData) {
   const u = await requireUser();
@@ -375,9 +399,9 @@ export async function saveContent(fd: FormData) {
   const title = s(fd, "title");
   if (!title) return;
   const kind = ["reel", "story", "post"].includes(s(fd, "kind")) ? s(fd, "kind") : "reel";
-  const vals = [title, opt(fd, "idea"), kind, isDate(opt(fd, "date")) ? s(fd, "date") : null, opt(fd, "owner_id") ?? u.id, opt(fd, "link"), opt(fd, "pillar")];
-  if (id) await q("update content_items set title=$1, idea=$2, kind=$3, date=$4, owner_id=$5, link=$6, pillar=$7 where id=$8", [...vals, id]);
-  else await q("insert into content_items (title, idea, kind, date, owner_id, link, pillar) values ($1,$2,$3,$4,$5,$6,$7)", vals);
+  const vals = [title, opt(fd, "idea"), kind, isDate(opt(fd, "date")) ? s(fd, "date") : null, opt(fd, "owner_id") ?? u.id, opt(fd, "link"), opt(fd, "pillar"), opt(fd, "brand")];
+  if (id) await q("update content_items set title=$1, idea=$2, kind=$3, date=$4, owner_id=$5, link=$6, pillar=$7, brand=$8 where id=$9", [...vals, id]);
+  else await q("insert into content_items (title, idea, kind, date, owner_id, link, pillar, brand) values ($1,$2,$3,$4,$5,$6,$7,$8)", vals);
   revalidatePath("/app", "layout");
   redirect(back(fd, "/app/content"));
 }
@@ -501,5 +525,159 @@ export async function addQuote(fd: FormData) {
 export async function deleteJournal(fd: FormData) {
   await requireAdmin();
   await q("delete from journal where id = $1", [s(fd, "id")]);
+  revalidatePath("/app", "layout");
+}
+
+/* ───────── Werkblokken (opdracht ↔ agenda) ───────── */
+export async function savePlan(fd: FormData) {
+  const u = await requireUser();
+  const taskId = s(fd, "task_id");
+  const date = s(fd, "date");
+  if (!taskId || !isDate(date)) return;
+  // Stagiairs plannen voor zichzelf; beheerders mogen voor iedereen plannen
+  const userId = u.role === "admin" && s(fd, "user_id") ? s(fd, "user_id") : u.id;
+  await q("insert into task_plans (task_id, user_id, date, start_time, end_time, note) values ($1,$2,$3,$4,$5,$6)", [taskId, userId, date, opt(fd, "start_time"), opt(fd, "end_time"), opt(fd, "note")]);
+  await q("update tasks set status = 'doing', updated_at = now() where id = $1 and status = 'todo' and $2::date <= current_date", [taskId, date]);
+  revalidatePath("/app", "layout");
+  redirect(back(fd, `/app/tasks/${taskId}`));
+}
+export async function togglePlan(fd: FormData) {
+  const u = await requireUser();
+  if (u.role === "admin") await q("update task_plans set done = not done where id = $1", [s(fd, "id")]);
+  else await q("update task_plans set done = not done where id = $1 and user_id = $2", [s(fd, "id"), u.id]);
+  revalidatePath("/app", "layout");
+}
+export async function deletePlan(fd: FormData) {
+  const u = await requireUser();
+  if (u.role === "admin") await q("delete from task_plans where id = $1", [s(fd, "id")]);
+  else await q("delete from task_plans where id = $1 and user_id = $2", [s(fd, "id"), u.id]);
+  revalidatePath("/app", "layout");
+}
+
+/* ───────── Instagram-Zahlen & Ziele ───────── */
+const int = (fd: FormData, k: string) => { const v = num(fd, k); return v === null ? null : Math.round(v); };
+export async function saveSocialStats(fd: FormData) {
+  const u = await requireUser();
+  const date = s(fd, "date");
+  if (!isDate(date)) return;
+  await q(
+    `insert into social_stats (date, followers, reach, interactions, profile_visits, note, user_id) values ($1,$2,$3,$4,$5,$6,$7)
+     on conflict (date) do update set followers=excluded.followers, reach=excluded.reach, interactions=excluded.interactions, profile_visits=excluded.profile_visits, note=excluded.note, user_id=excluded.user_id`,
+    [date, int(fd, "followers"), int(fd, "reach"), int(fd, "interactions"), int(fd, "profile_visits"), opt(fd, "note"), u.id],
+  );
+  revalidatePath("/app", "layout");
+  redirect("/app/content");
+}
+export async function saveSocialGoals(fd: FormData) {
+  const u = await requireUser();
+  const month = s(fd, "month");
+  if (!isDate(month)) return;
+  await q(
+    `insert into social_goals (month, followers, reach, interactions, posts, stories, note, updated_by) values ($1,$2,$3,$4,$5,$6,$7,$8)
+     on conflict (month) do update set followers=excluded.followers, reach=excluded.reach, interactions=excluded.interactions, posts=excluded.posts, stories=excluded.stories, note=excluded.note, updated_by=excluded.updated_by`,
+    [month, int(fd, "followers"), int(fd, "reach"), int(fd, "interactions"), int(fd, "posts"), int(fd, "stories"), opt(fd, "note"), u.id],
+  );
+  revalidatePath("/app", "layout");
+  redirect("/app/content");
+}
+
+/* ───────── Wochenrückblick ───────── */
+export async function saveReflection(fd: FormData) {
+  const u = await requireUser();
+  const week = s(fd, "week");
+  if (!isDate(week)) return;
+  const mood = Math.min(5, Math.max(1, Number(s(fd, "mood")) || 0)) || null;
+  await q(
+    `insert into reflections (user_id, week, learned, liked, hard, next, mood) values ($1,$2,$3,$4,$5,$6,$7)
+     on conflict (user_id, week) do update set learned=excluded.learned, liked=excluded.liked, hard=excluded.hard, next=excluded.next, mood=excluded.mood, updated_at=now()`,
+    [u.id, week, opt(fd, "learned"), opt(fd, "liked"), opt(fd, "hard"), opt(fd, "next"), mood],
+  );
+  revalidatePath("/app", "layout");
+  redirect("/app/reflect?saved=1");
+}
+export async function saveReflectionFeedback(fd: FormData) {
+  const u = await requireAdmin();
+  await q("update reflections set feedback = $1, feedback_by = $2, feedback_at = now() where id = $3", [opt(fd, "feedback"), u.id, s(fd, "id")]);
+  revalidatePath("/app", "layout");
+}
+
+/* ───────── Lernziele ───────── */
+export async function setSkillLevel(fd: FormData) {
+  const u = await requireUser();
+  const level = Math.min(3, Math.max(0, Number(s(fd, "level")) || 0));
+  const skillId = s(fd, "skill_id");
+  if (u.role === "admin") {
+    const target = s(fd, "user_id");
+    if (!target) return;
+    await q("insert into skill_levels (skill_id, user_id, confirmed, confirmed_by) values ($1,$2,$3,$4) on conflict (skill_id, user_id) do update set confirmed=excluded.confirmed, confirmed_by=excluded.confirmed_by, updated_at=now()", [skillId, target, level, u.id]);
+  } else {
+    await q("insert into skill_levels (skill_id, user_id, level) values ($1,$2,$3) on conflict (skill_id, user_id) do update set level=excluded.level, updated_at=now()", [skillId, u.id, level]);
+  }
+  revalidatePath("/app", "layout");
+}
+export async function saveSkill(fd: FormData) {
+  await requireAdmin();
+  const title = s(fd, "title_de");
+  if (!title) return;
+  await q("insert into skills (area, title_de, position) values ($1,$2,(select coalesce(max(position),0)+1 from skills))", [s(fd, "area") || "Laden", title]);
+  revalidatePath("/app", "layout");
+}
+export async function deleteSkill(fd: FormData) {
+  await requireAdmin();
+  await q("delete from skills where id = $1", [s(fd, "id")]);
+  revalidatePath("/app", "layout");
+}
+
+/* ───────── Abwesenheit ───────── */
+async function applyAbsence(id: string) {
+  const a = await q1<{ user_id: string; date: string; end_date: string | null; kind: string; note: string | null }>("select user_id, date, end_date, kind, note from absences where id = $1", [id]);
+  if (!a) return;
+  const label = a.kind === "sick" ? "krank" : a.kind === "school" ? "Schule" : "frei";
+  for (let d = a.date, i = 0; d <= (a.end_date || a.date) && i < 60; d = addDays(d, 1), i++) {
+    if (weekday(d) === 7) continue;
+    await q(
+      `insert into shifts (user_id, date, kind, note) values ($1,$2,$3,$4)
+       on conflict (user_id, date) do update set kind=excluded.kind, start_time=null, end_time=null, break_start=null, break_end=null, note=excluded.note`,
+      [a.user_id, d, a.kind === "school" ? "school" : "off", a.note ? `${label}: ${a.note}` : label],
+    );
+  }
+}
+export async function requestAbsence(fd: FormData) {
+  const u = await requireUser();
+  const date = s(fd, "date");
+  if (!isDate(date)) return;
+  const end = isDate(opt(fd, "end_date")) && s(fd, "end_date") > date ? s(fd, "end_date") : null;
+  const kind = ["free", "school", "sick", "other"].includes(s(fd, "kind")) ? s(fd, "kind") : "free";
+  const userId = u.role === "admin" && s(fd, "user_id") ? s(fd, "user_id") : u.id;
+  // Krankmeldung gilt sofort; alles andere muss freigegeben werden
+  const status = kind === "sick" || u.role === "admin" ? "approved" : "requested";
+  const row = await q1<{ id: string }>("insert into absences (user_id, date, end_date, kind, note, status, decided_by) values ($1,$2,$3,$4,$5,$6,$7) returning id", [userId, date, end, kind, opt(fd, "note"), status, u.role === "admin" ? u.id : null]);
+  if (status === "approved") await applyAbsence(row!.id);
+  revalidatePath("/app", "layout");
+  redirect(back(fd, "/app/absence?saved=1"));
+}
+export async function decideAbsence(fd: FormData) {
+  const u = await requireAdmin();
+  const status = s(fd, "status") === "approved" ? "approved" : "declined";
+  await q("update absences set status = $1, decided_by = $2 where id = $3", [status, u.id, s(fd, "id")]);
+  if (status === "approved") await applyAbsence(s(fd, "id"));
+  revalidatePath("/app", "layout");
+}
+export async function deleteAbsence(fd: FormData) {
+  const u = await requireUser();
+  if (u.role === "admin") await q("delete from absences where id = $1", [s(fd, "id")]);
+  else await q("delete from absences where id = $1 and user_id = $2 and status = 'requested'", [s(fd, "id"), u.id]);
+  revalidatePath("/app", "layout");
+}
+
+/* ───────── Tagescheckliste ───────── */
+export async function toggleDaily(fd: FormData) {
+  const u = await requireUser();
+  const date = s(fd, "date");
+  const key = s(fd, "key");
+  if (!isDate(date) || !/^[a-z_]{1,30}$/.test(key)) return;
+  const has = await q1("select 1 from daily_checks where date = $1 and key = $2", [date, key]);
+  if (has) await q("delete from daily_checks where date = $1 and key = $2", [date, key]);
+  else await q("insert into daily_checks (date, key, user_id) values ($1,$2,$3) on conflict do nothing", [date, key, u.id]);
   revalidatePath("/app", "layout");
 }

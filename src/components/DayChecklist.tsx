@@ -43,8 +43,8 @@ function Check({ it, date, lang }: { it: Item; date: string; lang: Lang }) {
  * Eén dagchecklist: morgen → ingeplande opdrachten → overdag → afsluiten.
  * Vaste punten (Tag geplant, Story) komen uit daily_checks; Storepflege uit cleaning_tasks; werkblokken uit task_plans.
  */
-export function DayChecklist({ date, lang, cleaning, plans, daily, storyPosted, zones, me, isAdmin, closed }: {
-  date: string; lang: Lang; cleaning: CleaningRow[]; plans: PlanRow[]; daily: { key: string; name: string | null }[]; storyPosted: boolean;
+export function DayChecklist({ date, lang, cleaning, plans, daily, storyWeek, zones, me, isAdmin, closed }: {
+  date: string; lang: Lang; cleaning: CleaningRow[]; plans: PlanRow[]; daily: { key: string; name: string | null }[]; storyWeek: { done: number; goal: number };
   zones?: { a?: Owner; b?: Owner }; me: { id: string }; isAdmin: boolean; closed: boolean;
 }) {
   const tr = T(lang);
@@ -52,14 +52,19 @@ export function DayChecklist({ date, lang, cleaning, plans, daily, storyPosted, 
   const cleanItems = (moment: string): Item[] => cleaning.filter((c) => c.moment === moment).map((c) => ({ id: c.id, label: pick(lang, c.title_de, c.title_nl), done: !!c.done_by, by: c.done_by, owner: c.zone ? zones?.[c.zone as "a" | "b"] : null, form: "clean", weekly: c.freq === "weekly" }));
   const planItems: Item[] = plans.map((p) => ({ id: p.id, label: p.title, done: p.done, hint: `${p.start_time ? `${hm(p.start_time)}${p.end_time ? "–" + hm(p.end_time) : ""} · ` : ""}${p.name}`, form: "plan", href: `/app/tasks/${p.task_id}`, disabled: !isAdmin && p.user_id !== me.id }));
   const planCheck: Item = { id: "plan", label: tr("Tag geplant: Aufgaben für heute in der Agenda eingeplant", "Dag gepland: opdrachten voor vandaag in de agenda gezet"), done: !!dk("plan") || plans.length > 0, by: dk("plan")?.name, form: "daily", href: "/app/calendar" };
-  const storyCheck: Item = { id: "story", label: tr("Story gepostet", "Story gepost"), done: storyPosted || !!dk("story"), by: storyPosted ? "Content-Plan" : dk("story")?.name, form: "daily", href: "/app/content", hint: tr("jeden Tag eine – auch am Homeoffice-Tag", "elke dag één – ook op de thuiswerkdag") };
+  // Storys sind ein Wochenziel (Standard: 4 pro Woche). Ist es erreicht, verschwindet der Punkt.
+  const storyOpen = storyWeek.done < storyWeek.goal;
+  const storyCheck: Item = {
+    id: "story", label: tr("Story gepostet", "Story gepost"), done: !storyOpen || !!dk("story"), by: dk("story")?.name, form: "daily", href: "/app/content",
+    hint: tr(`diese Woche ${storyWeek.done} von ${storyWeek.goal}`, `deze week ${storyWeek.done} van ${storyWeek.goal}`),
+  };
 
   const groups: { title: string; items: Item[] }[] = closed
-    ? [{ title: tr("Homeoffice", "Thuiswerk"), items: [planCheck, ...planItems, storyCheck] }]
+    ? [{ title: tr("Homeoffice", "Thuiswerk"), items: [planCheck, ...planItems, ...(storyOpen ? [storyCheck] : [])] }]
     : [
         { title: tr("Morgens", "'s Ochtends"), items: [...cleanItems("open"), planCheck] },
         { title: tr("Heute eingeplant", "Vandaag ingepland"), items: planItems },
-        { title: tr("Tagsüber", "Overdag"), items: [storyCheck, ...cleanItems("day")] },
+        { title: tr("Tagsüber", "Overdag"), items: [...(storyOpen ? [storyCheck] : []), ...cleanItems("day")] },
         { title: tr("Zum Feierabend", "Bij sluiten"), items: cleanItems("close") },
       ];
   const all = groups.flatMap((g) => g.items);

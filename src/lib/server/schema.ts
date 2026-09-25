@@ -1,6 +1,6 @@
 /** Databaseschema. Alles is idempotent: opnieuw draaien kan altijd. */
 /** Ophogen bij elke schemawijziging: de app werkt de database dan zelf bij. */
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 7;
 
 export const SCHEMA_SQL = `
 create extension if not exists pgcrypto;
@@ -396,6 +396,21 @@ begin
      where u.id = s.user_id and u.role = 'intern' and s.kind = 'shop' and s.date >= current_date
        and ((extract(isodow from s.date) in (2,4,5) and s.start_time = '10:00') or (extract(isodow from s.date) in (3,6) and s.start_time = '09:00'));
     insert into settings (key, value) values ('mig_intern_start_at_opening', 'true'::jsonb);
+  end if;
+end $$;
+
+-- Versie 7: TikTok neben Instagram, Kanal pro Beitrag, Wochenziel 4 Storys
+alter table social_stats add column if not exists tt_followers int;
+alter table social_stats add column if not exists tt_reach int;
+alter table social_stats add column if not exists tt_interactions int;
+alter table social_goals add column if not exists tt_followers int;
+alter table social_goals add column if not exists tt_reach int;
+alter table content_items add column if not exists channel text not null default 'both';
+do $$
+begin
+  if not exists (select 1 from settings where key = 'mig_goal_4_stories') then
+    update social_goals set stories = 4 where stories is null or stories = 7;
+    insert into settings (key, value) values ('mig_goal_4_stories', 'true'::jsonb);
   end if;
 end $$;
 

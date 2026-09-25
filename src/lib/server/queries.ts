@@ -1,6 +1,7 @@
 import "server-only";
 import { q, q1 } from "./db";
-import { isoWeek, weekday } from "@/lib/dates";
+import { addDays, isoWeek, monday, weekday } from "@/lib/dates";
+import { shiftMinutes } from "@/lib/hours";
 
 export type TeamUser = { id: string; name: string; role: "admin" | "intern"; color: string; username: string; lang: "de" | "nl"; active: boolean };
 export const team = (onlyActive = true) => q<TeamUser>(`select id, name, role, color, username, lang, active from users ${onlyActive ? "where active" : ""} order by role desc, created_at`);
@@ -55,4 +56,37 @@ export async function zoneOwners(date: string): Promise<{ a?: { id: string; name
   if (interns.length < 2) return { a: interns[0], b: interns[0] };
   const even = isoWeek(date) % 2 === 0;
   return { a: interns[even ? 0 : 1], b: interns[even ? 1 : 0] };
+}
+
+/* ───────── Urenteller stagiaires ─────────
+ * Telt de uren uit het rooster (winkel + thuiswerk), pauzes eraf.
+ * "geleistet" = dagen tot en met vandaag, "geplant" = alles wat in het rooster staat.
+ */
+export type HoursRow = {
+  user_id: string; name: string; color: string;
+  weekDone: number; weekPlanned: number; monthDone: number; monthPlanned: number; total: number; days: number;
+  firstDate: string | null; lastDate: string | null;
+};
+export async function internHours(date: string): Promise<HoursRow[]> {
+  const week = monday(date);
+  const weekEnd = addDays(week, 6);
+  const monthStart = `${date.slice(0, 7)}-01`;
+  const monthEnd = `${date.slice(0, 7)}-31`;
+  const rows = await q<{ user_id: string; name: string; color: string; date: string; start_time: string | null; end_time: string | null; break_start: string | null; break_end: string | null; break2_start: string | null; break2_end: string | null }>(
+    `select s.user_id, u.name, u.color, s.date::text as date, s.start_time, s.end_time, s.break_start, s.break_end, s.break2_start, s.break2_end
+       from shifts s join users u on u.id = s.user_id
+      where u.role = 'intern' and u.active and s.kind in ('shop','home') and s.start_time is not null and s.end_time is not null
+      order by u.created_at, s.date`);
+  const map = new Map<string, HoursRow>();
+  for (const r of rows) {
+    const cur = map.get(r.user_id) ?? { user_id: r.user_id, name: r.name, color: r.color, weekDone: 0, weekPlanned: 0, monthDone: 0, monthPlanned: 0, total: 0, days: 0, firstDate: null, lastDate: null };
+    const min = shiftMinutes(r);
+    if (!min) { map.set(r.user_id, cur); continue; }
+    const past = r.date <= date;
+    if (past) { cur.total += min; cur.days += 1; cur.lastDate = r.date; if (!cur.firstDate) cur.firstDate = r.date; }
+    if (r.date >= week && r.date <= weekEnd) { cur.weekPlanned += min; if (past) cur.weekDone += min; }
+    if (r.date >= monthStart && r.date <= monthEnd) { cur.monthPlanned += min; if (past) cur.monthDone += min; }
+    map.set(r.user_id, cur);
+  }
+  return [...map.values()];
 }

@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/server/auth";
 import { q } from "@/lib/server/db";
-import { team } from "@/lib/server/queries";
+import { internHours, team } from "@/lib/server/queries";
 import { SHIFT_KIND, T, lbl } from "@/lib/i18n";
 import { OPENING_TEXT_DE, shiftForRole } from "@/lib/hours";
 import { addDays, dayName, hm, isoWeek, longDate, monday, monthName, today, weekday } from "@/lib/dates";
 import { Avatar, PageHeader } from "@/components/ui";
+import { HoursCard } from "@/components/Hours";
 import { ConfirmSubmit, Submit } from "@/components/client";
 import { addOpenSunday, generateRoster, removeOpenSunday, saveShift } from "../actions";
 
@@ -25,11 +26,12 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
   const mon = monday(/^\d{4}-\d{2}-\d{2}$/.test(searchParams.w || "") ? searchParams.w! : now);
   const sun = addDays(mon, 6);
   const monthStart = `${addDays(mon, 5).slice(0, 7)}-01`;
-  const [users, shifts, sats] = await Promise.all([
+  const [users, shifts, sats, hourRows] = await Promise.all([
     team(),
     q<Sh>("select * from shifts where date between $1 and $2", [mon, sun]),
     q<{ user_id: string; n: number }>(
       "select user_id, count(*)::int as n from shifts where kind = 'shop' and extract(isodow from date) = 6 and date >= $1::date and date < ($1::date + interval '1 month') group by user_id", [monthStart]),
+    internHours(now),
   ]);
   const get = (uid: string, d: string) => shifts.find((s) => s.user_id === uid && s.date === d);
   // Zondag alleen tonen als er die dag iets staat (verkaufsoffener Sonntag)
@@ -96,6 +98,10 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
           <span className="text-stone-400"> — {tr("die Schule erlaubt max. 2 pro Monat", "school staat max. 2 per maand toe")}</span>
         </p>
       )}
+
+      <div className="mt-5">
+        <HoursCard rows={hourRows} lang={user.lang} me={user} isAdmin={isAdmin} />
+      </div>
 
       {editing?.user && (
         <section className="card mt-5 max-w-xl">

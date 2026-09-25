@@ -67,6 +67,11 @@ export const KB_CATEGORY: Record<string, L> = {
   produkte: { de: "Produktwissen", nl: "Productkennis" },
   anleitungen: { de: "Anleitungen", nl: "Handleidingen" },
 };
+export const CHANNEL: Record<string, L> = {
+  both: { de: "Instagram + TikTok", nl: "Instagram + TikTok", color: "bg-stone-100 text-stone-700" },
+  instagram: { de: "Instagram", nl: "Instagram", color: "bg-pink-100 text-pink-800" },
+  tiktok: { de: "TikTok", nl: "TikTok", color: "bg-sky-100 text-sky-900" },
+};
 export const PILLARS = ["Vorher/Nachher", "Building KANSO", "Gastgeber-Ideen", "Outdoor Cooking", "Design & Materialien", "Kundenprojekte"];
 export const URGENCY: Record<string, L> = {
   checkin: { de: "Bis zum Check-in", nl: "Tot de check-in", color: "bg-stone-100 text-stone-600" },
@@ -75,4 +80,4 @@ export const URGENCY: Record<string, L> = {
 };
 export const lbl = (lang: Lang, l?: L) => (l ? (lang === "nl" ? l.nl : l.de) : "");
 
-export const BRANDS = ["Tenderflame", "KANSO SPICES", "KANSO Raumduft", "Luca Lifestyle", "Archief", "Grain by Grain", "Kerzen", "Lapuan Kankurit", "Alkoholfreie Spirituosen", "Outdoor-Teppiche", "Kamado-Grills", "KOALA Kitchens", "KANSO Kitchens", "Rijpex Pergola", "Laden & Schaufenster", "Lüneburg"];
+export const BRANDS = ["Tenderflame", "KANSO SPICES", "KANSO Raumduft", "Luca Lifestyle", "Archief", "Grain by Grain", "Kerzen", "Lapuan Kankurit", "Alkoholfreie Spirituosen", "Outdoor-Teppiche", "Kamado-Grills", "KOALA Kitchens", "Vesper Kitchen", "KANSO Kitchens", "Rijpex Pergola", "Laden & Schaufenster", "Lüneburg"];

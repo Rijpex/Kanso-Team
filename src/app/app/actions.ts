@@ -442,9 +442,10 @@ export async function saveContent(fd: FormData) {
   const title = s(fd, "title");
   if (!title) return;
   const kind = ["reel", "story", "post"].includes(s(fd, "kind")) ? s(fd, "kind") : "reel";
-  const vals = [title, opt(fd, "idea"), kind, isDate(opt(fd, "date")) ? s(fd, "date") : null, opt(fd, "owner_id") ?? u.id, opt(fd, "link"), opt(fd, "pillar"), opt(fd, "brand")];
-  if (id) await q("update content_items set title=$1, idea=$2, kind=$3, date=$4, owner_id=$5, link=$6, pillar=$7, brand=$8 where id=$9", [...vals, id]);
-  else await q("insert into content_items (title, idea, kind, date, owner_id, link, pillar, brand) values ($1,$2,$3,$4,$5,$6,$7,$8)", vals);
+  const channel = ["both", "instagram", "tiktok"].includes(s(fd, "channel")) ? s(fd, "channel") : "both";
+  const vals = [title, opt(fd, "idea"), kind, isDate(opt(fd, "date")) ? s(fd, "date") : null, opt(fd, "owner_id") ?? u.id, opt(fd, "link"), opt(fd, "pillar"), opt(fd, "brand"), channel];
+  if (id) await q("update content_items set title=$1, idea=$2, kind=$3, date=$4, owner_id=$5, link=$6, pillar=$7, brand=$8, channel=$9 where id=$10", [...vals, id]);
+  else await q("insert into content_items (title, idea, kind, date, owner_id, link, pillar, brand, channel) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)", vals);
   revalidatePath("/app", "layout");
   redirect(back(fd, "/app/content"));
 }
@@ -617,9 +618,10 @@ export async function saveSocialStats(fd: FormData) {
   const date = s(fd, "date");
   if (!isDate(date)) return;
   await q(
-    `insert into social_stats (date, followers, reach, interactions, profile_visits, note, user_id) values ($1,$2,$3,$4,$5,$6,$7)
-     on conflict (date) do update set followers=excluded.followers, reach=excluded.reach, interactions=excluded.interactions, profile_visits=excluded.profile_visits, note=excluded.note, user_id=excluded.user_id`,
-    [date, int(fd, "followers"), int(fd, "reach"), int(fd, "interactions"), int(fd, "profile_visits"), opt(fd, "note"), u.id],
+    `insert into social_stats (date, followers, reach, interactions, profile_visits, tt_followers, tt_reach, tt_interactions, note, user_id) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+     on conflict (date) do update set followers=excluded.followers, reach=excluded.reach, interactions=excluded.interactions, profile_visits=excluded.profile_visits,
+       tt_followers=excluded.tt_followers, tt_reach=excluded.tt_reach, tt_interactions=excluded.tt_interactions, note=excluded.note, user_id=excluded.user_id`,
+    [date, int(fd, "followers"), int(fd, "reach"), int(fd, "interactions"), int(fd, "profile_visits"), int(fd, "tt_followers"), int(fd, "tt_reach"), int(fd, "tt_interactions"), opt(fd, "note"), u.id],
   );
   revalidatePath("/app", "layout");
   redirect("/app/content");
@@ -629,9 +631,10 @@ export async function saveSocialGoals(fd: FormData) {
   const month = s(fd, "month");
   if (!isDate(month)) return;
   await q(
-    `insert into social_goals (month, followers, reach, interactions, posts, stories, note, updated_by) values ($1,$2,$3,$4,$5,$6,$7,$8)
-     on conflict (month) do update set followers=excluded.followers, reach=excluded.reach, interactions=excluded.interactions, posts=excluded.posts, stories=excluded.stories, note=excluded.note, updated_by=excluded.updated_by`,
-    [month, int(fd, "followers"), int(fd, "reach"), int(fd, "interactions"), int(fd, "posts"), int(fd, "stories"), opt(fd, "note"), u.id],
+    `insert into social_goals (month, followers, reach, interactions, posts, stories, tt_followers, tt_reach, note, updated_by) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+     on conflict (month) do update set followers=excluded.followers, reach=excluded.reach, interactions=excluded.interactions, posts=excluded.posts, stories=excluded.stories,
+       tt_followers=excluded.tt_followers, tt_reach=excluded.tt_reach, note=excluded.note, updated_by=excluded.updated_by`,
+    [month, int(fd, "followers"), int(fd, "reach"), int(fd, "interactions"), int(fd, "posts"), int(fd, "stories"), int(fd, "tt_followers"), int(fd, "tt_reach"), opt(fd, "note"), u.id],
   );
   revalidatePath("/app", "layout");
   redirect("/app/content");

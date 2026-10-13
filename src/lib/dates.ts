@@ -35,6 +35,9 @@ const loc = (lang: string) => (lang === "nl" ? "nl-NL" : "de-DE");
 export function longDate(d: string, lang: string): string {
   return new Intl.DateTimeFormat(loc(lang), { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(parse(d));
 }
+export function longDateY(d: string, lang: string): string {
+  return new Intl.DateTimeFormat(loc(lang), { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(parse(d));
+}
 export function shortDate(d: string, lang: string): string {
   return new Intl.DateTimeFormat(loc(lang), { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(parse(d));
 }

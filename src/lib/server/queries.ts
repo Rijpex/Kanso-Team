@@ -58,35 +58,99 @@ export async function zoneOwners(date: string): Promise<{ a?: { id: string; name
   return { a: interns[even ? 0 : 1], b: interns[even ? 1 : 0] };
 }
 
-/* ───────── Urenteller stagiaires ─────────
- * Telt de uren uit het rooster (winkel + thuiswerk), pauzes eraf.
- * "geleistet" = dagen tot en met vandaag, "geplant" = alles wat in het rooster staat.
+/* ───────── Praktikumsstunden ─────────
+ * Eén bron: het rooster. Een dag telt mee als hij in het verleden ligt, van het soort
+ * "Laden" of "Homeoffice" is, en op of na de startdatum van de stage valt.
+ * worked_minutes op een dienst is een handmatige correctie en gaat vóór de roostertijden.
+ * before_minutes zijn uren van vóór de hub, die Bas of Lea met de hand invullen.
  */
+export type MonthRow = { month: string; minutes: number; days: number };
+export type DayRow = {
+  user_id: string; date: string; kind: string; start_time: string | null; end_time: string | null;
+  break_start: string | null; break_end: string | null; break2_start: string | null; break2_end: string | null;
+  worked_minutes: number | null; note: string | null; minutes: number; counts: boolean;
+};
 export type HoursRow = {
   user_id: string; name: string; color: string;
-  weekDone: number; weekPlanned: number; monthDone: number; monthPlanned: number; total: number; days: number;
-  firstDate: string | null; lastDate: string | null;
+  startDate: string | null; endDate: string | null; targetMinutes: number; beforeMinutes: number;
+  weekDone: number; weekPlanned: number; monthDone: number; monthPlanned: number;
+  rosterMinutes: number; doneMinutes: number; futureMinutes: number;
+  days: number; firstDate: string | null; lastDate: string | null;
+  months: MonthRow[];
 };
+
+type ShiftRow = {
+  user_id: string; name: string; color: string; date: string; kind: string;
+  start_time: string | null; end_time: string | null; break_start: string | null; break_end: string | null;
+  break2_start: string | null; break2_end: string | null; worked_minutes: number | null; note: string | null;
+  start_date: string | null; end_date: string | null; target_hours: number | null; before_minutes: number;
+};
+
+const SHIFT_SELECT = `select s.user_id, u.name, u.color, s.date::text as date, s.kind, s.start_time, s.end_time,
+        s.break_start, s.break_end, s.break2_start, s.break2_end, s.worked_minutes, s.note,
+        u.start_date::text as start_date, u.end_date::text as end_date, u.target_hours, u.before_minutes
+   from shifts s join users u on u.id = s.user_id
+  where u.role = 'intern' and u.active and s.kind in ('shop','home')
+  order by u.created_at, s.date`;
+
+/** Minuten van één dag: handmatige correctie, anders uit de roostertijden. */
+const dayMinutes = (r: ShiftRow | DayRow) => (r.worked_minutes != null ? Math.max(0, r.worked_minutes) : shiftMinutes(r));
+
 export async function internHours(date: string): Promise<HoursRow[]> {
   const week = monday(date);
   const weekEnd = addDays(week, 6);
   const monthStart = `${date.slice(0, 7)}-01`;
   const monthEnd = `${date.slice(0, 7)}-31`;
-  const rows = await q<{ user_id: string; name: string; color: string; date: string; start_time: string | null; end_time: string | null; break_start: string | null; break_end: string | null; break2_start: string | null; break2_end: string | null }>(
-    `select s.user_id, u.name, u.color, s.date::text as date, s.start_time, s.end_time, s.break_start, s.break_end, s.break2_start, s.break2_end
-       from shifts s join users u on u.id = s.user_id
-      where u.role = 'intern' and u.active and s.kind in ('shop','home') and s.start_time is not null and s.end_time is not null
-      order by u.created_at, s.date`);
+  const rows = await q<ShiftRow>(SHIFT_SELECT);
   const map = new Map<string, HoursRow>();
+  const months = new Map<string, Map<string, MonthRow>>();
   for (const r of rows) {
-    const cur = map.get(r.user_id) ?? { user_id: r.user_id, name: r.name, color: r.color, weekDone: 0, weekPlanned: 0, monthDone: 0, monthPlanned: 0, total: 0, days: 0, firstDate: null, lastDate: null };
-    const min = shiftMinutes(r);
-    if (!min) { map.set(r.user_id, cur); continue; }
+    const cur = map.get(r.user_id) ?? {
+      user_id: r.user_id, name: r.name, color: r.color,
+      startDate: r.start_date, endDate: r.end_date,
+      targetMinutes: (r.target_hours ?? 900) * 60, beforeMinutes: r.before_minutes || 0,
+      weekDone: 0, weekPlanned: 0, monthDone: 0, monthPlanned: 0,
+      rosterMinutes: 0, doneMinutes: 0, futureMinutes: 0, days: 0, firstDate: null, lastDate: null, months: [],
+    };
+    map.set(r.user_id, cur);
+    const min = dayMinutes(r);
+    if (!min) continue;
+    const started = !r.start_date || r.date >= r.start_date;
     const past = r.date <= date;
-    if (past) { cur.total += min; cur.days += 1; cur.lastDate = r.date; if (!cur.firstDate) cur.firstDate = r.date; }
+    if (started) {
+      if (past) {
+        cur.rosterMinutes += min;
+        cur.days += 1;
+        cur.lastDate = r.date;
+        if (!cur.firstDate) cur.firstDate = r.date;
+        const key = r.date.slice(0, 7);
+        const mm = months.get(r.user_id) ?? new Map<string, MonthRow>();
+        const row = mm.get(key) ?? { month: `${key}-01`, minutes: 0, days: 0 };
+        row.minutes += min; row.days += 1;
+        mm.set(key, row); months.set(r.user_id, mm);
+      } else {
+        cur.futureMinutes += min;
+      }
+    }
     if (r.date >= week && r.date <= weekEnd) { cur.weekPlanned += min; if (past) cur.weekDone += min; }
     if (r.date >= monthStart && r.date <= monthEnd) { cur.monthPlanned += min; if (past) cur.monthDone += min; }
-    map.set(r.user_id, cur);
+  }
+  for (const row of map.values()) {
+    row.doneMinutes = row.rosterMinutes + row.beforeMinutes;
+    row.months = [...(months.get(row.user_id)?.values() ?? [])].sort((a, b) => (a.month < b.month ? 1 : -1));
   }
   return [...map.values()];
+}
+
+/** Alle roosterdagen van de stagiaires, nieuwste eerst – voor de urenpagina. */
+export async function internDays(date: string): Promise<DayRow[]> {
+  const rows = await q<ShiftRow>(SHIFT_SELECT);
+  return rows
+    .map((r) => ({
+      user_id: r.user_id, date: r.date, kind: r.kind, start_time: r.start_time, end_time: r.end_time,
+      break_start: r.break_start, break_end: r.break_end, break2_start: r.break2_start, break2_end: r.break2_end,
+      worked_minutes: r.worked_minutes, note: r.note, minutes: dayMinutes(r),
+      counts: r.date <= date && (!r.start_date || r.date >= r.start_date),
+    }))
+    .sort((a, b) => (a.date < b.date ? 1 : -1));
 }

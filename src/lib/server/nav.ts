@@ -20,6 +20,7 @@ export async function navItems(user: { id: string; role: string; lang: "de" | "n
     { href: "/app/content", label: tr("Content-Plan", "Contentplan"), icon: "video", group: G.proj },
     { href: "/app/ideas", label: tr("Produktideen", "Productideeën"), icon: "bulb", group: G.proj },
     { href: "/app/journal", label: tr("Kundenfragen", "Klantvragen"), icon: "chat", group: G.proj },
+    { href: "/app/hours", label: tr("Stunden", "Uren"), icon: "clock", group: G.me },
     { href: "/app/reflect", label: tr("Wochenrückblick", "Weekboek"), icon: "book", group: G.me },
     { href: "/app/skills", label: tr("Lernziele", "Leerdoelen"), icon: "flag", group: G.me },
     { href: "/app/absence", label: tr("Abwesenheit", "Afwezigheid"), icon: "clock", group: G.me, badge: pendingAbs },

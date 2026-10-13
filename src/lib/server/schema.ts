@@ -1,6 +1,6 @@
 /** Databaseschema. Alles is idempotent: opnieuw draaien kan altijd. */
 /** Ophogen bij elke schemawijziging: de app werkt de database dan zelf bij. */
-export const SCHEMA_VERSION = 7;
+export const SCHEMA_VERSION = 8;
 
 export const SCHEMA_SQL = `
 create extension if not exists pgcrypto;
@@ -411,6 +411,23 @@ begin
   if not exists (select 1 from settings where key = 'mig_goal_4_stories') then
     update social_goals set stories = 4 where stories is null or stories = 7;
     insert into settings (key, value) values ('mig_goal_4_stories', 'true'::jsonb);
+  end if;
+end $$;
+
+-- Versie 8: Praktikumsstunden sauber zählen (Ziel 900 Stunden pro Praktikantin)
+alter table users add column if not exists start_date date;       -- Beginn des Praktikums: ab hier wird gezählt
+alter table users add column if not exists end_date date;         -- geplantes Ende
+alter table users add column if not exists target_hours int;      -- Stundenziel (Standard 900)
+alter table users add column if not exists before_minutes int not null default 0; -- Stunden vor dem Hub, von Hand eingetragen
+alter table shifts add column if not exists worked_minutes int;   -- Korrektur: tatsächlich gearbeitete Minuten an diesem Tag
+update users set target_hours = 900 where role = 'intern' and target_hours is null;
+do $$
+begin
+  if not exists (select 1 from settings where key = 'mig_internship_start') then
+    update users u set start_date = x.d
+      from (select user_id, min(date) as d from shifts where kind in ('shop','home') group by user_id) x
+     where x.user_id = u.id and u.role = 'intern' and u.start_date is null;
+    insert into settings (key, value) values ('mig_internship_start', 'true'::jsonb);
   end if;
 end $$;
 

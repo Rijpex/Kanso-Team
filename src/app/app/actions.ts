@@ -640,6 +640,43 @@ export async function saveSocialGoals(fd: FormData) {
   redirect("/app/content");
 }
 
+/* ───────── Praktikumsstunden ───────── */
+/** Eén dag corrigeren of toevoegen. Leeg uren-veld = correctie weghalen, weer uit het rooster rekenen. */
+export async function saveWorkedHours(fd: FormData) {
+  await requireAdmin();
+  const user_id = s(fd, "user_id");
+  const date = s(fd, "date");
+  if (!user_id || !isDate(date)) return;
+  const raw = s(fd, "hours").replace(",", ".");
+  const minutes = raw === "" ? null : Math.max(0, Math.round(Number(raw) * 60));
+  if (minutes != null && !Number.isFinite(minutes)) return;
+  const note = opt(fd, "note");
+  const cur = await q1<{ id: string; start_time: string | null; note: string | null }>("select id, start_time, note from shifts where user_id = $1 and date = $2", [user_id, date]);
+  if (cur) {
+    if (minutes == null && !cur.start_time) await q("delete from shifts where id = $1", [cur.id]);
+    else await q("update shifts set worked_minutes = $1, note = coalesce($2, note) where id = $3", [minutes, note, cur.id]);
+  } else if (minutes != null) {
+    await q("insert into shifts (user_id, date, kind, worked_minutes, note) values ($1,$2,'shop',$3,$4)", [user_id, date, minutes, note]);
+  }
+  revalidatePath("/app", "layout");
+  redirect(back(fd, "/app/hours"));
+}
+/** Startdatum, einddatum, urendoel en de uren van vóór de hub. */
+export async function saveInternship(fd: FormData) {
+  await requireAdmin();
+  const id = s(fd, "id");
+  if (!id) return;
+  const target = num(fd, "target_hours");
+  const before = num(fd, "before_hours");
+  await q(
+    "update users set start_date = $1, end_date = $2, target_hours = $3, before_minutes = $4 where id = $5",
+    [isDate(opt(fd, "start_date")) ? s(fd, "start_date") : null, isDate(opt(fd, "end_date")) ? s(fd, "end_date") : null,
+     target != null ? Math.round(target) : 900, before != null ? Math.round(before * 60) : 0, id],
+  );
+  revalidatePath("/app", "layout");
+  redirect("/app/hours?saved=1");
+}
+
 /* ───────── Wochenrückblick ───────── */
 export async function saveReflection(fd: FormData) {
   const u = await requireUser();
@@ -696,7 +733,7 @@ async function applyAbsence(id: string) {
     if (weekday(d) === 7) continue;
     await q(
       `insert into shifts (user_id, date, kind, note) values ($1,$2,$3,$4)
-       on conflict (user_id, date) do update set kind=excluded.kind, start_time=null, end_time=null, break_start=null, break_end=null, break2_start=null, break2_end=null, note=excluded.note`,
+       on conflict (user_id, date) do update set kind=excluded.kind, start_time=null, end_time=null, break_start=null, break_end=null, break2_start=null, break2_end=null, worked_minutes=null, note=excluded.note`,
       [a.user_id, d, a.kind === "school" ? "school" : "off", a.note ? `${label}: ${a.note}` : label],
     );
   }

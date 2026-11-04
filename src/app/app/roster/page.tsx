@@ -151,7 +151,7 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
         <details className="card mt-5">
           <summary className="cursor-pointer font-semibold">{tr("Dienstplan automatisch füllen", "Rooster automatisch vullen")}</summary>
           <form action={generateRoster} className="mt-4 space-y-4 text-sm">
-            <p className="muted">{tr("Füllt den Dienstplan der Praktikantinnen. Woche A: eine arbeitet Samstag, die andere hat Montag Homeoffice – in der Woche danach andersherum. Maximal 2 Samstage pro Person und Kalendermonat. Bestehende Einträge bleiben, außer du hakst „überschreiben“ an.", "Vult het rooster voor de stagiairs. Week A: de ene werkt zaterdag, de andere heeft maandag thuiswerk – de week erna andersom. Maximaal 2 zaterdagen per persoon per kalendermaand. Bestaande invoer blijft staan, tenzij je \"overschrijven\" aanvinkt.")}</p>
+            <p className="muted">{tr("Füllt den Dienstplan der Praktikantinnen. Woche A: eine arbeitet Samstag, die andere Montag – in der Woche danach andersherum. Maximal 2 Samstage pro Person und Kalendermonat. Bestehende Einträge bleiben, außer du hakst „überschreiben“ an.", "Vult het rooster voor de stagiairs. Week A: de ene werkt zaterdag, de andere maandag – de week erna andersom. Maximaal 2 zaterdagen per persoon per kalendermaand. Bestaande invoer blijft staan, tenzij je \"overschrijven\" aanvinkt.")}</p>
             <div className="grid gap-3 sm:grid-cols-3">
               <div><label className="label">{tr("Ab", "Vanaf")}</label><input type="date" name="from" className="input" defaultValue={now} required /></div>
               <div><label className="label">{tr("Anzahl Wochen", "Aantal weken")}</label><input type="number" name="weeks" className="input" defaultValue={8} min={1} max={26} /></div>
@@ -171,7 +171,7 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
                 </tbody>
               </table>
             </div>
-            <p className="rounded-lg bg-sand-100 p-3 text-xs text-stone-600">{tr("Arbeitszeiten Praktikantinnen = Öffnung bis Ladenschluss (Bas und Lea 30 Minuten früher)", "Werktijden stagiaires = opening tot sluiting (Bas en Lea 30 minuten eerder)")}: {OPENING_TEXT_DE}</p>
+            <p className="rounded-lg bg-sand-100 p-3 text-xs text-stone-600">{tr("Alle arbeiten von 30 Minuten vor Öffnung bis Ladenschluss – mit zwei Pausen à 30 Minuten sind das 7,5 Stunden am Tag", "Iedereen werkt van 30 minuten voor opening tot sluiting – met twee pauzes van een half uur is dat 7,5 uur per dag")}: {OPENING_TEXT_DE}</p>
             <p className="text-xs text-stone-500">{tr("Pausen: zwei Mal 30 Minuten. Eine gemeinsame Pause (beide zusammen) und eine, die wechselt – wer diese Woche früh Pause hat, hat nächste Woche spät.", "Pauzes: twee keer 30 minuten. Eén gezamenlijke pauze (samen) en één die wisselt – wie deze week vroeg pauze heeft, heeft volgende week laat.")}</p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               <div><label className="label">{tr("Gemeinsame Pause", "Gezamenlijke pauze")}</label><div className="flex gap-1"><input type="time" name="break_shared_start" className="input" defaultValue="13:00" /><input type="time" name="break_shared_end" className="input" defaultValue="13:30" /></div></div>
@@ -180,7 +180,7 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
               <div><label className="label">{tr("Homeoffice Mo von", "Thuiswerk ma van")}</label><input type="time" name="home_start" className="input" defaultValue="10:00" /></div>
               <div><label className="label">{tr("Homeoffice Mo bis", "Thuiswerk ma tot")}</label><input type="time" name="home_end" className="input" defaultValue="14:30" /></div>
             </div>
-            <label className="flex items-center gap-2"><input type="checkbox" name="monday_home" defaultChecked /> {tr("Wer nicht Samstag arbeitet, hat Montag Homeoffice", "Wie zaterdag niet werkt, heeft maandag thuiswerk")}</label>
+            <label className="flex items-center gap-2"><input type="checkbox" name="monday_home" /> {tr("Montag als Homeoffice statt im Laden", "Maandag als thuiswerkdag in plaats van in de winkel")}</label>
             <label className="flex items-center gap-2"><input type="checkbox" name="admins" defaultChecked /> {tr("Bas und Lea an jedem Ladentag eintragen (frei nehmen geht danach über Agenda oder Abwesenheit)", "Bas en Lea elke winkeldag inplannen (vrij nemen kan daarna via agenda of afwezigheid)")}</label>
             <label className="flex items-center gap-2"><input type="checkbox" name="overwrite" /> {tr("Bestehende Einträge überschreiben", "Bestaande invoer overschrijven")}</label>
             <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">{tr("Jugendarbeitsschutz (unter 18): max. 8 Stunden am Tag, 40 pro Woche, 5 Tage pro Woche; bei mehr als 6 Stunden 60 Minuten Pause. Schultage zählen als Arbeitstage. Der Plan färbt sich rot, wenn ein Tag oder eine Woche darüber liegt.", "Jugendarbeitsschutzgesetz (onder 18): max. 8 uur per dag, 40 per week, 5 dagen per week; bij meer dan 6 uur werk 60 minuten pauze. Schooldagen tellen als werkdag. Het rooster kleurt rood als een dag of week daarboven komt.")}</p>

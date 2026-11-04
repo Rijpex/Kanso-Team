@@ -9,7 +9,6 @@ export const team = (onlyActive = true) => q<TeamUser>(`select id, name, role, c
 export type CleaningRow = { id: string; title_de: string; title_nl: string | null; freq: string; weekday: number | null; moment: string; zone: string | null; done_by: string | null; done_color: string | null };
 export async function cleaningFor(date: string): Promise<CleaningRow[]> {
   const wd = weekday(date);
-  if (wd === 1) return []; // maandag gesloten
   if (wd === 7) {
     // zondag alleen bij verkaufsoffener Sonntag (staat als agenda-item met kind 'shop')
     const open = await q1("select 1 from events where date = $1 and kind = 'shop'", [date]);

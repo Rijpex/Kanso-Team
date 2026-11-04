@@ -1,6 +1,6 @@
 /** Databaseschema. Alles is idempotent: opnieuw draaien kan altijd. */
 /** Ophogen bij elke schemawijziging: de app werkt de database dan zelf bij. */
-export const SCHEMA_VERSION = 8;
+export const SCHEMA_VERSION = 9;
 
 export const SCHEMA_SQL = `
 create extension if not exists pgcrypto;
@@ -428,6 +428,45 @@ begin
       from (select user_id, min(date) as d from shifts where kind in ('shop','home') group by user_id) x
      where x.user_id = u.id and u.role = 'intern' and u.start_date is null;
     insert into settings (key, value) values ('mig_internship_start', 'true'::jsonb);
+  end if;
+end $$;
+
+-- Versie 9: der Laden ist jetzt auch montags offen (10:30–18:30) und alle arbeiten
+-- von 30 Minuten vor Öffnung bis Ladenschluss. Einmalig den schon gefüllten Dienstplan ab 09.11.2026 anpassen.
+do $$
+declare last_day date;
+begin
+  if not exists (select 1 from settings where key = 'mig_monday_open') then
+    select max(date) into last_day from shifts;
+    -- Standard-Startzeiten der Praktikantinnen eine halbe Stunde nach vorn
+    update shifts s set start_time = '10:00'
+      from users u where u.id = s.user_id and u.role = 'intern' and s.kind = 'shop'
+       and s.date >= date '2026-11-09' and extract(isodow from s.date) in (2,4) and s.start_time = '10:30';
+    update shifts s set start_time = '09:00'
+      from users u where u.id = s.user_id and u.role = 'intern' and s.kind = 'shop'
+       and s.date >= date '2026-11-09' and extract(isodow from s.date) = 3 and s.start_time = '09:30';
+    update shifts s set start_time = '09:00'
+      from users u where u.id = s.user_id and u.role = 'intern' and s.kind = 'shop'
+       and s.date >= date '2026-11-09' and extract(isodow from s.date) = 6 and s.start_time = '09:30';
+    -- Aus dem Homeoffice-Montag wird ein Ladentag mit zwei Pausen
+    update shifts s set kind = 'shop', start_time = '10:00', end_time = '18:30',
+           break_start = '11:00', break_end = '11:30', break2_start = '13:00', break2_end = '13:30'
+      from users u where u.id = s.user_id and u.role = 'intern' and s.kind = 'home'
+       and s.date >= date '2026-11-09' and extract(isodow from s.date) = 1
+       and s.start_time = '10:00' and s.end_time = '14:30';
+    -- Bas und Lea stehen montags mit im Laden (nur wo noch nichts eingetragen ist)
+    if last_day is not null then
+      insert into shifts (user_id, date, kind, start_time, end_time)
+      select u.id, d::date, 'shop', '10:00', '18:30'
+        from users u cross join generate_series(date '2026-11-09', last_day, interval '7 days') d
+       where u.role = 'admin' and u.active
+      on conflict (user_id, date) do nothing;
+    end if;
+    update kb_pages set body_de = replace(body_de, 'Montag geschlossen', 'Montag 10:30–18:30'),
+                        body_nl = replace(coalesce(body_nl, ''), 'maandag gesloten', 'maandag 10:30–18:30'),
+                        updated_at = now()
+     where body_de like '%Montag geschlossen%' or body_nl like '%maandag gesloten%';
+    insert into settings (key, value) values ('mig_monday_open', 'true'::jsonb);
   end if;
 end $$;
 

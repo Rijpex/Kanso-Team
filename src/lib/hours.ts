@@ -1,6 +1,6 @@
-/** Openingstijden per weekdag (1 = ma … 6 = za). Bas en Lea zijn 30 minuten eerder aanwezig, stagiaires beginnen bij opening. */
+/** Openingstijden per weekdag (1 = ma … 6 = za). Iedereen is 30 minuten voor opening aanwezig. */
 export const OPENING: Record<number, { open: string; close: string } | null> = {
-  1: null,
+  1: { open: "10:30", close: "18:30" },
   2: { open: "10:30", close: "18:30" },
   3: { open: "09:30", close: "17:30" },
   4: { open: "10:30", close: "18:30" },
@@ -9,12 +9,12 @@ export const OPENING: Record<number, { open: string; close: string } | null> = {
   7: null,
 };
 const minus30 = (t: string) => { const [h, m] = t.split(":").map(Number); const x = h * 60 + m - 30; return `${String(Math.floor(x / 60)).padStart(2, "0")}:${String(x % 60).padStart(2, "0")}`; };
-/** Werktijd op een dag: half uur voor opening tot sluiting. */
+/** Werktijd op een dag: half uur voor opening (openingsronde) tot sluiting. Geldt voor iedereen. */
 export const shiftFor = (wd: number) => { const o = OPENING[wd]; return o ? { start: minus30(o.open), end: o.close } : null; };
-/** Werktijd stagiaires: vanaf opening tot sluiting. */
-export const internShiftFor = (wd: number) => { const o = OPENING[wd]; return o ? { start: o.open, end: o.close } : null; };
-/** Standaardtijd per rol. */
-export const shiftForRole = (wd: number, role?: string) => (role === "intern" ? internShiftFor(wd) : shiftFor(wd));
+/** Stagiaires draaien dezelfde dag als Bas en Lea: met twee keer een half uur pauze is dat 7,5 uur netto. */
+export const internShiftFor = shiftFor;
+/** Standaardtijd per rol (gelijk sinds de winkel ook maandag open is). */
+export const shiftForRole = (wd: number, _role?: string) => shiftFor(wd);
 /* ───────── Urenrekenen (voor de urenteller van de stagiaires) ───────── */
 export const toMin = (t?: string | null) => {
   if (!t) return null;
@@ -35,4 +35,4 @@ export function shiftMinutes(r: TimeRow): number {
 /** 1350 → "22,5" (Duitse notatie, altijd één decimaal na de komma als er een rest is). */
 export const fmtHours = (min: number) => (min / 60).toLocaleString("de-DE", { maximumFractionDigits: 1 });
 
-export const OPENING_TEXT_DE = "Di 10:30–18:30 · Mi 09:30–17:30 · Do 10:30–18:30 · Fr 10:30–17:30 · Sa 09:30–16:00 · Mo geschlossen";
+export const OPENING_TEXT_DE = "Mo 10:30–18:30 · Di 10:30–18:30 · Mi 09:30–17:30 · Do 10:30–18:30 · Fr 10:30–17:30 · Sa 09:30–16:00";

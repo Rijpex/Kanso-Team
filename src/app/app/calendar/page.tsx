@@ -5,7 +5,7 @@ import { cleaningFor, MINE, tasksQuery, team, zoneOwners } from "@/lib/server/qu
 import { EVENT_KIND, SHIFT_KIND, T, lbl } from "@/lib/i18n";
 import { addDays, dayName, fmt, hm, isoWeek, longDate, monday, monthName, parse, today, weekday } from "@/lib/dates";
 import { Avatar, PageHeader } from "@/components/ui";
-import { shiftForRole } from "@/lib/hours";
+import { shiftForRole, OPENING } from "@/lib/hours";
 import { ConfirmSubmit, Submit } from "@/components/client";
 import { CleaningList } from "@/components/CleaningList";
 import { deleteEvent, deletePlan, saveEvent, savePlan, saveShift, togglePlan } from "../actions";
@@ -60,7 +60,7 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
   const dayUrl = (d: string) => (view === "month" ? `/app/calendar?view=month&m=${month}&d=${d}` : `/app/calendar?d=${d}`);
   // Zondag is dicht, tenzij er een verkaufsoffener Sonntag in de agenda staat
   const openSun = (d: string) => weekday(d) === 7 && evOn(d).some((e) => e.kind === "shop");
-  const closed = (d: string) => (weekday(d) === 7 && !openSun(d)) || weekday(d) === 1;
+  const closed = (d: string) => !OPENING[weekday(d)] && !openSun(d);
   const weekDays = view === "week" ? days.filter((d, i) => i < 6 || openSun(d)) : days;
   const shiftUser = isAdmin && searchParams.shift ? users.find((u) => u.id === searchParams.shift) : undefined;
   const shiftOfSel = (uid: string) => shifts.find((s) => s.date === sel && s.user_id === uid);

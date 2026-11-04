@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OPENING } from "@/lib/hours";
 import { requireUser } from "@/lib/server/auth";
 import { q } from "@/lib/server/db";
 import { cleaningFor, zoneOwners } from "@/lib/server/queries";
@@ -47,7 +48,7 @@ export default async function Cleaning({ searchParams }: { searchParams: { d?: s
       )}
       <section className="card">
         <h2 className="mb-3 capitalize">{longDate(sel, user.lang)}{sel === now ? ` · ${tr("heute", "vandaag")}` : ""}</h2>
-        {rows.length ? <CleaningList rows={rows} date={sel} lang={user.lang} zones={zones} /> : <p className="text-sm text-stone-500">{weekday(sel) === 1 || weekday(sel) === 7 ? tr("Laden geschlossen.", "Winkel gesloten.") : tr("Keine Aufgaben.", "Geen taken.")}</p>}
+        {rows.length ? <CleaningList rows={rows} date={sel} lang={user.lang} zones={zones} /> : <p className="text-sm text-stone-500">{!OPENING[weekday(sel)] ? tr("Laden geschlossen.", "Winkel gesloten.") : tr("Keine Aufgaben.", "Geen taken.")}</p>}
       </section>
 
       {user.role === "admin" && (

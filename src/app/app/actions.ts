@@ -126,8 +126,9 @@ export async function generateRoster(fd: FormData) {
       // In volgorde van de dag opslaan: pauze 1 = de vroegste
       const brk: [string, string, string, string] = own[0] < shared[0] ? [own[0], own[1], shared[0], shared[1]] : [shared[0], shared[1], own[0], own[1]];
       const worksSat = satWorker?.id === it.id;
-      // Zelfde week: wie zaterdag niet werkt, heeft maandag thuiswerk
-      const mondayHome = s(fd, "monday_home") === "on" && interns.length > 1 && !!satWorker && !worksSat;
+      // Zelfde week: wie zaterdag niet werkt, staat maandag in de winkel (of thuis, als dat is aangevinkt)
+      const worksMon = interns.length < 2 || (!!satWorker && !worksSat);
+      const mondayHome = s(fd, "monday_home") === "on";
       for (let wd = 1; wd <= 6; wd++) {
         const date = addDays(mon, wd - 1);
         if (date < from) continue;
@@ -135,7 +136,9 @@ export async function generateRoster(fd: FormData) {
         const none: Row = ["off", null, null, null, null, null, null];
         let row: Row | null = null;
         if (wd === 1) {
-          row = mondayHome ? ["home", t("home_start", "10:00"), t("home_end", "14:30"), null, null, null, null] : none;
+          row = !worksMon ? none
+            : mondayHome ? ["home", t("home_start", "10:00"), t("home_end", "14:30"), null, null, null, null]
+            : ["shop", internShiftFor(1)!.start, internShiftFor(1)!.end, ...brk];
         } else if (wd === 6) {
           row = worksSat ? ["shop", internShiftFor(6)!.start, internShiftFor(6)!.end, ...brk] : none;
         } else {
@@ -158,7 +161,7 @@ export async function generateRoster(fd: FormData) {
   if (s(fd, "admins") === "on") {
     const admins = await q<{ id: string }>("select id from users where role = 'admin' and active");
     for (let w = 0; w < weeks; w++) {
-      for (let wd = 2; wd <= 6; wd++) {
+      for (let wd = 1; wd <= 6; wd++) {
         const date = addDays(startMonday, w * 7 + wd - 1);
         if (date < from) continue;
         const sh = shiftFor(wd)!;

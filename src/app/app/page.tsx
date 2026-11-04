@@ -63,7 +63,7 @@ export default async function Today() {
         where c.status = 'edited' ${isAdmin ? "" : "and c.owner_id = $1"} order by c.date nulls last limit 4`, isAdmin ? [] : [user.id]),
     q<{ slug: string; title_de: string; title_nl: string | null }>("select slug, title_de, title_nl from kb_pages order by category, position, slug"),
   ]);
-  const shopClosed = weekday(d) === 1 || weekday(d) === 7;
+  const shopClosed = !OPENING[weekday(d)];
   const wd = new Date(`${d}T12:00:00Z`).getUTCDay();
   const remindReflect = !isAdmin && !hasReflection && (wd === 5 || wd === 6);
   const onlineToday = journal.filter((j) => j.kind === "online" && j.date === d).length;

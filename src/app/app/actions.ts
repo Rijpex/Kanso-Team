@@ -7,7 +7,7 @@ import { q, q1 } from "@/lib/server/db";
 import { hashPassword, logout, requireAdmin, requireUser } from "@/lib/server/auth";
 import { migrate } from "@/lib/server/setup";
 import { addDays, weekday } from "@/lib/dates";
-import { internShiftFor, shiftFor } from "@/lib/hours";
+import { shiftOn } from "@/lib/hours";
 import { BUCKET, supabaseAdmin, supabaseConfigured } from "@/lib/server/storage";
 
 const s = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
@@ -126,9 +126,10 @@ export async function generateRoster(fd: FormData) {
       // In volgorde van de dag opslaan: pauze 1 = de vroegste
       const brk: [string, string, string, string] = own[0] < shared[0] ? [own[0], own[1], shared[0], shared[1]] : [shared[0], shared[1], own[0], own[1]];
       const worksSat = satWorker?.id === it.id;
-      // Zelfde week: wie zaterdag niet werkt, staat maandag in de winkel (of thuis, als dat is aangevinkt)
-      const worksMon = interns.length < 2 || (!!satWorker && !worksSat);
-      const mondayHome = s(fd, "monday_home") === "on";
+      // Maandag: standaard allebei in de winkel; "alternate" = alleen wie zaterdag niet werkt; "home" = die dan thuis; "none" = niemand
+      const mondayMode = ["both", "alternate", "home", "none"].includes(s(fd, "monday_mode")) ? s(fd, "monday_mode") : "both";
+      const worksMon = mondayMode === "both" ? true : mondayMode === "none" ? false : interns.length < 2 || (!!satWorker && !worksSat);
+      const mondayHome = mondayMode === "home";
       for (let wd = 1; wd <= 6; wd++) {
         const date = addDays(mon, wd - 1);
         if (date < from) continue;
@@ -138,12 +139,12 @@ export async function generateRoster(fd: FormData) {
         if (wd === 1) {
           row = !worksMon ? none
             : mondayHome ? ["home", t("home_start", "10:00"), t("home_end", "14:30"), null, null, null, null]
-            : ["shop", internShiftFor(1)!.start, internShiftFor(1)!.end, ...brk];
+            : ["shop", shiftOn(date, "intern")!.start, shiftOn(date, "intern")!.end, ...brk];
         } else if (wd === 6) {
-          row = worksSat ? ["shop", internShiftFor(6)!.start, internShiftFor(6)!.end, ...brk] : none;
+          row = worksSat ? ["shop", shiftOn(date, "intern")!.start, shiftOn(date, "intern")!.end, ...brk] : none;
         } else {
           const choice = s(fd, `d_${it.id}_${wd}`) || "shop";
-          if (choice === "shop") row = ["shop", internShiftFor(wd)!.start, internShiftFor(wd)!.end, ...brk];
+          if (choice === "shop") row = ["shop", shiftOn(date, "intern")!.start, shiftOn(date, "intern")!.end, ...brk];
           else if (choice === "school") row = ["school", null, null, null, null, null, null];
           else if (choice === "off") row = none;
           // "skip" = deze dag niet vullen
@@ -164,8 +165,13 @@ export async function generateRoster(fd: FormData) {
       for (let wd = 1; wd <= 6; wd++) {
         const date = addDays(startMonday, w * 7 + wd - 1);
         if (date < from) continue;
-        const sh = shiftFor(wd)!;
+        const sh = shiftOn(date)!;
         for (const a of admins) {
+          // Vaste vrije dag per persoon (bijv. Lea maandag, Bas woensdag)
+          if (Number(s(fd, `off_${a.id}`)) === wd) {
+            await q(`insert into shifts (user_id, date, kind) values ($1,$2,'off') on conflict (user_id, date) do ${overwrite ? "update set kind='off', start_time=null, end_time=null, break_start=null, break_end=null, break2_start=null, break2_end=null" : "nothing"}`, [a.id, date]);
+            continue;
+          }
           await q(
             `insert into shifts (user_id, date, kind, start_time, end_time) values ($1,$2,'shop',$3,$4)
              on conflict (user_id, date) do ${overwrite ? "update set kind='shop', start_time=excluded.start_time, end_time=excluded.end_time, break_start=null, break_end=null, break2_start=null, break2_end=null" : "nothing"}`,
@@ -478,7 +484,7 @@ export async function saveUser(fd: FormData) {
   const id = opt(fd, "id");
   const name = s(fd, "name");
   const username = s(fd, "username").toLowerCase();
-  const role = s(fd, "role") === "admin" ? "admin" : "intern";
+  const role = ["admin", "intern", "seller"].includes(s(fd, "role")) ? s(fd, "role") : "intern";
   const lang = s(fd, "lang") === "nl" ? "nl" : "de";
   const color = /^#[0-9a-f]{6}$/i.test(s(fd, "color")) ? s(fd, "color") : "#7a6a4f";
   const password = s(fd, "password");
@@ -566,7 +572,7 @@ export async function saveCustomerRequest(fd: FormData) {
   const text = s(fd, "text");
   const date = isDate(s(fd, "date")) ? s(fd, "date") : null;
   if (!text || !date) return;
-  const kind = ["question", "wish", "complaint", "quote"].includes(s(fd, "kind")) ? s(fd, "kind") : "question";
+  const kind = ["question", "wish", "complaint", "quote", "lead"].includes(s(fd, "kind")) ? s(fd, "kind") : "question";
   // Schnell-Eingabe auf "Heute" hat kein Häkchen: Fragen/Wünsche bleiben dann offen, Kundensätze nicht
   const action = fd.has("action_needed") || fd.has("id") ? s(fd, "action_needed") === "on" : kind !== "quote";
   const id = opt(fd, "id");

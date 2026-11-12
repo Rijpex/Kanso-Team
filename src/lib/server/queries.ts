@@ -3,7 +3,7 @@ import { q, q1 } from "./db";
 import { addDays, isoWeek, monday, weekday } from "@/lib/dates";
 import { shiftMinutes } from "@/lib/hours";
 
-export type TeamUser = { id: string; name: string; role: "admin" | "intern"; color: string; username: string; lang: "de" | "nl"; active: boolean };
+export type TeamUser = { id: string; name: string; role: "admin" | "intern" | "seller"; color: string; username: string; lang: "de" | "nl"; active: boolean };
 export const team = (onlyActive = true) => q<TeamUser>(`select id, name, role, color, username, lang, active from users ${onlyActive ? "where active" : ""} order by role desc, created_at`);
 
 export type CleaningRow = { id: string; title_de: string; title_nl: string | null; freq: string; weekday: number | null; moment: string; zone: string | null; done_by: string | null; done_color: string | null };
@@ -70,7 +70,7 @@ export type DayRow = {
   worked_minutes: number | null; note: string | null; minutes: number; counts: boolean;
 };
 export type HoursRow = {
-  user_id: string; name: string; color: string;
+  user_id: string; name: string; color: string; role: string;
   startDate: string | null; endDate: string | null; targetMinutes: number; beforeMinutes: number;
   weekDone: number; weekPlanned: number; monthDone: number; monthPlanned: number;
   rosterMinutes: number; doneMinutes: number; futureMinutes: number;
@@ -79,17 +79,17 @@ export type HoursRow = {
 };
 
 type ShiftRow = {
-  user_id: string; name: string; color: string; date: string; kind: string;
+  user_id: string; name: string; color: string; role: string; date: string; kind: string;
   start_time: string | null; end_time: string | null; break_start: string | null; break_end: string | null;
   break2_start: string | null; break2_end: string | null; worked_minutes: number | null; note: string | null;
   start_date: string | null; end_date: string | null; target_hours: number | null; before_minutes: number;
 };
 
-const SHIFT_SELECT = `select s.user_id, u.name, u.color, s.date::text as date, s.kind, s.start_time, s.end_time,
+const SHIFT_SELECT = `select s.user_id, u.name, u.color, u.role, s.date::text as date, s.kind, s.start_time, s.end_time,
         s.break_start, s.break_end, s.break2_start, s.break2_end, s.worked_minutes, s.note,
         u.start_date::text as start_date, u.end_date::text as end_date, u.target_hours, u.before_minutes
    from shifts s join users u on u.id = s.user_id
-  where u.role = 'intern' and u.active and s.kind in ('shop','home')
+  where u.role in ('intern','seller') and u.active and s.kind in ('shop','home')
   order by u.created_at, s.date`;
 
 /** Minuten van één dag: handmatige correctie, anders uit de roostertijden. */
@@ -105,9 +105,9 @@ export async function internHours(date: string): Promise<HoursRow[]> {
   const months = new Map<string, Map<string, MonthRow>>();
   for (const r of rows) {
     const cur = map.get(r.user_id) ?? {
-      user_id: r.user_id, name: r.name, color: r.color,
+      user_id: r.user_id, name: r.name, color: r.color, role: r.role,
       startDate: r.start_date, endDate: r.end_date,
-      targetMinutes: (r.target_hours ?? 900) * 60, beforeMinutes: r.before_minutes || 0,
+      targetMinutes: r.role === "intern" ? (r.target_hours ?? 900) * 60 : 0, beforeMinutes: r.before_minutes || 0,
       weekDone: 0, weekPlanned: 0, monthDone: 0, monthPlanned: 0,
       rosterMinutes: 0, doneMinutes: 0, futureMinutes: 0, days: 0, firstDate: null, lastDate: null, months: [],
     };

@@ -27,6 +27,30 @@ export function HoursCard({ rows, lang, me, isAdmin }: { rows: HoursRow[]; lang:
   const list = isAdmin ? rows : mine ? [mine] : [];
   if (!list.length) return null;
 
+  if (!isAdmin && mine && mine.role !== "intern") {
+    return (
+      <section className="card">
+        <div className="mb-1 flex items-baseline justify-between">
+          <h2>{tr("Deine Stunden", "Jouw uren")}</h2>
+          <Link href="/app/hours" className="text-sm text-brand hover:underline">{tr("Details", "Details")} →</Link>
+        </div>
+        <dl className="grid grid-cols-3 gap-2 text-center">
+          {[
+            { k: tr("Diese Woche", "Deze week"), v: `${fmtHours(mine.weekDone)} h` },
+            { k: tr("Dieser Monat", "Deze maand"), v: `${fmtHours(mine.monthDone)} h` },
+            { k: tr("Schichten", "Diensten"), v: String(mine.days) },
+          ].map((x) => (
+            <div key={x.k} className="rounded-xl bg-sand-100 p-2">
+              <dt className="text-[11px] uppercase tracking-wide text-stone-500">{x.k}</dt>
+              <dd className="text-lg font-semibold tabular-nums">{x.v}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="mt-2 text-xs text-stone-500">{tr("Gezählt wird, was im Dienstplan steht. Monatsstunden für deine Rechnung findest du unter Details.", "Geteld wordt wat in het rooster staat. Maanduren voor je factuur staan onder Details.")}</p>
+      </section>
+    );
+  }
+
   if (!isAdmin && mine) {
     const left = Math.max(0, mine.targetMinutes - mine.doneMinutes);
     const pct = mine.targetMinutes ? Math.round((mine.doneMinutes / mine.targetMinutes) * 100) : 0;
@@ -71,6 +95,13 @@ export function HoursCard({ rows, lang, me, isAdmin }: { rows: HoursRow[]; lang:
       <ul className="space-y-3">
         {list.map((r) => {
           const pct = r.targetMinutes ? Math.round((r.doneMinutes / r.targetMinutes) * 100) : 0;
+          if (r.role !== "intern") return (
+            <li key={r.user_id} className="flex items-baseline gap-2 text-sm">
+              <Avatar name={r.name} color={r.color} size="h-6 w-6 text-[10px]" />
+              <span className="font-medium">{r.name}</span>
+              <span className="ml-auto tabular-nums text-stone-500">{tr("Monat", "maand")} <b className="text-ink">{fmtHours(r.monthDone)} h</b> · {tr("Woche", "week")} {fmtHours(r.weekDone)} h · {r.days} {tr("Schichten", "diensten")}</span>
+            </li>
+          );
           return (
             <li key={r.user_id}>
               <div className="flex items-baseline gap-2 text-sm">

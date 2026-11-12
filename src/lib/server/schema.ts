@@ -1,6 +1,6 @@
 /** Databaseschema. Alles is idempotent: opnieuw draaien kan altijd. */
 /** Ophogen bij elke schemawijziging: de app werkt de database dan zelf bij. */
-export const SCHEMA_VERSION = 9;
+export const SCHEMA_VERSION = 10;
 
 export const SCHEMA_SQL = `
 create extension if not exists pgcrypto;
@@ -467,6 +467,41 @@ begin
                         updated_at = now()
      where body_de like '%Montag geschlossen%' or body_nl like '%maandag gesloten%';
     insert into settings (key, value) values ('mig_monday_open', 'true'::jsonb);
+  end if;
+end $$;
+
+-- Versie 10: Rolle "Verkäufer" (Mathias), Projekt-Leads bei den Kundenfragen,
+-- neue Öffnungszeiten ab 16.11.2026 (Fr und Sa bis 18:30), beide Praktikantinnen montags im Laden.
+alter table users drop constraint if exists users_role_check;
+alter table users add constraint users_role_check check (role in ('admin','intern','seller'));
+alter table customer_requests drop constraint if exists customer_requests_kind_check;
+alter table customer_requests add constraint customer_requests_kind_check check (kind in ('question','wish','complaint','quote','lead'));
+do $$
+begin
+  if not exists (select 1 from settings where key = 'mig_v10_roster') then
+    -- Ab 9.11.: Lea montags frei, Bas mittwochs frei (nur Standardeinträge; Vrij/School bleiben)
+    update shifts s set kind = 'off', start_time = null, end_time = null, break_start = null, break_end = null, break2_start = null, break2_end = null
+      from users u where u.id = s.user_id and u.role = 'admin' and u.name ilike 'Lea%'
+       and s.date >= date '2026-11-09' and extract(isodow from s.date) = 1 and s.kind = 'shop';
+    update shifts s set kind = 'off', start_time = null, end_time = null, break_start = null, break_end = null, break2_start = null, break2_end = null
+      from users u where u.id = s.user_id and u.role = 'admin' and u.name ilike 'Bas%'
+       and s.date >= date '2026-11-09' and extract(isodow from s.date) = 3 and s.kind = 'shop';
+    -- Ab 9.11.: beide Praktikantinnen montags im Laden – nur in Wochen, in denen sie dienstags auch arbeiten
+    update shifts s set kind = 'shop', start_time = '10:00', end_time = '18:30',
+           break_start = '11:00', break_end = '11:30', break2_start = '13:00', break2_end = '13:30'
+      from users u where u.id = s.user_id and u.role = 'intern'
+       and s.date >= date '2026-11-09' and extract(isodow from s.date) = 1 and s.kind in ('off','home')
+       and exists (select 1 from shifts t where t.user_id = s.user_id and t.date = s.date + 1 and t.kind = 'shop');
+    -- Ab 16.11.: Freitag und Samstag bis 18:30 (Bas und Lea), Praktikantinnen samstags bis 17:30 (max. 8,5 Std. Anwesenheit)
+    update shifts s set end_time = '18:30' from users u where u.id = s.user_id and u.role = 'admin'
+       and s.date >= date '2026-11-16' and extract(isodow from s.date) = 5 and s.kind = 'shop' and s.end_time = '17:30';
+    update shifts s set end_time = '18:30' from users u where u.id = s.user_id and u.role = 'admin'
+       and s.date >= date '2026-11-16' and extract(isodow from s.date) = 6 and s.kind = 'shop' and s.end_time = '16:00';
+    update shifts s set end_time = '17:30' from users u where u.id = s.user_id and u.role = 'intern'
+       and s.date >= date '2026-11-16' and extract(isodow from s.date) = 6 and s.kind = 'shop' and s.end_time = '16:00';
+    update kb_pages set body_de = replace(replace(body_de, 'Freitag 10:30–17:30, Samstag 09:30–16:00', 'Freitag 10:30–18:30, Samstag 09:30–18:30'), 'Fr 10:30–17:30 · Sa 09:30–16:00', 'Fr 10:30–18:30 · Sa 09:30–18:30'), updated_at = now()
+     where body_de like '%Freitag 10:30–17:30, Samstag 09:30–16:00%' or body_de like '%Fr 10:30–17:30 · Sa 09:30–16:00%';
+    insert into settings (key, value) values ('mig_v10_roster', 'true'::jsonb);
   end if;
 end $$;
 

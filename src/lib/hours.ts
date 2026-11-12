@@ -1,5 +1,8 @@
-/** Openingstijden per weekdag (1 = ma … 6 = za). Iedereen is 30 minuten voor opening aanwezig. */
-export const OPENING: Record<number, { open: string; close: string } | null> = {
+import { weekday } from "@/lib/dates";
+
+type Hours = Record<number, { open: string; close: string } | null>;
+/** Openingstijden per weekdag (1 = ma … 7 = zo) tot en met 15 november 2026. */
+export const OPENING: Hours = {
   1: { open: "10:30", close: "18:30" },
   2: { open: "10:30", close: "18:30" },
   3: { open: "09:30", close: "17:30" },
@@ -8,13 +11,39 @@ export const OPENING: Record<number, { open: string; close: string } | null> = {
   6: { open: "09:30", close: "16:00" },
   7: null,
 };
-const minus30 = (t: string) => { const [h, m] = t.split(":").map(Number); const x = h * 60 + m - 30; return `${String(Math.floor(x / 60)).padStart(2, "0")}:${String(x % 60).padStart(2, "0")}`; };
-/** Werktijd op een dag: half uur voor opening (openingsronde) tot sluiting. Geldt voor iedereen. */
+/** Nieuwe openingstijden met ingangsdatum: vanaf 16 november 2026 vrijdag en zaterdag tot 18:30. */
+export const OPENING_FROM: { from: string; hours: Hours }[] = [
+  { from: "2026-11-16", hours: { ...OPENING, 5: { open: "10:30", close: "18:30" }, 6: { open: "09:30", close: "18:30" } } },
+];
+/** Openingstijden die op een datum gelden. */
+export function openingOn(date: string): Hours {
+  let h = OPENING;
+  for (const x of OPENING_FROM) if (date >= x.from) h = x.hours;
+  return h;
+}
+const addMin = (t: string, n: number) => { const [h, m] = t.split(":").map(Number); const x = h * 60 + m + n; return `${String(Math.floor(x / 60)).padStart(2, "0")}:${String(x % 60).padStart(2, "0")}`; };
+const minus30 = (t: string) => addMin(t, -30);
+const spanMin = (a: string, b: string) => { const [h1, m1] = a.split(":").map(Number); const [h2, m2] = b.split(":").map(Number); return h2 * 60 + m2 - (h1 * 60 + m1); };
+/** Werktijd op een weekdag (oude tijden): half uur voor opening tot sluiting. */
 export const shiftFor = (wd: number) => { const o = OPENING[wd]; return o ? { start: minus30(o.open), end: o.close } : null; };
-/** Stagiaires draaien dezelfde dag als Bas en Lea: met twee keer een half uur pauze is dat 7,5 uur netto. */
 export const internShiftFor = shiftFor;
-/** Standaardtijd per rol (gelijk sinds de winkel ook maandag open is). */
 export const shiftForRole = (wd: number, _role?: string) => shiftFor(wd);
+/**
+ * Standaarddienst op een datum, per rol:
+ * - Bas en Lea: 30 minuten voor opening tot sluiting.
+ * - Stagiaires: idem, maar maximaal 8,5 uur aanwezig (8 uur netto bij 1 uur pauze is het wettelijke maximum).
+ * - Verkoper (Mathias): de laatste 4 uur van de dag.
+ */
+export function shiftOn(date: string, role?: string) {
+  const o = openingOn(date)[weekday(date)];
+  if (!o) return null;
+  if (role === "seller") return { start: addMin(o.close, -240), end: o.close };
+  const start = minus30(o.open);
+  let end = o.close;
+  if (role === "intern" && spanMin(start, end) > 510) end = addMin(start, 510);
+  return { start, end };
+}
+export const OPENING_TEXT_DE = "Mo 10:30–18:30 · Di 10:30–18:30 · Mi 09:30–17:30 · Do 10:30–18:30 · Fr 10:30–18:30 · Sa 09:30–18:30 (ab 16.11.)";
 /* ───────── Urenrekenen (voor de urenteller van de stagiaires) ───────── */
 export const toMin = (t?: string | null) => {
   if (!t) return null;
@@ -35,4 +64,3 @@ export function shiftMinutes(r: TimeRow): number {
 /** 1350 → "22,5" (Duitse notatie, altijd één decimaal na de komma als er een rest is). */
 export const fmtHours = (min: number) => (min / 60).toLocaleString("de-DE", { maximumFractionDigits: 1 });
 
-export const OPENING_TEXT_DE = "Mo 10:30–18:30 · Di 10:30–18:30 · Mi 09:30–17:30 · Do 10:30–18:30 · Fr 10:30–17:30 · Sa 09:30–16:00";

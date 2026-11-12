@@ -4,13 +4,14 @@ import { q, q1 } from "@/lib/server/db";
 import { cleaningFor, internHours, MINE, tasksQuery, zoneOwners } from "@/lib/server/queries";
 import { EVENT_KIND, REQUEST_KIND, SHIFT_KIND, T, lbl, pick } from "@/lib/i18n";
 import { addDays, dateTime, hm, longDate, monday, shortDate, today, weekday } from "@/lib/dates";
-import { OPENING } from "@/lib/hours";
+import { openingOn } from "@/lib/hours";
 import { ConfirmSubmit } from "@/components/client";
 import { addFocus, countOnline, deleteFocus, saveCustomerRequest, toggleFocus } from "./actions";
 import { Avatar, Badge } from "@/components/ui";
 import { TaskCard } from "@/components/TaskCard";
 import { HoursCard } from "@/components/Hours";
 import { DayChecklist, type PlanRow } from "@/components/DayChecklist";
+import { SellerToday } from "./seller-today";
 
 /** Kleine attentieregel bovenaan: kleur, tekst, link. */
 function Alert({ href, tone, children }: { href: string; tone: "amber" | "brand" | "rose"; children: React.ReactNode }) {
@@ -20,6 +21,7 @@ function Alert({ href, tone, children }: { href: string; tone: "amber" | "brand"
 
 export default async function Today() {
   const user = await requireUser();
+  if (user.role === "seller") return <SellerToday user={user} />;
   const tr = T(user.lang);
   const d = today();
   const isAdmin = user.role === "admin";
@@ -63,7 +65,7 @@ export default async function Today() {
         where c.status = 'edited' ${isAdmin ? "" : "and c.owner_id = $1"} order by c.date nulls last limit 4`, isAdmin ? [] : [user.id]),
     q<{ slug: string; title_de: string; title_nl: string | null }>("select slug, title_de, title_nl from kb_pages order by category, position, slug"),
   ]);
-  const shopClosed = !OPENING[weekday(d)];
+  const shopClosed = !openingOn(d)[weekday(d)];
   const wd = new Date(`${d}T12:00:00Z`).getUTCDay();
   const remindReflect = !isAdmin && !hasReflection && (wd === 5 || wd === 6);
   const onlineToday = journal.filter((j) => j.kind === "online" && j.date === d).length;
@@ -72,8 +74,8 @@ export default async function Today() {
   const working = shifts.filter((s) => s.kind !== "off");
   const hour = Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hour12: false, timeZone: "Europe/Berlin" }).format(new Date()));
   const greet = hour < 11 ? tr("Guten Morgen", "Goedemorgen") : hour < 17 ? tr("Hallo", "Hoi") : tr("Guten Abend", "Goedenavond");
-  const openToday = OPENING[weekday(d)];
-  const openTomorrow = OPENING[weekday(tomorrow)];
+  const openToday = openingOn(d)[weekday(d)];
+  const openTomorrow = openingOn(tomorrow)[weekday(tomorrow)];
   const storiesGoal = await q1<{ stories: number | null }>("select stories from social_goals where month = $1", [`${d.slice(0, 7)}-01`]).then((g) => g?.stories ?? 4);
   const storiesDone = storyWeek?.n ?? 0;
   // Wissenshappen: jeden Tag eine andere Seite, für alle gleich.

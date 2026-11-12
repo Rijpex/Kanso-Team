@@ -36,8 +36,14 @@ export const EVENT_KIND: Record<string, L> = {
   closed: { de: "Geschlossen / Feiertag", nl: "Gesloten / feestdag", color: "bg-red-100 text-red-800" },
   shop: { de: "Verkaufsoffener Sonntag", nl: "Open zondag", color: "bg-emerald-100 text-emerald-900" },
 };
+export const ROLE: Record<string, L> = {
+  admin: { de: "Verwaltung", nl: "Beheerder" },
+  intern: { de: "Praktikantin", nl: "Stagiair" },
+  seller: { de: "Verkäufer", nl: "Verkoper" },
+};
 export const REQUEST_KIND: Record<string, L> = {
   question: { de: "Frage", nl: "Vraag", color: "bg-sky-100 text-sky-900" },
+  lead: { de: "Projekt-Interessent", nl: "Projectlead", color: "bg-emerald-100 text-emerald-900" },
   wish: { de: "Wunsch / gesucht", nl: "Wens / gezocht", color: "bg-amber-100 text-amber-900" },
   complaint: { de: "Beschwerde", nl: "Klacht", color: "bg-rose-100 text-rose-900" },
   quote: { de: "Kundensatz", nl: "Klantzin", color: "bg-stone-100 text-stone-700" },
@@ -65,6 +71,7 @@ export const KB_CATEGORY: Record<string, L> = {
   team: { de: "Zu zweit", nl: "Met z'n tweeën" },
   q4: { de: "Produkt & Q4", nl: "Product & Q4" },
   produkte: { de: "Produktwissen", nl: "Productkennis" },
+  verkauf: { de: "Verkauf & Beratung", nl: "Verkoop & advies" },
   anleitungen: { de: "Anleitungen", nl: "Handleidingen" },
 };
 export const CHANNEL: Record<string, L> = {

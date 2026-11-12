@@ -5,7 +5,7 @@ import { cleaningFor, MINE, tasksQuery, team, zoneOwners } from "@/lib/server/qu
 import { EVENT_KIND, SHIFT_KIND, T, lbl } from "@/lib/i18n";
 import { addDays, dayName, fmt, hm, isoWeek, longDate, monday, monthName, parse, today, weekday } from "@/lib/dates";
 import { Avatar, PageHeader } from "@/components/ui";
-import { shiftForRole, OPENING } from "@/lib/hours";
+import { shiftOn, openingOn } from "@/lib/hours";
 import { ConfirmSubmit, Submit } from "@/components/client";
 import { CleaningList } from "@/components/CleaningList";
 import { deleteEvent, deletePlan, saveEvent, savePlan, saveShift, togglePlan } from "../actions";
@@ -60,7 +60,7 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
   const dayUrl = (d: string) => (view === "month" ? `/app/calendar?view=month&m=${month}&d=${d}` : `/app/calendar?d=${d}`);
   // Zondag is dicht, tenzij er een verkaufsoffener Sonntag in de agenda staat
   const openSun = (d: string) => weekday(d) === 7 && evOn(d).some((e) => e.kind === "shop");
-  const closed = (d: string) => !OPENING[weekday(d)] && !openSun(d);
+  const closed = (d: string) => !openingOn(d)[weekday(d)] && !openSun(d);
   const weekDays = view === "week" ? days.filter((d, i) => i < 6 || openSun(d)) : days;
   const shiftUser = isAdmin && searchParams.shift ? users.find((u) => u.id === searchParams.shift) : undefined;
   const shiftOfSel = (uid: string) => shifts.find((s) => s.date === sel && s.user_id === uid);
@@ -179,8 +179,8 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
                 {Object.entries(SHIFT_KIND).map(([k, l]) => <option key={k} value={k}>{lbl(user.lang, l)}</option>)}<option value="none">{tr("– Eintrag entfernen –", "– Invoer verwijderen –")}</option>
               </select>
               <div className="grid grid-cols-2 gap-2">
-                <div><label className="label">{tr("von", "van")}</label><input type="time" name="start_time" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.start_time) || shiftForRole(weekday(sel), shiftUser.role)?.start || "10:00"} /></div>
-                <div><label className="label">{tr("bis", "tot")}</label><input type="time" name="end_time" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.end_time) || shiftForRole(weekday(sel), shiftUser.role)?.end || "18:30"} /></div>
+                <div><label className="label">{tr("von", "van")}</label><input type="time" name="start_time" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.start_time) || shiftOn(sel, shiftUser.role)?.start || "10:00"} /></div>
+                <div><label className="label">{tr("bis", "tot")}</label><input type="time" name="end_time" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.end_time) || shiftOn(sel, shiftUser.role)?.end || "18:30"} /></div>
                 <div><label className="label">{tr("Pause von", "pauze van")}</label><input type="time" name="break_start" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.break_start)} /></div>
                 <div><label className="label">{tr("Pause bis", "pauze tot")}</label><input type="time" name="break_end" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.break_end)} /></div>
                 <div><label className="label">{tr("2. Pause von", "2e pauze van")}</label><input type="time" name="break2_start" className="input" defaultValue={hm(shiftOfSel(shiftUser.id)?.break2_start)} /></div>

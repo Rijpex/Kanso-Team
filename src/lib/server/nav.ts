@@ -5,6 +5,17 @@ import type { NavItem } from "@/components/Nav";
 
 export async function navItems(user: { id: string; role: string; lang: "de" | "nl" }): Promise<NavItem[]> {
   const tr = T(user.lang);
+  if (user.role === "seller") {
+    // Kompakte Ansicht für den Verkäufer: nur was er im Laden braucht
+    return [
+      { href: "/app", label: tr("Heute", "Vandaag"), icon: "home", main: true },
+      { href: "/app/calendar", label: tr("Agenda", "Agenda"), icon: "calendar", main: true },
+      { href: "/app/roster", label: tr("Dienstplan", "Rooster"), icon: "clock", main: true },
+      { href: "/app/journal", label: tr("Kundenfragen & Leads", "Klantvragen & leads"), icon: "chat", main: true },
+      { href: "/app/hours", label: tr("Meine Stunden", "Mijn uren"), icon: "clock", main: true },
+      { href: "/app/kb", label: tr("Produktwissen", "Productkennis"), icon: "book", main: true },
+    ];
+  }
   const openQ = user.role === "admin" ? (await q1<{ n: number }>("select count(*)::int as n from questions where status = 'open'"))?.n ?? 0 : 0;
   const review = user.role === "admin" ? (await q1<{ n: number }>("select count(*)::int as n from tasks where status = 'review'"))?.n ?? 0 : 0;
   const pendingAbs = user.role === "admin" ? (await q1<{ n: number }>("select count(*)::int as n from absences where status = 'requested'"))?.n ?? 0 : 0;

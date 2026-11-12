@@ -28,14 +28,16 @@ export default async function Hours({ searchParams }: { searchParams: { saved?: 
   const now = today();
   const [rows, allDays, users] = await Promise.all([internHours(now), internDays(now), team()]);
   const mine = rows.filter((r) => isAdmin || r.user_id === user.id);
-  const interns = users.filter((u) => u.role === "intern");
+  const interns = users.filter((u) => u.role === "intern" || u.role === "seller");
   const showAll = searchParams.all === "1";
 
   return (
     <div className="max-w-4xl">
       <PageHeader
-        title={tr("Praktikumsstunden", "Stage-uren")}
-        sub={tr(
+        title={user.role === "seller" ? tr("Meine Stunden", "Mijn uren") : tr("Praktikumsstunden", "Stage-uren")}
+        sub={user.role === "seller"
+          ? tr("Deine Schichten und Stunden, Monat für Monat.", "Jouw diensten en uren, maand voor maand.")
+          : tr(
           "Gezählt wird, was im Dienstplan steht: Laden und Homeoffice, Pausen abgezogen, ab dem Beginn des Praktikums. Krank- und Schultage zählen nicht mit.",
           "Geteld wordt wat in het rooster staat: winkel en thuiswerk, pauzes eraf, vanaf de start van de stage. Ziekte- en schooldagen tellen niet mee.",
         )}
@@ -47,6 +49,46 @@ export default async function Hours({ searchParams }: { searchParams: { saved?: 
 
       <div className="space-y-6">
         {mine.map((r) => {
+          if (r.role !== "intern") {
+            // Verkäufer: Stunden pro Monat für die Rechnung, kein Stundenziel
+            const days = allDays.filter((d) => d.user_id === r.user_id && d.counts);
+            return (
+              <section key={r.user_id} className="card">
+                <div className="flex flex-wrap items-center gap-2"><Avatar name={r.name} color={r.color} /><h2>{r.name}</h2><span className="text-sm text-stone-500">{tr("Verkäufer", "verkoper")}{r.firstDate && <> · {tr("seit", "sinds")} {shortDate(r.firstDate, user.lang)}</>}</span></div>
+                <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {[
+                    { k: tr("Diese Woche", "Deze week"), v: `${fmtHours(r.weekDone)} / ${fmtHours(r.weekPlanned)} h` },
+                    { k: tr("Dieser Monat", "Deze maand"), v: `${fmtHours(r.monthDone)} h` },
+                    { k: tr("Insgesamt", "Totaal"), v: `${fmtHours(r.doneMinutes)} h` },
+                    { k: tr("Schichten", "Diensten"), v: String(r.days) },
+                  ].map((x) => (
+                    <div key={x.k} className="rounded-xl bg-sand-100 p-2 text-center"><dt className="text-[11px] uppercase tracking-wide text-stone-500">{x.k}</dt><dd className="text-lg font-semibold tabular-nums">{x.v}</dd></div>
+                  ))}
+                </dl>
+                {r.months.length > 0 && (
+                  <table className="mt-4 w-full text-sm">
+                    <thead><tr className="text-left text-xs uppercase tracking-wide text-stone-400"><th className="font-medium">{tr("Monat", "Maand")}</th><th className="font-medium">{tr("Stunden", "Uren")}</th><th className="font-medium">{tr("Schichten", "Diensten")}</th></tr></thead>
+                    <tbody>{r.months.map((m) => <tr key={m.month} className="border-t border-sand-200"><td className="py-1.5 capitalize">{monthName(m.month, user.lang)}</td><td className="font-semibold tabular-nums">{fmtHours(m.minutes)}</td><td className="tabular-nums text-stone-500">{m.days}</td></tr>)}</tbody>
+                  </table>
+                )}
+                <details className="mt-4">
+                  <summary className="cursor-pointer text-sm font-semibold">{tr("Schicht für Schicht", "Dienst voor dienst")} ({days.length})</summary>
+                  <table className="mt-2 w-full text-sm">
+                    <thead><tr className="text-left text-xs uppercase tracking-wide text-stone-400"><th className="font-medium">{tr("Tag", "Dag")}</th><th className="font-medium">{tr("Zeit", "Tijd")}</th><th className="font-medium">{tr("Stunden", "Uren")}</th>{isAdmin && <th className="font-medium">{tr("Korrektur", "Correctie")}</th>}</tr></thead>
+                    <tbody>{days.map((d) => (
+                      <tr key={d.date} className="border-t border-sand-200">
+                        <td className="py-1.5 capitalize">{shortDate(d.date, user.lang)}</td>
+                        <td className="text-stone-500">{d.start_time ? `${hm(d.start_time)}–${hm(d.end_time)}` : tr("von Hand", "met de hand")}{d.note && <> · {d.note}</>}</td>
+                        <td className="font-semibold tabular-nums">{fmtHours(d.minutes)}{d.worked_minutes != null && <span className="ml-1 text-xs font-normal text-brand">{tr("korrigiert", "gecorrigeerd")}</span>}</td>
+                        {isAdmin && <td><form action={saveWorkedHours} className="flex items-center gap-1"><input type="hidden" name="user_id" value={r.user_id} /><input type="hidden" name="date" value={d.date} /><input type="hidden" name="back" value="/app/hours" /><input name="hours" inputMode="decimal" className="input !w-16 !py-1 text-xs" placeholder={fmtHours(d.minutes)} /><button className="btn-ghost btn-sm">Ok</button></form></td>}
+                      </tr>
+                    ))}</tbody>
+                  </table>
+                </details>
+                <p className="mt-3 text-xs text-stone-500">{tr("Eine Schicht sind 4 Stunden ohne Pause. Gezählt wird, was im Dienstplan steht – Bas oder Lea korrigieren, wenn es anders lief.", "Een dienst is 4 uur zonder pauze. Geteld wordt wat in het rooster staat – Bas of Lea corrigeren als het anders liep.")}</p>
+              </section>
+            );
+          }
           const f = forecast(r, now);
           const pct = r.targetMinutes ? Math.round((r.doneMinutes / r.targetMinutes) * 100) : 0;
           const days = allDays.filter((d) => d.user_id === r.user_id);

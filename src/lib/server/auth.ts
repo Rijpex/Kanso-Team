@@ -7,7 +7,7 @@ import { q, q1 } from "./db";
 import { ensureSchema } from "./setup";
 
 export const COOKIE = "hub_session";
-export type User = { id: string; username: string; name: string; role: "admin" | "intern"; lang: "de" | "nl"; color: string; active: boolean };
+export type User = { id: string; username: string; name: string; role: "admin" | "intern" | "seller"; lang: "de" | "nl"; color: string; active: boolean };
 
 export async function hashPassword(pw: string) {
   return bcrypt.hash(pw, 10);

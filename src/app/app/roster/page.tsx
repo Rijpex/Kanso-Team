@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/server/auth";
 import { q } from "@/lib/server/db";
 import { internHours, team } from "@/lib/server/queries";
 import { SHIFT_KIND, T, lbl } from "@/lib/i18n";
-import { OPENING_TEXT_DE, shiftForRole } from "@/lib/hours";
+import { OPENING_TEXT_DE, shiftOn } from "@/lib/hours";
 import { addDays, dayName, hm, isoWeek, longDate, monday, monthName, today, weekday } from "@/lib/dates";
 import { Avatar, PageHeader } from "@/components/ui";
 import { HoursCard } from "@/components/Hours";
@@ -115,8 +115,8 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
               </select>
             </div>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <div><label className="label">{tr("von", "van")}</label><input type="time" name="start_time" className="input" defaultValue={hm(editing.shift?.start_time) || shiftForRole(weekday(editing.date), editing.user?.role)?.start || "10:00"} /></div>
-              <div><label className="label">{tr("bis", "tot")}</label><input type="time" name="end_time" className="input" defaultValue={hm(editing.shift?.end_time) || shiftForRole(weekday(editing.date), editing.user?.role)?.end || "18:30"} /></div>
+              <div><label className="label">{tr("von", "van")}</label><input type="time" name="start_time" className="input" defaultValue={hm(editing.shift?.start_time) || shiftOn(editing.date, editing.user?.role)?.start || "10:00"} /></div>
+              <div><label className="label">{tr("bis", "tot")}</label><input type="time" name="end_time" className="input" defaultValue={hm(editing.shift?.end_time) || shiftOn(editing.date, editing.user?.role)?.end || "18:30"} /></div>
               <div><label className="label">{tr("Pause von", "Pauze van")}</label><input type="time" name="break_start" className="input" defaultValue={hm(editing.shift?.break_start)} /></div>
               <div><label className="label">{tr("Pause bis", "Pauze tot")}</label><input type="time" name="break_end" className="input" defaultValue={hm(editing.shift?.break_end)} /></div>
               <div><label className="label">{tr("2. Pause von", "2e pauze van")}</label><input type="time" name="break2_start" className="input" defaultValue={hm(editing.shift?.break2_start)} /></div>
@@ -151,7 +151,7 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
         <details className="card mt-5">
           <summary className="cursor-pointer font-semibold">{tr("Dienstplan automatisch füllen", "Rooster automatisch vullen")}</summary>
           <form action={generateRoster} className="mt-4 space-y-4 text-sm">
-            <p className="muted">{tr("Füllt den Dienstplan der Praktikantinnen. Woche A: eine arbeitet Samstag, die andere Montag – in der Woche danach andersherum. Maximal 2 Samstage pro Person und Kalendermonat. Bestehende Einträge bleiben, außer du hakst „überschreiben“ an.", "Vult het rooster voor de stagiairs. Week A: de ene werkt zaterdag, de andere maandag – de week erna andersom. Maximaal 2 zaterdagen per persoon per kalendermaand. Bestaande invoer blijft staan, tenzij je \"overschrijven\" aanvinkt.")}</p>
+            <p className="muted">{tr("Füllt den Dienstplan der Praktikantinnen. Montag bis Mittwoch sind beide da, samstags wechseln sie sich ab. Maximal 2 Samstage pro Person und Kalendermonat. Bestehende Einträge bleiben, außer du hakst „überschreiben“ an.", "Vult het rooster voor de stagiairs. Maandag tot en met woensdag zijn ze er allebei, op zaterdag wisselen ze af. Maximaal 2 zaterdagen per persoon per kalendermaand. Bestaande invoer blijft staan, tenzij je \"overschrijven\" aanvinkt.")}</p>
             <div className="grid gap-3 sm:grid-cols-3">
               <div><label className="label">{tr("Ab", "Vanaf")}</label><input type="date" name="from" className="input" defaultValue={now} required /></div>
               <div><label className="label">{tr("Anzahl Wochen", "Aantal weken")}</label><input type="number" name="weeks" className="input" defaultValue={8} min={1} max={26} /></div>
@@ -180,7 +180,22 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
               <div><label className="label">{tr("Homeoffice Mo von", "Thuiswerk ma van")}</label><input type="time" name="home_start" className="input" defaultValue="10:00" /></div>
               <div><label className="label">{tr("Homeoffice Mo bis", "Thuiswerk ma tot")}</label><input type="time" name="home_end" className="input" defaultValue="14:30" /></div>
             </div>
-            <label className="flex items-center gap-2"><input type="checkbox" name="monday_home" /> {tr("Montag als Homeoffice statt im Laden", "Maandag als thuiswerkdag in plaats van in de winkel")}</label>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div><label className="label">{tr("Montag", "Maandag")}</label>
+                <select name="monday_mode" className="input" defaultValue="both">
+                  <option value="both">{tr("beide im Laden", "allebei in de winkel")}</option>
+                  <option value="alternate">{tr("nur wer nicht Samstag arbeitet", "alleen wie zaterdag niet werkt")}</option>
+                  <option value="home">{tr("wer nicht Samstag arbeitet: Homeoffice", "wie zaterdag niet werkt: thuiswerk")}</option>
+                  <option value="none">{tr("niemand", "niemand")}</option>
+                </select></div>
+              {users.filter((u) => u.role === "admin").map((u) => (
+                <div key={u.id}><label className="label">{u.name}: {tr("fester freier Tag", "vaste vrije dag")}</label>
+                  <select name={`off_${u.id}`} className="input" defaultValue="0">
+                    <option value="0">{tr("keiner", "geen")}</option>
+                    {[1, 2, 3, 4, 5, 6].map((wd) => <option key={wd} value={wd}>{WDN[user.lang][wd]}</option>)}
+                  </select></div>
+              ))}
+            </div>
             <label className="flex items-center gap-2"><input type="checkbox" name="admins" defaultChecked /> {tr("Bas und Lea an jedem Ladentag eintragen (frei nehmen geht danach über Agenda oder Abwesenheit)", "Bas en Lea elke winkeldag inplannen (vrij nemen kan daarna via agenda of afwezigheid)")}</label>
             <label className="flex items-center gap-2"><input type="checkbox" name="overwrite" /> {tr("Bestehende Einträge überschreiben", "Bestaande invoer overschrijven")}</label>
             <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">{tr("Jugendarbeitsschutz (unter 18): max. 8 Stunden am Tag, 40 pro Woche, 5 Tage pro Woche; bei mehr als 6 Stunden 60 Minuten Pause. Schultage zählen als Arbeitstage. Der Plan färbt sich rot, wenn ein Tag oder eine Woche darüber liegt.", "Jugendarbeitsschutzgesetz (onder 18): max. 8 uur per dag, 40 per week, 5 dagen per week; bij meer dan 6 uur werk 60 minuten pauze. Schooldagen tellen als werkdag. Het rooster kleurt rood als een dag of week daarboven komt.")}</p>

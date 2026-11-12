@@ -2,6 +2,7 @@ import "server-only";
 import { q, q1, databaseUrl, pool } from "./db";
 import { SCHEMA_SQL, SCHEMA_VERSION } from "./schema";
 import { runSeed } from "./seed";
+import { VERKAUF_PAGES } from "./seed-data/pages-verkauf";
 
 export async function migrate() {
   // In één transactie met een slot, zodat twee gelijktijdige starts elkaar niet in de weg zitten
@@ -18,6 +19,11 @@ export async function migrate() {
     client.release();
   }
   await runSeed();
+  // Verkaufsseiten einmalig anlegen; bestehende Seiten (von Bas/Lea bearbeitet) bleiben unangetastet
+  for (const pg of VERKAUF_PAGES) {
+    await q("insert into kb_pages (slug, category, title_de, title_nl, body_de, position) values ($1,'verkauf',$2,$3,$4,$5) on conflict (slug) do nothing",
+      [pg.slug, pg.title_de, pg.title_nl, pg.body_de, pg.position]);
+  }
   await q("insert into settings (key, value) values ('schema_version', $1::jsonb) on conflict (key) do update set value = excluded.value", [JSON.stringify(SCHEMA_VERSION)]);
 }
 

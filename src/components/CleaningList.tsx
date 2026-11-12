@@ -9,10 +9,10 @@ const MOMENT: Record<string, { de: string; nl: string }> = {
 };
 
 type Owner = { id: string; name: string; color: string };
-export function CleaningList({ rows, date, lang, zones }: { rows: CleaningRow[]; date: string; lang: Lang; zones?: { a?: Owner; b?: Owner } }) {
+export function CleaningList({ rows, date, lang, zones, columns = false }: { rows: CleaningRow[]; date: string; lang: Lang; zones?: { a?: Owner; b?: Owner }; columns?: boolean }) {
   const groups = ["open", "day", "close"].map((m) => ({ m, rows: rows.filter((r) => r.moment === m) })).filter((g) => g.rows.length);
   return (
-    <div className="space-y-4">
+    <div className={columns ? "grid gap-4 md:grid-cols-3" : "space-y-4"}>
       {groups.map((g) => (
         <div key={g.m}>
           <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-stone-400">{pick(lang, MOMENT[g.m].de, MOMENT[g.m].nl)}</div>

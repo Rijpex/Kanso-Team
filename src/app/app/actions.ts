@@ -117,14 +117,8 @@ export async function generateRoster(fd: FormData) {
 
     for (let i = 0; i < interns.length; i++) {
       const it = interns[i];
-      // Twee pauzes van 30 min: één gezamenlijk (allebei tegelijk) en één wisselend – de "vroege" en "late" wisselen per week.
-      const shared: [string, string] = [t("break_shared_start", "13:00"), t("break_shared_end", "13:30")];
-      const early: [string, string] = [t("break_early_start", "11:00"), t("break_early_end", "11:30")];
-      const late: [string, string] = [t("break_late_start", "15:30"), t("break_late_end", "16:00")];
-      const takesEarly = (i + w) % 2 === 0;
-      const own = takesEarly ? early : late;
-      // In volgorde van de dag opslaan: pauze 1 = de vroegste
-      const brk: [string, string, string, string] = own[0] < shared[0] ? [own[0], own[1], shared[0], shared[1]] : [shared[0], shared[1], own[0], own[1]];
+      // Geen vaste pauzetijden meer: de stagiaires plannen hun uur pauze zelf; de teller trekt 60 minuten af (FLAT_BREAK).
+      const brk: [null, null, null, null] = [null, null, null, null];
       const worksSat = satWorker?.id === it.id;
       // Maandag: standaard allebei in de winkel; "alternate" = alleen wie zaterdag niet werkt; "home" = die dan thuis; "none" = niemand
       const mondayMode = ["both", "alternate", "home", "none"].includes(s(fd, "monday_mode")) ? s(fd, "monday_mode") : "both";
@@ -154,6 +148,24 @@ export async function generateRoster(fd: FormData) {
           `insert into shifts (user_id, date, kind, start_time, end_time, break_start, break_end, break2_start, break2_end) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)
            on conflict (user_id, date) do ${overwrite ? "update set kind=excluded.kind, start_time=excluded.start_time, end_time=excluded.end_time, break_start=excluded.break_start, break_end=excluded.break_end, break2_start=excluded.break2_start, break2_end=excluded.break2_end" : "nothing"}`,
           [it.id, date, ...row],
+        );
+      }
+    }
+  }
+  // Verkoper (Mathias): vaste dagen, de laatste 4 uur tot sluiting, zonder pauze.
+  const sellers = await q<{ id: string }>("select id from users where role = 'seller' and active");
+  for (const sl of sellers) {
+    const sellDays = [1, 2, 3, 4, 5, 6].filter((wd) => fd.get(`sell_${sl.id}_${wd}`) === "on");
+    for (let w = 0; w < weeks; w++) {
+      for (const wd of sellDays) {
+        const date = addDays(startMonday, w * 7 + wd - 1);
+        if (date < from) continue;
+        const sh = shiftOn(date, "seller");
+        if (!sh) continue;
+        await q(
+          `insert into shifts (user_id, date, kind, start_time, end_time) values ($1,$2,'shop',$3,$4)
+           on conflict (user_id, date) do ${overwrite ? "update set kind='shop', start_time=excluded.start_time, end_time=excluded.end_time, break_start=null, break_end=null, break2_start=null, break2_end=null" : "nothing"}`,
+          [sl.id, date, sh.start, sh.end],
         );
       }
     }

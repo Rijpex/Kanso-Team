@@ -1,6 +1,6 @@
 /** Databaseschema. Alles is idempotent: opnieuw draaien kan altijd. */
 /** Ophogen bij elke schemawijziging: de app werkt de database dan zelf bij. */
-export const SCHEMA_VERSION = 10;
+export const SCHEMA_VERSION = 11;
 
 export const SCHEMA_SQL = `
 create extension if not exists pgcrypto;
@@ -502,6 +502,35 @@ begin
     update kb_pages set body_de = replace(replace(body_de, 'Freitag 10:30–17:30, Samstag 09:30–16:00', 'Freitag 10:30–18:30, Samstag 09:30–18:30'), 'Fr 10:30–17:30 · Sa 09:30–16:00', 'Fr 10:30–18:30 · Sa 09:30–18:30'), updated_at = now()
      where body_de like '%Freitag 10:30–17:30, Samstag 09:30–16:00%' or body_de like '%Fr 10:30–17:30 · Sa 09:30–16:00%';
     insert into settings (key, value) values ('mig_v10_roster', 'true'::jsonb);
+  end if;
+end $$;
+
+-- v11: keine festen Pausenzeiten mehr für die Praktikantinnen (sie legen ihre Stunde Pause selbst; die Zählung zieht 60 Minuten ab),
+-- drei neue Storepflege-Punkte (Markisen, Kühlschrank, Fernseher im Schaufenster)
+do $$
+begin
+  if not exists (select 1 from settings where key = 'mig_v11_breaks') then
+    update shifts s set break_start = null, break_end = null, break2_start = null, break2_end = null
+      from users u where u.id = s.user_id and u.role = 'intern'
+       and coalesce(s.break_end - s.break_start, interval '0') + coalesce(s.break2_end - s.break2_start, interval '0') = interval '60 minutes';
+    insert into cleaning_tasks (title_de, title_nl, freq, moment, position)
+    select v.de, v.nl, 'daily', v.moment, (select coalesce(max(position), 0) from cleaning_tasks) + v.n
+      from (values
+        ('Markisen ausfahren', 'Markiezen uitdraaien', 'open', 1),
+        ('Kühlschrank in der Ausstellungsküche einstecken (Licht an)', 'Koelkast in de showkeuken: stekker erin (licht aan)', 'open', 2),
+        ('Fernseher im Schaufenster nach innen drehen', 'Tv in de etalage naar binnen draaien', 'open', 3),
+        ('Markisen einfahren', 'Markiezen indraaien', 'close', 4),
+        ('Kühlschrank in der Ausstellungsküche: Stecker ziehen', 'Koelkast in de showkeuken: stekker eruit', 'close', 5),
+        ('Fernseher im Schaufenster nach außen drehen', 'Tv in de etalage naar buiten draaien', 'close', 6)
+      ) as v(de, nl, moment, n)
+     where not exists (select 1 from cleaning_tasks c where c.title_de = v.de);
+    -- Verkäufer: Freitag und Samstag 14:30–18:30 ab 20.11.2026, 10 Wochen voraus (bestehende Einträge bleiben)
+    insert into shifts (user_id, date, kind, start_time, end_time)
+    select u.id, d::date, 'shop', '14:30', '18:30'
+      from users u, generate_series(date '2026-11-20', date '2026-11-20' + interval '10 weeks', interval '1 day') d
+     where u.role = 'seller' and u.active and extract(isodow from d) in (5, 6)
+    on conflict (user_id, date) do nothing;
+    insert into settings (key, value) values ('mig_v11_breaks', 'true'::jsonb);
   end if;
 end $$;
 

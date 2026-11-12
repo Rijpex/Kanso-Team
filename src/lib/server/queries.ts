@@ -1,6 +1,6 @@
 import "server-only";
 import { q, q1 } from "./db";
-import { addDays, isoWeek, monday, weekday } from "@/lib/dates";
+import { addDays, monday, weekday } from "@/lib/dates";
 import { shiftMinutes } from "@/lib/hours";
 
 export type TeamUser = { id: string; name: string; role: "admin" | "intern" | "seller"; color: string; username: string; lang: "de" | "nl"; active: boolean };
@@ -49,12 +49,9 @@ export function tasksQuery(where = "true", params: unknown[] = []) {
 export const MINE = `(exists (select 1 from task_assignees a where a.task_id = t.id and a.user_id = $1)
   or not exists (select 1 from task_assignees a where a.task_id = t.id))`;
 
-/** Storepflege-Bereiche wechseln jede Woche: gerade KW → erste Praktikantin hat Bereich A. */
-export async function zoneOwners(date: string): Promise<{ a?: { id: string; name: string; color: string }; b?: { id: string; name: string; color: string } }> {
-  const interns = await q<{ id: string; name: string; color: string }>("select id, name, color from users where role = 'intern' and active order by created_at limit 2");
-  if (interns.length < 2) return { a: interns[0], b: interns[0] };
-  const even = isoWeek(date) % 2 === 0;
-  return { a: interns[even ? 0 : 1], b: interns[even ? 1 : 0] };
+/** Storepflege is gezamenlijk: geen vaste bereiken of namen meer bij de taken (sinds v11). */
+export async function zoneOwners(_date: string): Promise<{ a?: { id: string; name: string; color: string }; b?: { id: string; name: string; color: string } }> {
+  return {};
 }
 
 /* ───────── Praktikumsstunden ─────────

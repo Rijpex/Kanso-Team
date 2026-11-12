@@ -356,6 +356,9 @@ type Clean = { de: string; nl: string; freq: "daily" | "weekly"; weekday?: numbe
 // Bereich A = Eingang, Schaufenster, Böden · Bereich B = Küchen, Oberflächen, Regale (wechselt jede Woche)
 const CLEANING: Clean[] = [
   { de: "Licht an, Musik leise, Kasse und Stripe-Terminal an", nl: "Licht aan, muziek zacht, kassa en Stripe-terminal aan", freq: "daily", moment: "open" },
+  { de: "Markisen ausfahren", nl: "Markiezen uitdraaien", freq: "daily", moment: "open" },
+  { de: "Kühlschrank in der Ausstellungsküche einstecken (Licht an)", nl: "Koelkast in de showkeuken: stekker erin (licht aan)", freq: "daily", moment: "open" },
+  { de: "Fernseher im Schaufenster nach innen drehen", nl: "Tv in de etalage naar binnen draaien", freq: "daily", moment: "open" },
   { de: "Öffnungsrunde: Eingang und Schaufenster von innen – Glas, Fliegen, sichtbarer Schmutz", nl: "Openingsronde: ingang en etalage van binnen – glas, vliegen, zichtbaar vuil", freq: "daily", moment: "open", zone: "a" },
   { de: "Öffnungsrunde: Laden und besonders den Eingangsbereich staubsaugen", nl: "Openingsronde: winkel en vooral de ingang stofzuigen", freq: "daily", moment: "open", zone: "a" },
   { de: "Öffnungsrunde: Oberflächen und Regale staubfrei", nl: "Openingsronde: oppervlakken en schappen stofvrij", freq: "daily", moment: "open", zone: "b" },
@@ -366,6 +369,9 @@ const CLEANING: Clean[] = [
   { de: "Content gesammelt: mindestens drei Fotos oder ein Clip ins Drive → 12. CONTENT", nl: "Content verzameld: minstens drie foto's of één clip in Drive → 12. CONTENT", freq: "daily", moment: "day" },
   { de: "Kasse gezählt: Bargeld zählen, Betrag ins Kassenbuch, Abweichung sofort an Lea", nl: "Kas geteld: contant tellen, bedrag in kasboek, verschil meteen aan Lea", freq: "daily", moment: "close" },
   { de: "Tischfeuer und Kerzen aus – doppelt prüfen", nl: "Tafelvuren en kaarsen uit – dubbel checken", freq: "daily", moment: "close" },
+  { de: "Markisen einfahren", nl: "Markiezen indraaien", freq: "daily", moment: "close" },
+  { de: "Kühlschrank in der Ausstellungsküche: Stecker ziehen", nl: "Koelkast in de showkeuken: stekker eruit", freq: "daily", moment: "close" },
+  { de: "Fernseher im Schaufenster nach außen drehen", nl: "Tv in de etalage naar buiten draaien", freq: "daily", moment: "close" },
   { de: "Abschlussrunde: Rundgang, Müll, Licht aus, Aufgaben im Hub aktualisiert, Fragen eingetragen", nl: "Afsluitronde: rondje, afval, licht uit, opdrachten in de hub bijgewerkt, vragen genoteerd", freq: "daily", moment: "close" },
   { de: "Den gesamten Laden wischen", nl: "De hele winkel dweilen", freq: "weekly", weekday: 5, moment: "close", zone: "a" },
   { de: "Küchen und Ausstellungsflächen intensiver grundreinigen", nl: "Keukens en showvlakken grondig schoonmaken", freq: "weekly", weekday: 5, moment: "day", zone: "b" },

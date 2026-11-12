@@ -68,7 +68,6 @@ export default async function Cleaning({ searchParams }: { searchParams: { d?: s
             <input name="title_nl" className="input" placeholder={tr("Aufgabe (Niederländisch, optional)", "Taak (Nederlands, optioneel)")} />
             <select name="freq" className="input"><option value="daily">{tr("Täglich", "Dagelijks")}</option><option value="weekly">{tr("Wöchentlich", "Wekelijks")}</option></select>
             <select name="weekday" className="input">{[2, 3, 4, 5, 6].map((d) => <option key={d} value={d}>{tr("Wöchentlich am", "Wekelijks op")}: {WD[user.lang][d]}</option>)}</select>
-            <select name="zone" className="input"><option value="">{tr("Für beide", "Voor allebei")}</option><option value="a">{tr("Bereich A · Eingang, Schaufenster, Böden", "Zone A · ingang, etalage, vloeren")}</option><option value="b">{tr("Bereich B · Küchen, Oberflächen, Regale", "Zone B · keukens, oppervlakken, schappen")}</option></select>
             <select name="moment" className="input"><option value="open">{tr("Vor dem Öffnen", "Voor opening")}</option><option value="day">{tr("Tagsüber", "Overdag")}</option><option value="close">{tr("Zum Feierabend", "Bij sluiten")}</option></select>
             <Submit>{tr("Hinzufügen", "Toevoegen")}</Submit>
           </form>

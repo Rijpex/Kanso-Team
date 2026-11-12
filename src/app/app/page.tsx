@@ -4,7 +4,7 @@ import { q, q1 } from "@/lib/server/db";
 import { cleaningFor, internHours, MINE, tasksQuery, zoneOwners } from "@/lib/server/queries";
 import { EVENT_KIND, REQUEST_KIND, SHIFT_KIND, T, lbl, pick } from "@/lib/i18n";
 import { addDays, dateTime, hm, longDate, monday, shortDate, today, weekday } from "@/lib/dates";
-import { openingOn } from "@/lib/hours";
+import { openingOn, breakText } from "@/lib/hours";
 import { ConfirmSubmit } from "@/components/client";
 import { addFocus, countOnline, deleteFocus, saveCustomerRequest, toggleFocus } from "./actions";
 import { Avatar, Badge } from "@/components/ui";
@@ -100,7 +100,7 @@ export default async function Today() {
               <p className="mt-2 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-brand-light px-3 py-2 text-sm">
                 <b>{tr("Deine Schicht", "Jouw dienst")}</b> {hm(mine.start_time)}–{hm(mine.end_time)}
                 <Badge l={SHIFT_KIND[mine.kind]} lang={user.lang} />
-                {mine.break_start && <span className="text-stone-600">{tr("Pause", "Pauze")} {hm(mine.break_start)}–{hm(mine.break_end)}{mine.break2_start && <> · {hm(mine.break2_start)}–{hm(mine.break2_end)}</>}</span>}
+                {breakText(mine, user.role, user.lang) && <span className="text-stone-600">{breakText(mine, user.role, user.lang)}</span>}
                 {mine.note && <span className="text-stone-600">· {mine.note}</span>}
               </p>
             ) : mine ? (

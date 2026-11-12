@@ -3,18 +3,17 @@ import { requireUser } from "@/lib/server/auth";
 import { q } from "@/lib/server/db";
 import { internHours, team } from "@/lib/server/queries";
 import { SHIFT_KIND, T, lbl } from "@/lib/i18n";
-import { OPENING_TEXT_DE, shiftOn } from "@/lib/hours";
+import { OPENING_TEXT_DE, breakText, shiftMinutes, shiftOn } from "@/lib/hours";
 import { addDays, dayName, hm, isoWeek, longDate, monday, monthName, today, weekday } from "@/lib/dates";
 import { Avatar, PageHeader } from "@/components/ui";
 import { HoursCard } from "@/components/Hours";
 import { ConfirmSubmit, Submit } from "@/components/client";
 import { addOpenSunday, generateRoster, removeOpenSunday, saveShift } from "../actions";
+import { SellerRoster } from "./seller-roster";
 
 type Sh = { user_id: string; date: string; kind: string; start_time: string | null; end_time: string | null; break_start: string | null; break_end: string | null; break2_start: string | null; break2_end: string | null; note: string | null };
 const WDN = { de: ["", "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"], nl: ["", "ma", "di", "wo", "do", "vr", "za", "zo"] };
-const mins = (t: string | null) => (t ? Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5)) : 0);
-const span = (a: string | null, b: string | null) => (a && b ? Math.max(0, mins(b) - mins(a)) : 0);
-const worked = (s: Sh) => (s.start_time && s.end_time ? Math.max(0, mins(s.end_time) - mins(s.start_time) - span(s.break_start, s.break_end) - span(s.break2_start, s.break2_end)) : 0);
+const worked = (s: Sh, role?: string) => shiftMinutes(s, role);
 const nextSunday = (d: string) => addDays(d, 7 - weekday(d) || 7);
 const hours = (m: number) => `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`;
 
@@ -24,6 +23,7 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
   const isAdmin = user.role === "admin";
   const now = today();
   const mon = monday(/^\d{4}-\d{2}-\d{2}$/.test(searchParams.w || "") ? searchParams.w! : now);
+  if (user.role === "seller") return <SellerRoster user={user} week={mon} />;
   const sun = addDays(mon, 6);
   const monthStart = `${addDays(mon, 5).slice(0, 7)}-01`;
   const [users, shifts, sats, hourRows] = await Promise.all([
@@ -61,7 +61,7 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
           </thead>
           <tbody>
             {users.map((u) => {
-              const total = days.reduce((n, d) => n + (get(u.id, d) ? worked(get(u.id, d)!) : 0), 0);
+              const total = days.reduce((n, d) => n + (get(u.id, d) ? worked(get(u.id, d)!, u.role) : 0), 0);
               const workDays = days.filter((d) => ["shop", "home", "school"].includes(get(u.id, d)?.kind || "")).length;
               const tooMuch = u.role === "intern" && (total > 2400 || workDays > 5);
               return (
@@ -69,12 +69,13 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
                   <td className="whitespace-nowrap p-3"><span className="flex items-center gap-2 font-medium"><Avatar name={u.name} color={u.color} />{u.name}</span></td>
                   {days.map((d) => {
                     const s = get(u.id, d);
-                    const long = s && u.role === "intern" && worked(s) > 480;
+                    const long = s && u.role === "intern" && worked(s, u.role) > 480;
+                    const pause = s ? breakText(s, u.role, user.lang) : null;
                     const inner = s ? (
                       <div className={`rounded-lg p-1.5 text-xs leading-tight ${SHIFT_KIND[s.kind]?.color} ${long ? "ring-2 ring-red-400" : ""}`}>
                         <div className="font-semibold">{lbl(user.lang, SHIFT_KIND[s.kind])}</div>
                         {s.start_time && <div>{hm(s.start_time)}–{hm(s.end_time)}</div>}
-                        {s.break_start && <div className="opacity-70">{tr("Pause", "Pauze")} {hm(s.break_start)}–{hm(s.break_end)}{s.break2_start && <> · {hm(s.break2_start)}–{hm(s.break2_end)}</>}</div>}
+                        {pause && <div className="opacity-70">{pause}</div>}
                         {s.note && <div className="opacity-70">{s.note}</div>}
                       </div>
                     ) : <div className="rounded-lg border border-dashed border-sand-200 p-1.5 text-center text-xs text-stone-300">{isAdmin ? "+" : "–"}</div>;
@@ -171,12 +172,19 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
                 </tbody>
               </table>
             </div>
-            <p className="rounded-lg bg-sand-100 p-3 text-xs text-stone-600">{tr("Alle arbeiten von 30 Minuten vor Öffnung bis Ladenschluss – mit zwei Pausen à 30 Minuten sind das 7,5 Stunden am Tag", "Iedereen werkt van 30 minuten voor opening tot sluiting – met twee pauzes van een half uur is dat 7,5 uur per dag")}: {OPENING_TEXT_DE}</p>
-            <p className="text-xs text-stone-500">{tr("Pausen: zwei Mal 30 Minuten. Eine gemeinsame Pause (beide zusammen) und eine, die wechselt – wer diese Woche früh Pause hat, hat nächste Woche spät.", "Pauzes: twee keer 30 minuten. Eén gezamenlijke pauze (samen) en één die wisselt – wie deze week vroeg pauze heeft, heeft volgende week laat.")}</p>
+            <p className="rounded-lg bg-sand-100 p-3 text-xs text-stone-600">{tr("Alle sind 30 Minuten vor Öffnung da und bleiben bis Ladenschluss. Die Praktikantinnen haben eine Stunde Pause am Tag und legen sie selbst – im Plan steht nur „1 Std. Pause“, die Stundenzählung zieht sie automatisch ab (7,5 Stunden an einem vollen Tag).", "Iedereen is 30 minuten voor opening aanwezig en blijft tot sluiting. De stagiaires hebben een uur pauze per dag en plannen die zelf – in het rooster staat alleen \"1 uur pauze\", de urenteller trekt hem automatisch af (7,5 uur op een volle dag).")} {OPENING_TEXT_DE}</p>
+            {users.some((u) => u.role === "seller") && (
+              <div className="space-y-2">
+                {users.filter((u) => u.role === "seller").map((u) => (
+                  <div key={u.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <span className="font-medium">{u.name} ({tr("Verkäufer", "verkoper")}):</span>
+                    {[1, 2, 3, 4, 5, 6].map((wd) => <label key={wd} className="flex items-center gap-1"><input type="checkbox" name={`sell_${u.id}_${wd}`} defaultChecked={wd >= 5} /> {WDN[user.lang][wd]}</label>)}
+                    <span className="text-xs text-stone-500">{tr("jeweils die letzten 4 Stunden bis Ladenschluss, ohne Pause", "steeds de laatste 4 uur tot sluiting, zonder pauze")}</span>
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              <div><label className="label">{tr("Gemeinsame Pause", "Gezamenlijke pauze")}</label><div className="flex gap-1"><input type="time" name="break_shared_start" className="input" defaultValue="13:00" /><input type="time" name="break_shared_end" className="input" defaultValue="13:30" /></div></div>
-              <div><label className="label">{tr("Wechselpause früh", "Wisselpauze vroeg")}</label><div className="flex gap-1"><input type="time" name="break_early_start" className="input" defaultValue="11:00" /><input type="time" name="break_early_end" className="input" defaultValue="11:30" /></div></div>
-              <div><label className="label">{tr("Wechselpause spät", "Wisselpauze laat")}</label><div className="flex gap-1"><input type="time" name="break_late_start" className="input" defaultValue="15:30" /><input type="time" name="break_late_end" className="input" defaultValue="16:00" /></div></div>
               <div><label className="label">{tr("Homeoffice Mo von", "Thuiswerk ma van")}</label><input type="time" name="home_start" className="input" defaultValue="10:00" /></div>
               <div><label className="label">{tr("Homeoffice Mo bis", "Thuiswerk ma tot")}</label><input type="time" name="home_end" className="input" defaultValue="14:30" /></div>
             </div>

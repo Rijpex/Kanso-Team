@@ -50,16 +50,38 @@ export const toMin = (t?: string | null) => {
   const [h, m] = t.split(":").map(Number);
   return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : null;
 };
-export type TimeRow = { start_time: string | null; end_time: string | null; break_start?: string | null; break_end?: string | null; break2_start?: string | null; break2_end?: string | null };
-/** Netto werktijd van één dienst in minuten: eindtijd − begintijd − de pauzes. */
-export function shiftMinutes(r: TimeRow): number {
+export type TimeRow = { start_time: string | null; end_time: string | null; break_start?: string | null; break_end?: string | null; break2_start?: string | null; break2_end?: string | null; role?: string | null };
+/** Vaste pauze per rol als er geen pauzetijden staan: stagiaires plannen hun uur pauze zelf. */
+export const FLAT_BREAK: Record<string, number> = { intern: 60 };
+const pauseOf = (s?: string | null, e?: string | null) => {
+  const x = toMin(s), y = toMin(e);
+  return x != null && y != null && y > x ? y - x : 0;
+};
+/** Pauze van één dienst in minuten: ingevulde tijden, anders de vaste pauze van de rol (vanaf 6 uur aanwezig). */
+export function breakMinutes(r: TimeRow, role: string | null | undefined = r.role): number {
   const a = toMin(r.start_time), b = toMin(r.end_time);
   if (a == null || b == null || b <= a) return 0;
-  const pause = (s?: string | null, e?: string | null) => {
-    const x = toMin(s), y = toMin(e);
-    return x != null && y != null && y > x ? y - x : 0;
-  };
-  return Math.max(0, b - a - pause(r.break_start, r.break_end) - pause(r.break2_start, r.break2_end));
+  const explicit = pauseOf(r.break_start, r.break_end) + pauseOf(r.break2_start, r.break2_end);
+  if (explicit > 0) return explicit;
+  const flat = role ? FLAT_BREAK[role] || 0 : 0;
+  return b - a > 360 ? Math.min(flat, b - a) : 0;
+}
+/** Netto werktijd van één dienst in minuten: eindtijd − begintijd − pauze. */
+export function shiftMinutes(r: TimeRow, role: string | null | undefined = r.role): number {
+  const a = toMin(r.start_time), b = toMin(r.end_time);
+  if (a == null || b == null || b <= a) return 0;
+  return Math.max(0, b - a - breakMinutes(r, role));
+}
+/** Tekst voor de pauze in rooster en agenda: tijden als ze er staan, anders "1 Std. Pause". */
+export function breakText(r: TimeRow, role: string | null | undefined, lang: "de" | "nl"): string | null {
+  if (r.break_start && r.break_end) {
+    const hm = (t: string) => t.slice(0, 5);
+    return `${lang === "nl" ? "Pauze" : "Pause"} ${hm(r.break_start)}–${hm(r.break_end)}${r.break2_start && r.break2_end ? ` · ${hm(r.break2_start)}–${hm(r.break2_end)}` : ""}`;
+  }
+  const m = breakMinutes(r, role);
+  if (!m) return null;
+  const h = m % 60 === 0 ? `${m / 60} ${lang === "nl" ? "uur" : "Std."}` : `${m} min`;
+  return lang === "nl" ? `${h} pauze` : `${h} Pause`;
 }
 /** 1350 → "22,5" (Duitse notatie, altijd één decimaal na de komma als er een rest is). */
 export const fmtHours = (min: number) => (min / 60).toLocaleString("de-DE", { maximumFractionDigits: 1 });

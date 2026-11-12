@@ -5,13 +5,13 @@ import { cleaningFor, MINE, tasksQuery, team, zoneOwners } from "@/lib/server/qu
 import { EVENT_KIND, SHIFT_KIND, T, lbl } from "@/lib/i18n";
 import { addDays, dayName, fmt, hm, isoWeek, longDate, monday, monthName, parse, today, weekday } from "@/lib/dates";
 import { Avatar, PageHeader } from "@/components/ui";
-import { shiftOn, openingOn } from "@/lib/hours";
+import { breakText, shiftOn, openingOn } from "@/lib/hours";
 import { ConfirmSubmit, Submit } from "@/components/client";
 import { CleaningList } from "@/components/CleaningList";
 import { deleteEvent, deletePlan, saveEvent, savePlan, saveShift, togglePlan } from "../actions";
 
 type Ev = { id: string; title: string; note: string | null; date: string; end_date: string | null; start_time: string | null; end_time: string | null; kind: string; created_by: string | null };
-type Sh = { user_id: string; date: string; kind: string; start_time: string | null; end_time: string | null; break_start: string | null; break_end: string | null; break2_start: string | null; break2_end: string | null; note: string | null; name: string; color: string };
+type Sh = { user_id: string; role: string; date: string; kind: string; start_time: string | null; end_time: string | null; break_start: string | null; break_end: string | null; break2_start: string | null; break2_end: string | null; note: string | null; name: string; color: string };
 type Plan = { id: string; task_id: string; user_id: string; date: string; start_time: string | null; end_time: string | null; note: string | null; done: boolean; title: string; name: string; color: string };
 
 const isD = (v?: string) => !!v && /^\d{4}-\d{2}-\d{2}$/.test(v);
@@ -20,6 +20,7 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
   const user = await requireUser();
   const tr = T(user.lang);
   const isAdmin = user.role === "admin";
+  const isSeller = user.role === "seller";
   const now = today();
   const view = searchParams.view === "month" ? "month" : "week";
   const monthParam = /^\d{4}-\d{2}$/.test(searchParams.m || "") ? searchParams.m! : "";
@@ -42,17 +43,17 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
 
   const [events, shifts, plans, users, cleaning, zones, myTasks, cleanProgress] = await Promise.all([
     q<Ev>("select * from events where date <= $2 and coalesce(end_date, date) >= $1 order by start_time nulls first, created_at", [start, end]),
-    q<Sh>("select s.*, u.name, u.color from shifts s join users u on u.id = s.user_id where u.active and s.date between $1 and $2 order by u.role, u.created_at", [start, end]),
+    q<Sh>("select s.*, u.name, u.color, u.role from shifts s join users u on u.id = s.user_id where u.active and s.date between $1 and $2 order by u.role, u.created_at", [start, end]),
     q<Plan>("select p.*, t.title, u.name, u.color from task_plans p join tasks t on t.id = p.task_id join users u on u.id = p.user_id where p.date between $1 and $2 order by p.start_time nulls last, p.created_at", [start, end]),
     team(),
     cleaningFor(sel),
     zoneOwners(sel),
-    isAdmin ? tasksQuery("t.status <> 'done'") : tasksQuery(`t.status <> 'done' and ${MINE}`, [user.id]),
+    isAdmin ? tasksQuery("t.status <> 'done'") : isSeller ? Promise.resolve([]) : tasksQuery(`t.status <> 'done' and ${MINE}`, [user.id]),
     q<{ date: string; n: number }>("select date, count(*)::int as n from cleaning_checks where date between $1 and $2 group by date", [start, end]),
   ]);
   const evOn = (d: string) => events.filter((e) => e.date <= d && (e.end_date || e.date) >= d);
   const shOn = (d: string) => shifts.filter((s) => s.date === d && s.kind !== "off");
-  const plOn = (d: string) => plans.filter((p) => p.date === d);
+  const plOn = (d: string) => (isSeller ? [] : plans.filter((p) => p.date === d));
   const mineOn = (d: string) => shifts.find((s) => s.date === d && s.user_id === user.id && s.kind !== "off");
   const editing = searchParams.edit ? events.find((e) => e.id === searchParams.edit) : undefined;
   const base = view === "month" ? `/app/calendar?view=month&m=${month}` : `/app/calendar?d=${sel}`;
@@ -73,7 +74,7 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
         <span className="font-semibold" style={{ color: s.color }}>{s.name}{me ? ` · ${tr("du", "jij")}` : ""}</span>
         {!compact && s.kind !== "shop" && <span className="text-stone-600"> · {lbl(user.lang, SHIFT_KIND[s.kind])}</span>}
         {s.start_time && <span className="block text-stone-700">{hm(s.start_time)}–{hm(s.end_time)}</span>}
-        {!compact && s.break_start && <span className="block text-stone-500">{tr("Pause", "Pauze")} {hm(s.break_start)}–{hm(s.break_end)}{s.break2_start && <> · {hm(s.break2_start)}–{hm(s.break2_end)}</>}</span>}
+        {!compact && breakText(s, s.role, user.lang) && <span className="block text-stone-500">{breakText(s, s.role, user.lang)}</span>}
         {compact && s.kind !== "shop" && <span className="block text-stone-500">{lbl(user.lang, SHIFT_KIND[s.kind])}</span>}
       </div>
     );
@@ -85,7 +86,7 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
 
   return (
     <div>
-      <PageHeader title={tr("Agenda", "Agenda")} sub={tr("Wer arbeitet wann, Termine, eingeplante Aufgaben und Storepflege – alles an einem Ort.", "Wie werkt wanneer, afspraken, ingeplande opdrachten en winkelverzorging – alles op één plek.")}>
+      <PageHeader title={tr("Agenda", "Agenda")} sub={isSeller ? tr("Wer arbeitet wann, Termine und die Storepflege-Punkte des Tages.", "Wie werkt wanneer, afspraken en de winkelverzorging van de dag.") : tr("Wer arbeitet wann, Termine, eingeplante Aufgaben und Storepflege – alles an einem Ort.", "Wie werkt wanneer, afspraken, ingeplande opdrachten en winkelverzorging – alles op één plek.")}>
         <Link href={`/app/calendar?d=${sel}`} className={tab(view === "week")}>{tr("Woche", "Week")}</Link>
         <Link href={`/app/calendar?view=month&d=${sel}`} className={tab(view === "month")}>{tr("Monat", "Maand")}</Link>
         {isAdmin && <Link href={`/app/roster?w=${monday(sel)}`} className="btn-ghost btn-sm">{tr("Dienstplan füllen", "Rooster vullen")}</Link>}
@@ -153,8 +154,9 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
 
       {/* ── Gekozen dag ── */}
       <h2 className="mb-3 mt-7 capitalize">{longDate(sel, user.lang)}{sel === now ? ` · ${tr("heute", "vandaag")}` : ""}</h2>
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className={`grid gap-5 ${isSeller ? "" : "lg:grid-cols-3"}`}>
         <section className="card">
+          <div className={isSeller ? "grid gap-5 sm:grid-cols-2" : ""}><div>
           <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-stone-400">{tr("Wer arbeitet", "Wie werkt")}</h3>
           <ul className="space-y-2 text-sm">
             {users.filter((u) => isAdmin || shiftOfSel(u.id)).map((u) => {
@@ -164,7 +166,7 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
                   <Avatar name={u.name} color={u.color} size="h-6 w-6 text-[10px]" />
                   <span className="font-medium">{u.name}</span>
                   <span className="whitespace-nowrap text-stone-600">{s ? `${lbl(user.lang, SHIFT_KIND[s.kind])}${s.start_time ? ` ${hm(s.start_time)}–${hm(s.end_time)}` : ""}` : "–"}</span>
-                  {s?.break_start && <span className="text-xs text-stone-400">{tr("Pause", "pauze")} {hm(s.break_start)}{s.break2_start ? ` + ${hm(s.break2_start)}` : ""}</span>}
+                  {s && breakText(s, s.role, user.lang) && <span className="text-xs text-stone-400">{breakText(s, s.role, user.lang)}</span>}
                   {isAdmin && <Link href={`${backUrl}&shift=${u.id}`} scroll={false} className="ml-auto text-xs text-brand hover:underline">{tr("Ändern", "Wijzig")}</Link>}
                 </li>
               );
@@ -191,7 +193,8 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
             </form>
           )}
 
-          <h3 className="mb-2 mt-5 text-sm font-semibold uppercase tracking-wide text-stone-400">{tr("Termine", "Afspraken")}</h3>
+          </div><div>
+          <h3 className={`mb-2 text-sm font-semibold uppercase tracking-wide text-stone-400 ${isSeller ? "" : "mt-5"}`}>{tr("Termine", "Afspraken")}</h3>
           <ul className="space-y-2">
             {evOn(sel).map((e) => (
               <li key={e.id} className={`rounded-lg p-2.5 text-sm ${EVENT_KIND[e.kind]?.color || "bg-sand-100"}`}>
@@ -220,9 +223,10 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
             </form>
             {editing && <form action={deleteEvent} className="mt-2"><input type="hidden" name="id" value={editing.id} /><input type="hidden" name="back" value={backUrl} /><ConfirmSubmit confirm={tr("Wirklich löschen?", "Echt verwijderen?")}>{tr("Löschen", "Verwijderen")}</ConfirmSubmit></form>}
           </details>
+          </div></div>
         </section>
 
-        <section className="card">
+        {!isSeller && <section className="card">
           <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-stone-400">{tr("Woran wird gearbeitet", "Waar wordt aan gewerkt")}</h3>
           <p className="mb-2 text-xs text-stone-500">{tr("Plane ein, wann du an welcher Aufgabe sitzt – und hak ab, wenn der Block geschafft ist.", "Plan in wanneer je aan welke opdracht werkt – en vink af als het blok klaar is.")}</p>
           <ul className="divide-y divide-sand-200">
@@ -248,11 +252,11 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
             <input name="note" className="input" placeholder={tr("Was genau? (optional)", "Wat precies? (optioneel)")} />
             <Submit className="btn-ghost">{tr("Einplanen", "Inplannen")}</Submit>
           </form>
-        </section>
+        </section>}
 
         <section className="card">
           <div className="mb-2 flex items-center justify-between"><h3 className="text-sm font-semibold uppercase tracking-wide text-stone-400">{tr("Storepflege", "Winkelverzorging")}</h3><span className="text-sm text-stone-500">{cleaning.filter((c) => c.done_by).length}/{cleaning.length}</span></div>
-          {cleaning.length ? <CleaningList rows={cleaning} date={sel} lang={user.lang} zones={zones} /> : <p className="text-sm text-stone-500">{tr("Laden geschlossen.", "Winkel gesloten.")}</p>}
+          {cleaning.length ? <CleaningList rows={cleaning} date={sel} lang={user.lang} zones={zones} columns={isSeller} /> : <p className="text-sm text-stone-500">{tr("Laden geschlossen.", "Winkel gesloten.")}</p>}
         </section>
       </div>
     </div>

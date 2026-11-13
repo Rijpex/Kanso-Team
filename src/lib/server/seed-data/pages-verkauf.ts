@@ -52,38 +52,58 @@ Mo, Di, Do 10:30–18:30 · Mi 09:30–17:30 · Fr 10:30–18:30 · Sa 09:30–1
   },
   {
     slug: "verkauf-tenderflame",
-    title_de: "Tenderflame verkaufen",
-    title_nl: "Tenderflame verkopen",
+    title_de: "Tenderflame",
+    title_nl: "Tenderflame",
     position: 2,
     body_de: `## Was es ist
 
-Tischfeuer und Kerzen mit echter Flamme – ohne Rauch, ohne Ruß, ohne Kamin. Sie brennen mit **Tenderfuel**, einem bio-basierten Brennstoff, über einen Docht aus Stahl.
+Tischfeuer und Kerzen mit echter Flamme – ohne Rauch, ohne Ruß, ohne Kamin. Sie brennen mit **Tenderfuel**, einem pflanzlichen Brennstoff, über einen Docht aus Stahl. **Zwei Jahre Garantie** auf den Stahldocht.
 
 ## Die drei Sätze, die den Unterschied machen
 
-1. **„Das ist kein Bio-Ethanol."** Tenderfuel entzündet sich erst ab etwa 100 °C. Fällt das Tischfeuer um oder kleckert etwas, gibt es keine Stichflamme. Bio-Ethanol entzündet sich schon bei 13 °C.
-2. **„Drinnen und draußen."** Kein Rauch, kein Ruß, kein scharfer Alkoholgeruch, keine schwarzen Ränder an der Decke. Auf dem Esstisch genauso wie auf der Terrasse.
-3. **„Anzünden, fertig."** Tenderfuel einfüllen, Docht anzünden. Kein Installateur, kein Gasanschluss, keine Wartung. Zwei Jahre Garantie auf den Stahldocht.
+1. **„Das ist kein Bio-Ethanol."** Tenderfuel entzündet sich erst ab etwa 100 °C und nur am Stahldocht. Fällt das Tischfeuer um oder kleckert etwas, gibt es keine Stichflamme. Bio-Ethanol entzündet sich schon bei 13 °C.
+2. **„Drinnen und draußen."** Kein Rauch, kein Ruß, kein Alkoholgeruch, keine schwarzen Ränder an der Decke. Auf dem Esstisch genauso wie auf der Terrasse (draußen windgeschützt).
+3. **„Anzünden, fertig."** Tenderfuel einfüllen, Docht anzünden. Kein Gasanschluss, keine Wartung.
 
-## Sortiment bei uns
+## Füllmenge und Brenndauer – immer dazusagen
 
-Tischfeuer (ab 27,90 €), Kerzen zum Nachfüllen, Geschenksets, Tenderfuel und Anzünder. Linien: Cycloflame, Natural Concrete, Brushed Steel, Agni, Glow by vtwonen; für draußen Vulcan. [[BAS PRÜFEN: welche Linien und Größen wir aktuell im Laden haben]]
+Der Kunde will wissen, wie lange ein Abend reicht. Beispiel **Café 14: 250 ml Tank, brennt 4–5 Stunden**. Die kleinen Lilly-Modelle brennen länger, der Cycloflame kürzer. **Die genauen Werte stehen im Tenderflame-Katalog bei jedem Modell** – schlag sie dort mit dem Kunden nach, statt zu raten. Ein Liter Tenderfuel (11,99 €) reicht für vier bis fünf Füllungen – „ein Liter reicht viele Abende".
+
+Nur Tenderfuel verwenden – kein Bioethanol, kein Lampenöl.
+
+## Was gut läuft – verkauf Sets, nicht einzelne Teile
+
+- **Lilly 10 Geschenkset** mit 0,5 l Tenderfuel (29,95 €, Kupfer oder Schwarz) – unser Bestseller, das perfekte Geschenk: auspacken, einfüllen, anzünden.
+- **Lilly 8 & 10 Duo Pack** (29,90 €) – zwei Größen, zwei Kerzen auf dem Tisch.
+- **Cycloflame Table** (119,90 €) – die Flamme dreht sich langsam im Glaszylinder, 38 cm hoch. Verkauft sich hier richtig gut, am besten brennend auf dem Counter.
+- Daneben: Breeze 10 (auch als Duo Pack), Café 14 / 18, Globus, Tulip, Rosie, Aster, Daisy, Cycloflame Wall.
+
+Was im Laden steht, haben wir. Will der Kunde eine andere Farbe, Größe oder ein Modell aus dem Katalog: **bestellen wir einfach für ihn** – aufnehmen als Kundenwunsch in der Hub, Bas oder Lea bestellen.
+
+## Katalog mitgeben – aber richtig
+
+Den Tenderflame-Katalog geben wir **nicht einfach so** mit, nur bei echtem Interesse. Und dann immer mit diesem Satz: „Wenn du online schaust und irgendwo einen besseren Preis siehst: **wir garantieren dir den günstigsten Preis** – und du zahlst keinen Versand, weil du es bei uns abholst. Oder wir schicken es dir." Ziel: Der Kunde kauft bei uns, nicht bei Tenderflame oder Amazon.
 
 ## Rabattregel Tenderflame
 
-Tenderflame bietet auf der eigenen Website regelmäßig **10 % Rabatt** an (Newsletter / Aktion). Kunden wissen das manchmal.
+Tenderflame bietet auf der eigenen Website regelmäßig **10 % Rabatt** an. Kunden wissen das manchmal.
 
-- Kunde fragt nach Rabatt und **nennt die 10 % von Tenderflame**: wir ziehen gleich und geben 10 %. Wir wollen nicht, dass er online kauft.
-- Kunde fragt nach Rabatt, **kennt die Aktion aber nicht**: erst 5 % anbieten. Nur wenn er darauf besteht, auf 10 % gehen.
+- Kunde fragt nach Rabatt und **nennt die 10 % von Tenderflame**: wir ziehen gleich und geben 10 %.
+- Kunde fragt nach Rabatt, **kennt die Aktion nicht**: erst 5 % anbieten. Nur wenn er darauf besteht, auf 10 % gehen.
 - Kunde fragt nicht: kein Rabatt.
 
-## Dazu verkaufen
+## Dazu verkaufen – jedes Mal
 
-Zu jedem Tischfeuer gehört Tenderfuel – frag immer: „Hast du schon Brennstoff zu Hause?" Ein Liter reicht lange, deshalb nehmen viele gleich die große Flasche. Zum Geschenk: Set mit Tischfeuer plus 0,5 l Tenderfuel.
+1. **Tenderfuel.** Ohne Brennstoff brennt nichts: „Hast du schon Tenderfuel zu Hause?" 1 l (11,99 €) oder gleich 2,5 l (27,99 €).
+2. **Pen Torch Feuerzeug** (14,95 €, Schwarz oder Bronze) – ganz am Ende, an der Kasse: „Ein normales Feuerzeug geht auch, aber das dauert ewig – mit dem Pen Torch brennt es in einer Sekunde." Fast jeder nimmt es.
+
+## Der Tipp an der Kasse
+
+Beim Bezahlen immer sagen: **„Wenn du das Tischfeuer ein paar Tage nicht benutzt, gieß den Brennstoff zurück in die Flasche."** Bleibt Tenderfuel im Tank stehen, zieht es Feuchtigkeit (Kondens) – beim nächsten Anzünden knistert und spuckt die Flamme, und man muss den Brennstoff wechseln. Also: ausblasen, abkühlen lassen, zurück in die Flasche. Das erspart Reklamationen und macht den Kunden glücklich.
 
 ## Vorführen
 
-Zünde eines an, wenn ein Kunde zögert. Die Flamme verkauft sich selbst. Brennendes Tischfeuer nie unbeaufsichtigt lassen, beim Schließen alle Flammen doppelt prüfen.`,
+Zünde eines an, wenn ein Kunde zögert – die Flamme verkauft sich selbst. Brennendes Tischfeuer nie unbeaufsichtigt lassen, beim Schließen alle Flammen doppelt prüfen.`,
   },
   {
     slug: "verkauf-koala-kitchens",
@@ -314,31 +334,38 @@ Als **Projekt-Interessent** eintragen – eine Pergola ab 4.000 € zählt für 
     position: 7,
     body_de: `## Was es ist
 
-Handgemachte Pflanzgefäße aus Vietnam, leicht und wetterfest, mit **5 Jahren Garantie**. Sehen aus wie Beton, Stein oder Ton, wiegen aber einen Bruchteil – ein großes Gefäß trägt man allein. Bis 120 cm hoch.
+Handgemachte Pflanzgefäße, leicht und wetterfest, mit **5 Jahren Garantie**. Sehen aus wie Beton, Stein oder Ton, wiegen aber einen Bruchteil – ein großes Gefäß trägt man allein. Material: **Polyester, verstärkt mit Steinmehl** (Fiberglas-Komposit), **frostfest**, UV-fest, bleibt das ganze Jahr draußen. Gegenüber dem Kunden reicht: „handgemacht, leicht, frostfest, 5 Jahre Garantie".
 
-## Die Linien
+## Was wir haben
 
-- **Grigio** – Beton-Optik
-- **Terreno** – Ton-Optik mit feinem Relief
-- **Liscio, Ruvido, Bordo, Argento, Rondello** – glatt, rau, mit Rand, metallisch, rund
-- **Luca Exclusive** – Komposit-Material, die edelste Linie
+Linie **Grigio** in Naturbeton, Antikweiß, Anthrazit, Sand, Earth und als **Metallic** in Champagne. Formen: Egg Pot, Balloon (Low / Tall), Box, Bowl, Vase, Cylinder – von 32 € (kleiner Low Balloon) bis gut 400 € (großer Egg Pot Low). Die Preise stehen an den Gefäßen.
 
-Material: leichtes Polyester bzw. Komposit. Weerbestendig, aber: [[BAS PRÜFEN: frostfest ohne Einschränkung? Ablauflöcher vorgebohrt?]]
+**Neu: Wallhanger Organic** – drei organische Formen für die Wand (#1, #2, #3, je 85 €, in Earth oder Sand). Meistverkauft als **Set von drei** nebeneinander. Bei einem 3er-Set darfst du etwas entgegenkommen: rund 5 % oder ein runder Betrag, **maximal 30 €**.
+
+Was im Laden steht, haben wir. Alles andere aus dem Luca-Sortiment – andere Größe, Form, Farbe – **bestellen wir für den Kunden**: Lieferzeit etwa **1,5 Wochen**, maximal.
 
 ## So beraten wir
 
-Wir verkaufen keine einzelnen Töpfe, wir gestalten Ecken. Frag: Wo soll es stehen (Eingang, Terrasse, Balkon), welcher Stil (Haus, Möbel, Farben), was soll hinein? Dann schlag eine Gruppe vor: **drei Gefäße, drei Höhen, eine Farbe** – das wirkt immer.
+Einzelne Töpfe verkaufen wir natürlich auch – aber das Ziel ist die Kombination. Frag: Wo soll es stehen (Eingang, Terrasse, Balkon, Wand), welcher Stil (Haus, Möbel, Farben), was soll hinein? Dann schlag eine Gruppe vor: **drei Gefäße, drei Höhen, eine Farbe** – das wirkt immer.
 
 - Zeig die Kombination im Laden, stell sie zusammen.
-- Wir bieten **Beratung zu Hause** an: wir kommen vorbei, schauen uns die Terrasse an und machen einen Vorschlag.
-- Wir **bestellen Gefäße speziell für den Kunden** – Größe, Form und Farbe aus dem ganzen Luca-Sortiment, nicht nur, was im Laden steht. [[BAS PRÜFEN: Lieferzeit Sonderbestellung]]
+- **Beratung zu Hause**: wir kommen vorbei, schauen uns die Terrasse an und machen einen Vorschlag.
+- Unten ins Gefäß eine Schicht Blähton gegen Staunässe – sagen wir dazu.
+
+## Olivenbaum-Kombi
+
+Wir haben **künstliche Olivenbäume** im Laden – davon gehen regelmäßig welche raus. Die beste Kombination: Olivenbaum + Luca-Gefäß + Füllung. Als Füllung haben wir **Holzschnitzel in Rot oder Schwarz**. Kauft der Kunde Baum und Gefäß zusammen, gibt es **die Füllung gratis** dazu – das sagst du als Bonus, nicht als Rabatt.
 
 ## Rabattregel
 
-Bei mehreren Gefäßen ist ein Rabatt möglich – aber **nicht von selbst anbieten**. Erst wenn der Kunde fragt, und dann mit Bas oder Lea abstimmen, wie viel. [[BAS PRÜFEN: Spielraum in Prozent ab wie vielen Gefäßen]]
+Nicht von selbst anbieten. Aber wenn jemand mehrere Gefäße nimmt, darfst du selbst entscheiden: **ab etwa 400–500 € Gefäße → 5 % Rabatt**. 3er-Set Wallhanger: siehe oben (max. 30 €). Mehr als das: mit Bas oder Lea abstimmen.
+
+## Lieferung
+
+Wir liefern **nach Hause** – in Lüneburg kostenlos. Wohnt der Kunde etwas außerhalb, berechnen wir kleine Versandkosten, und zwar **immer nachträglich**, weil es von der Größe der Sendung abhängt. Also nicht vorab einen Betrag nennen: „Die Versandkosten rechnen wir nach Größe ab, das klären Bas oder Lea mit dir."
 
 ## Dazu verkaufen
 
-Pflanzen stehen nicht bei uns, aber Gestaltung: Dekosteine und Wandhalter aus der Luca-Linie, Outdoor-Teppich darunter, Tenderflame daneben. Wer eine Terrasse neu macht, ist ein Pergola- oder Küchen-Lead – frag nach.`,
+Dekosteine, Holzschnitzel, Outdoor-Teppich darunter, Tenderflame daneben. Wer eine Terrasse neu macht, ist ein Pergola- oder Küchen-Lead – frag nach und trag es ein.`,
   },
 ];

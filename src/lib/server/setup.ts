@@ -32,6 +32,16 @@ export async function migrate() {
     }
     await q("insert into settings (key, value) values ('mig_v12_kb', 'true'::jsonb) on conflict (key) do nothing");
   }
+  // v13: Tenderflame- und Luca-Seite mit Bas' Verkaufsregeln neu geschrieben (einmalig überschreiben)
+  if (!(await q1("select 1 from settings where key = 'mig_v13_kb'"))) {
+    for (const slug of ["verkauf-tenderflame", "verkauf-luca-lifestyle"]) {
+      const pg = VERKAUF_PAGES.find((x) => x.slug === slug);
+      if (pg) await q("update kb_pages set body_de = $2, title_de = $3, title_nl = $4, updated_at = now() where slug = $1", [slug, pg.body_de, pg.title_de, pg.title_nl]);
+    }
+    // Nur noch eine Tenderflame-Seite: die alte Produktseite aus dem ersten Seed geht raus
+    await q("delete from kb_pages where slug = 'tenderflame'");
+    await q("insert into settings (key, value) values ('mig_v13_kb', 'true'::jsonb) on conflict (key) do nothing");
+  }
   await q("insert into settings (key, value) values ('schema_version', $1::jsonb) on conflict (key) do update set value = excluded.value", [JSON.stringify(SCHEMA_VERSION)]);
 }
 

@@ -368,4 +368,77 @@ Wir liefern **nach Hause** – in Lüneburg kostenlos. Wohnt der Kunde etwas au�
 
 Dekosteine, Holzschnitzel, Outdoor-Teppich darunter, Tenderflame daneben. Wer eine Terrasse neu macht, ist ein Pergola- oder Küchen-Lead – frag nach und trag es ein.`,
   },
+  {
+    slug: "kamado-grills-moddern",
+    title_de: "Kamado-Grills (Moddern) verkaufen",
+    title_nl: "Kamado-grills (Moddern) verkopen",
+    position: 8,
+    body_de: `## Warum wir auf Kamados setzen
+
+In den Niederlanden ist der Kamado längst ein Ding – in Deutschland kennen ihn noch wenige. Wir glauben, dass der Trend herüberkommt, und wollen in Lüneburg die Adresse dafür sein. Deshalb steht er bei uns im Laden, brennt bei Vorführungen und ist in jede Outdoor-Küche einbaubar. Nächstes Jahr geben wir **Kamado-Workshops** hinter dem Laden auf dem Kanso-Parkplatz – sag das jedem Interessenten: „Vielleicht auch etwas für dich." Interesse notieren, wir laden ein.
+
+## Was ein Kamado ist – in drei Sätzen
+
+1. Ein Keramikgrill nach japanischem Vorbild: dicke Keramikwände speichern die Hitze, **eine Füllung Holzkohle hält viele Stunden**.
+2. Die Temperatur stellst du nur über zwei Luftschieber ein – **80 bis 400 °C**, stabil wie ein Backofen.
+3. **Grill, Ofen und Smoker in einem**: mit geschlossenem Deckel bleibt alles saftig, der Rauch gibt den Geschmack.
+
+## Low & slow – und ganz heiß
+
+Das Argument, mit dem du verkaufst: Auf einem Kamado kochst du besser als auf jedem Gasgrill.
+
+- **Low & slow** (100–130 °C): Spareribs, Short Ribs, Pulled Pork, Brisket – stundenlang bei niedriger Temperatur, mit Platesetter indirekt. Zart, rauchig, ohne Aufpassen. Beispiel Spareribs: 3 Stunden rauchen, 2 Stunden in Folie, 1 Stunde glasieren – die „3-2-1-Methode".
+- **Heiß** (300–400 °C): Steak mit Kruste, **Pizza auf dem Pizzastein** wie aus dem Steinofen, Brot, Gemüse.
+- **Indirekt backen** (160–200 °C): Hähnchen, Braten, Aufläufe – wie im Umluftofen, mit Platesetter.
+
+Deshalb kommt nächstes Jahr der **Compact dazu**: zwei Kamados, zwei Temperaturen. Auf dem großen läuft stundenlang das Low-&-slow-Stück, auf dem kleinen grillst du heiß nach oder machst die Pizza. Wer das einmal gesehen hat, will beide.
+
+## Unsere Modelle: Moddern (Design aus den Niederlanden)
+
+| Modell | Für wen | Preis ab |
+|---|---|---|
+| **Compact** | Balkon, kleine Terrasse, Zweitgrill zum Nachgrillen; mobil | 749 € |
+| **Solo** | ohne Untergestell, zum **Einbau in die Outdoor-Küche** (74 kg Keramik) | 1.349 € |
+| **Special** | freistehend auf Rollgestell mit klappbaren Seitentischen, fährt ohne Heben | 1.699 € |
+
+Vier Farben: **Anthrazit, Olivgrün, Tiefblau, Sand** – richtig Design, kein grüner Klotz. Solo und Special haben dieselbe Keramik und Leistung; der Unterschied ist nur Einbau oder Gestell. Der Solo passt in **jede** unserer Outdoor-Küchen (KOALA, Vesper): Ausschnitt, Lüftung und Abstand werden mitgeplant, die Arbeitsplatte läuft durch. Aktuelle Preise an der Ware und unter Produkte.
+
+## Material und Garantie
+
+Keramikkorpus, Gussrost, Edelstahl-Kohlekorb, Bambus-Seitentische beim Special. **Garantie (Moddern): Keramik 25 Jahre** (begrenzt lebenslang für den Erstkäufer), Metallteile 5 Jahre, Platesetter 3 Jahre, Zubehör 2 Jahre, Holz / Thermometer / Dichtungen 1 Jahr. Der Grill muss auf **moddern.eu registriert** werden, damit die Garantie gilt – das dem Kunden beim Kauf sagen. Bleibt mit Wetterhaube das ganze Jahr draußen.
+
+## Lieferung
+
+Die Kamados liefern wir **als Standard innerhalb weniger Tage** nach Hause (ca. 4 Werktage; Lieferung laut Website 181,49 €, Abholung im Laden kostenlos) – oder eingebaut in die Outdoor-Küche mit der Küchenmontage. Beim Einbau gibt es nichts aufzubauen: nur Rost und Kohlekorb einsetzen.
+
+## Zubehör – immer mit anbieten
+
+| Zubehör | Preis | Wofür |
+|---|---|---|
+| Platesetter (2-teilig) | 79,95 € | indirekt grillen, backen, low & slow – **das** Teil, ohne geht's nicht |
+| Pizzastein | 49,95 € | Pizza und Brot wie im Steinofen |
+| Wetterhaube | 119,95 € | draußen stehen lassen, ganzjährig |
+| Gussrost rund | 69,95 € | Ersatz oder zweite Ebene |
+| Edelstahl-Kohlekorb | 79,95 € | Asche einfach ausklopfen |
+| Drehspieß mit Motor | 229,95 € | auf Bestellung |
+| Holzkohle (8 kg) | ab 16,95 € | nur Stückholzkohle, keine Briketts |
+| Räucherchunks Apfel (3 kg) | 28,95 € | low & slow |
+| Räucherchips Eiche (1 kg) | 14,95 € | kurzes Räuchern |
+
+Das Starterpaket, das du jedem Kamado-Käufer vorschlägst: **Platesetter + Pizzastein + Wetterhaube + Holzkohle + Chunks**. Dazu einen Anzündkamin oder Anzünder – nie Spiritus, die Keramik nimmt Gerüche an.
+
+## Kleine Weisheiten, mit denen du punktest
+
+- **Deckel zu.** „Wer guckt, grillt nicht" – jedes Öffnen kostet Hitze und Feuchtigkeit.
+- **Luftschieber statt Thermostat.** Unten regelt grob, oben fein. Temperatur immer von unten her anfahren – runterkühlen dauert ewig.
+- **Erst Rauch, dann Fleisch.** Die ersten 15 Minuten riecht die Kohle noch scharf; erst grillen, wenn der Rauch dünn und blau ist.
+- **Holzkohle bleibt drin.** Nach dem Grillen Schieber zu, das Feuer erstickt – die Restkohle nutzt man beim nächsten Mal. Darum braucht man so wenig.
+- **Backofen-Trick.** Mit Platesetter wird der Kamado zum Ofen: Brot, Kuchen, Lasagne im Garten.
+- **Keramik ist schwer, aber hält ewig.** 74 kg – deshalb Rollgestell oder Einbau. Keramik rostet nicht, wird nicht spröde, 25 Jahre Garantie.
+- **Gasgrill-Kunde?** Wer nur schnell und oft Würstchen grillt, ist mit Gas gut bedient – ehrlich sagen. Wer kochen will, braucht den Kamado.
+
+## Dein Part
+
+Ein Kamado ist eine größere Anschaffung und oft Teil einer Outdoor-Küche. Frag: Wo soll er stehen, wie viele Leute, eher Steak oder eher Pizza und Ribs, kommt vielleicht eine Küche drumherum? Ab Küchen-Interesse als **Projekt-Interessent** eintragen (zählt für die Provision). Vorführung anbieten: Wir zünden ihn an, der Kunde darf probieren. Kein Rabatt auf Kamados; Zubehör ist der Mehrwert.`,
+  },
 ];

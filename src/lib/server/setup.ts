@@ -42,6 +42,12 @@ export async function migrate() {
     await q("delete from kb_pages where slug = 'tenderflame'");
     await q("insert into settings (key, value) values ('mig_v13_kb', 'true'::jsonb) on conflict (key) do nothing");
   }
+  // v14: Kamado-Seite (von Bas/Lea angelegt) neu geschrieben und ins Verkaufswissen verschoben (einmalig)
+  if (!(await q1("select 1 from settings where key = 'mig_v14_kb'"))) {
+    const pg = VERKAUF_PAGES.find((x) => x.slug === "kamado-grills-moddern");
+    if (pg) await q("update kb_pages set body_de = $2, title_de = $3, title_nl = $4, category = 'verkauf', position = $5, updated_at = now() where slug = $1", [pg.slug, pg.body_de, pg.title_de, pg.title_nl, pg.position]);
+    await q("insert into settings (key, value) values ('mig_v14_kb', 'true'::jsonb) on conflict (key) do nothing");
+  }
   await q("insert into settings (key, value) values ('schema_version', $1::jsonb) on conflict (key) do update set value = excluded.value", [JSON.stringify(SCHEMA_VERSION)]);
 }
 

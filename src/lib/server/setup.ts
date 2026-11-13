@@ -2,7 +2,7 @@ import "server-only";
 import { q, q1, databaseUrl, pool } from "./db";
 import { SCHEMA_SQL, SCHEMA_VERSION } from "./schema";
 import { runSeed } from "./seed";
-import { VERKAUF_PAGES } from "./seed-data/pages-verkauf";
+import { ETIKETTEN_PAGE, VERKAUF_PAGES } from "./seed-data/pages-verkauf";
 
 export async function migrate() {
   // In één transactie met een slot, zodat twee gelijktijdige starts elkaar niet in de weg zitten
@@ -47,6 +47,12 @@ export async function migrate() {
     const pg = VERKAUF_PAGES.find((x) => x.slug === "kamado-grills-moddern");
     if (pg) await q("update kb_pages set body_de = $2, title_de = $3, title_nl = $4, category = 'verkauf', position = $5, updated_at = now() where slug = $1", [pg.slug, pg.body_de, pg.title_de, pg.title_nl, pg.position]);
     await q("insert into settings (key, value) values ('mig_v14_kb', 'true'::jsonb) on conflict (key) do nothing");
+  }
+  // v15: Etikettendrucker-Seite: keine Bedienungsanleitung mehr, sondern was wir drucken können und Ideen (einmalig)
+  if (!(await q1("select 1 from settings where key = 'mig_v15_kb'"))) {
+    await q("update kb_pages set body_de = $2, title_de = $3, title_nl = $4, body_nl = null, updated_at = now() where slug = $1",
+      [ETIKETTEN_PAGE.slug, ETIKETTEN_PAGE.body_de, ETIKETTEN_PAGE.title_de, ETIKETTEN_PAGE.title_nl]);
+    await q("insert into settings (key, value) values ('mig_v15_kb', 'true'::jsonb) on conflict (key) do nothing");
   }
   await q("insert into settings (key, value) values ('schema_version', $1::jsonb) on conflict (key) do update set value = excluded.value", [JSON.stringify(SCHEMA_VERSION)]);
 }

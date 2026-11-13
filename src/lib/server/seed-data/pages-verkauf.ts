@@ -442,3 +442,53 @@ Das Starterpaket, das du jedem Kamado-Käufer vorschlägst: **Platesetter + Pizz
 Ein Kamado ist eine größere Anschaffung und oft Teil einer Outdoor-Küche. Frag: Wo soll er stehen, wie viele Leute, eher Steak oder eher Pizza und Ribs, kommt vielleicht eine Küche drumherum? Ab Küchen-Interesse als **Projekt-Interessent** eintragen (zählt für die Provision). Vorführung anbieten: Wir zünden ihn an, der Kunde darf probieren. Kein Rabatt auf Kamados; Zubehör ist der Mehrwert.`,
   },
 ];
+
+/** Wissensseite Etikettendrucker (Kategorie "anleitungen"), neu geschrieben in v15. */
+export const ETIKETTEN_PAGE = {
+  slug: "etikettendrucker",
+  title_de: "Etiketten & Labels: was wir drucken können",
+  title_nl: "Etiketten & labels: wat we kunnen printen",
+  body_de: `## Was wir haben
+
+Einen echten Profi-Etikettendrucker: **Epson ColorWorks C4000**. Vollfarbe in Fotoqualität (bis 1.200 dpi), pigmentierte Tinte – **wasserfest, wischfest, lichtbeständig**. Wir drucken auf **matte Etiketten**, das passt zu unserem ruhigen KANSŌ-Look. Damit sind zum Beispiel die Etiketten der Gewürzlinie und die Labels der Lüneburg-Häuschen entstanden.
+
+Drucken machen Bas und Lea. Für dich zählt: **Was wäre ein schönes Etikett?** Ideen sind immer willkommen.
+
+## Was geht – Formate
+
+| Was | Möglich |
+|---|---|
+| Breite | Rollen von 25 bis 112 mm breit, bedruckbar bis **108 mm** (gut 10 cm) |
+| Länge | von **8 mm bis ca. 40 cm** pro Etikett |
+| Formen | rechteckig in jeder Länge (der Drucker schneidet selbst); rund, oval oder mit Ecken nur mit passend vorgestanzter Rolle |
+| Farben | alles, inklusive Fotos, Verläufe, feine Schrift, QR- und Barcodes |
+| Material | matt (Standard bei uns); möglich wären auch glänzend oder Kunststoff-Etiketten für draußen |
+
+Faustregel: alles, was auf eine Fläche bis etwa 10 × 40 cm passt, können wir drucken – von der kleinen Preisetikette bis zum langen Banderole-Streifen um eine Schachtel.
+
+## Ideen: wo Etiketten uns stärker machen
+
+**Eigene Produkte**
+- **KANSO SPICES** und **Raumduft**: einheitliche Etiketten mit Name, Herkunft, Füllmenge, MHD – sauber und wiedererkennbar.
+- **Lüneburg-Häuschen**: Label auf der Box mit dem Motiv-Namen und einem Satz zum Gebäude („St. Johannis – die Kirche mit dem schiefen Turm").
+- **Bundles und Q4-Geschenksets**: Banderole um das Set, z. B. „Abend am Feuer: Tischfeuer + Tenderfuel + Pen Torch".
+
+**Laden und Verpackung**
+- **Siegel-Sticker** für Geschenkpapier und Tüten: rund, KANSŌ-Logo, „Mit Liebe aus Lüneburg". Macht jedes Päckchen zur Marke.
+- **Einheitliche Preisschilder** und Regal-Etiketten in einem Stil – wirkt sofort hochwertiger.
+- **Pflege-Kärtchen als Sticker**: z. B. für Tenderflame „Nach dem Abend: Brennstoff zurück in die Flasche" – innen auf die Schachtel, erspart Reklamationen.
+- **QR-Sticker** an der Kasse oder auf der Tüte: zu Instagram, Google-Bewertung oder der Produktseite.
+
+**Partner und Projekte**
+- **Verkaufsstellen der Häuschen** (z. B. Tourist-Info): Display-Schild „Lüneburg-Häuschen – hier erhältlich" und kleine Nummern-Sticker, damit wir bei Kommission sehen, was verkauft ist.
+- **Outdoor-Küchen und Pergola**: „Geplant und montiert von KANSŌ Lüneburg" als dezentes Typenschild-Etikett innen an der Tür.
+- **Workshops und Events** (Kamado 2027): Namensschilder, Gutscheine, Rezept-Etiketten für Gewürzmischungen zum Mitnehmen.
+
+## Wenn du eine Idee hast
+
+1. Kurz beschreiben: wofür, welche Größe, wie viele.
+2. Entwurf in **Canva** (Lea hat die Vorlagen) – Marke, Schrift und Farben wie bei den bestehenden Etiketten.
+3. Gedruckt wird nur aus einer **von Lea oder Bas freigegebenen Masterdatei**. Bei Produkten mit Lebensmitteln (Gewürze) müssen Pflichtangaben stimmen – immer gegenprüfen lassen.
+
+Tipp: Erst ein Etikett testweise drucken und aufkleben, dann die Serie.`,
+};

@@ -2,7 +2,7 @@ import "server-only";
 import { q, q1, databaseUrl, pool } from "./db";
 import { SCHEMA_SQL, SCHEMA_VERSION } from "./schema";
 import { runSeed } from "./seed";
-import { ETIKETTEN_PAGE, VERKAUF_PAGES } from "./seed-data/pages-verkauf";
+import { ETIKETTEN_PAGE, KERZEN_PAGE, VERKAUF_PAGES } from "./seed-data/pages-verkauf";
 
 export async function migrate() {
   // In één transactie met een slot, zodat twee gelijktijdige starts elkaar niet in de weg zitten
@@ -53,6 +53,12 @@ export async function migrate() {
     await q("update kb_pages set body_de = $2, title_de = $3, title_nl = $4, body_nl = null, updated_at = now() where slug = $1",
       [ETIKETTEN_PAGE.slug, ETIKETTEN_PAGE.body_de, ETIKETTEN_PAGE.title_de, ETIKETTEN_PAGE.title_nl]);
     await q("insert into settings (key, value) values ('mig_v15_kb', 'true'::jsonb) on conflict (key) do nothing");
+  }
+  // v17: Kerzen- & Textilseite mit Sojawachs-Kerzen, Verkaufsideen und Lounge-Kissen (einmalig)
+  if (!(await q1("select 1 from settings where key = 'mig_v17_kb'"))) {
+    await q("update kb_pages set body_de = $2, title_de = $3, title_nl = $4, body_nl = null, updated_at = now() where slug = $1",
+      [KERZEN_PAGE.slug, KERZEN_PAGE.body_de, KERZEN_PAGE.title_de, KERZEN_PAGE.title_nl]);
+    await q("insert into settings (key, value) values ('mig_v17_kb', 'true'::jsonb) on conflict (key) do nothing");
   }
   await q("insert into settings (key, value) values ('schema_version', $1::jsonb) on conflict (key) do update set value = excluded.value", [JSON.stringify(SCHEMA_VERSION)]);
 }

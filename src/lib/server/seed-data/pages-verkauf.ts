@@ -542,3 +542,69 @@ Faustregel: alles, was auf eine Fläche bis etwa 10 × 40 cm passt, können wir 
 
 Tipp: Erst ein Etikett testweise drucken und aufkleben, dann die Serie.`,
 };
+
+/** Wissensseite Kerzen & Textilien (Kategorie "produkte"), neu geschrieben in v17. */
+export const KERZEN_PAGE = {
+  slug: "keramik-kerzen-toepfe",
+  title_de: "Kerzen, Textilien & Wohnaccessoires",
+  title_nl: "Kaarsen, textiel & woonaccessoires",
+  body_de: `Neben Tenderflame haben wir viele kleinere Marken. Die aktuelle Liste mit Preisen siehst du immer unter **Produkte** (kommt live aus dem Webshop).
+
+## Unsere Sojawachs-Kerzen
+
+Wir haben eine große Partie eigener Kerzen: **Bubble-Kerzen** (die Würfel aus Kugeln), **Säulenkerzen** und die kleine **U-Kerze** (Bogenform). Alle aus **Bio-Sojawachs** – brennt sauberer und ruhiger als Paraffin, natürlicher Rohstoff. Jede Kerze steckt in einer **stabilen eigenen Schachtel**: perfekt zum Verschenken und problemlos zu verschicken.
+
+Davon haben wir noch reichlich Vorrat – diese Kerzen sind ein **Fokusprodukt**: bei jedem passenden Verkauf mit anbieten.
+
+### So verkaufst du sie
+
+- **Als Mitnahme an der Kasse**: „Schon fertig verpackt, ein schönes kleines Geschenk." Die Schachtel ist das Argument.
+- **Zum Stil passend**: Bubble-Kerze ist ein Design-Objekt, auch unangezündet – „steht einfach schön auf dem Sideboard". U-Kerze und Säulen für den Esstisch.
+- **Zu anderen Käufen**: Tischläufer, Kerzenhalter, Luca-Gefäß, Häuschen – die Kerze rundet ab.
+- **Versand**: Wer für jemanden außerhalb kauft – wir schicken die Kerze direkt hin.
+
+### Ideen, damit sie besser laufen (für Bas, Lea und das Team)
+
+Fertige Bundles haben bisher nicht gezündet. Was wir als Nächstes testen können:
+
+1. **Brennend zeigen, nicht im Regal.** Auf dem Tisch der Showroom-Küche, im Schaufenster, auf dem Counter – in Gruppen von drei oder fünf, verschiedene Höhen auf einem Tablett. Kerzen verkaufen sich über Atmosphäre.
+2. **Adventsset statt Bundle.** Vier Säulenkerzen auf einem Tablett oder Teller als **Adventskranz-Alternative** – jetzt im November der richtige Moment. Fertig dekoriert ins Schaufenster.
+3. **Frei kombinieren statt festes Set.** „3 Kerzen nach Wahl für X €" – der Kunde stellt selbst zusammen, das fühlt sich nach Auswahl an, nicht nach Restposten.
+4. **Zugabe bei größeren Käufen.** Ab einem Einkaufswert (z. B. 75 €) eine U-Kerze als Geschenk – bewegt Ware und macht Kunden glücklich, kostet uns wenig.
+5. **Geschenk an der Kasse sichtbar machen.** Kleines Schild „Fertig verpackt – Geschenk in 10 Sekunden" mit Preis direkt neben der Kasse.
+6. **Firmen- und Weihnachtsgeschenke.** Zusammen mit dem Lüneburg-Häuschen als Paket für Firmen (Mitarbeiter-, Kundengeschenke).
+7. **Social Media.** Bubble-Kerzen sind sehr fotogen – Reel „Kerze anzünden, Zeitraffer", Weihnachtstisch-Styling, Verpackungs-Video.
+8. **Eigenes Label.** Mit dem Etikettendrucker ein KANSŌ-Label auf die Schachtel: „Bio-Sojawachs · handverpackt in Lüneburg" – macht aus der Kerze ein Kanso-Produkt.
+9. **Verkaufsstellen.** Den Häuschen-Partnern (Tourist-Info, Hotels) die Kerzen gleich mit anbieten.
+
+[[BAS PRÜFEN: Preise je Kerze, Brenndauer, Duft ja/nein]]
+
+## Weitere Kerzen & Kerzenhalter
+
+- **Original home** – Kerzen (Spiral-, Dip-Dye-, dünne Kerzen) und Kerzenhalter aus Holz.
+- **Onrus** – handgegossene EcoSoy-Kerzen, vegan.
+- **MIAMIO** – Kerzenhalter aus Metall, dazu Glas und Stoffservietten.
+- **ByBazz** – Teak (Servierschalen, Löffel, Serviettenringe) und Kerzenhalter aus Marmor.
+- **O Cactuu** – Keramik-Kerzenhalter.
+
+## Textilien
+
+- **Outdoor-Kissen** – laufen gut. Für Lounge, Bank und Gartenstuhl.
+- **Lapuan Kankurit** – Weberei aus Lapua (Finnland), gegründet 1922, seit vier Generationen in Familienhand. Leinen (europäischer Langflachs), Merinowolle, Baumwolle, in Finnland gewebt. Bei uns: Tischläufer, Leinenhandtücher, Wolldecken (ca. 20–180 €). Argument: Handwerk, Herkunft, hält jahrelang.
+- **Pihapuu** – Wolldecken mit Fransen.
+
+### Coming soon: Kissen für die Lounge
+
+Im Laden stehen ein **Lounge-Set** und ein **Tisch**. Viele Kunden sagen, die Lounge wirkt noch „etwas hölzern" – deshalb lassen wir **passende Kissen aus gutem Outdoor-Stoff** nähen (eine Freundin von Lea näht sie). Dann verkaufen wir die Lounge als komplettes Set. Wenn Kunden fragen: „Die Kissen kommen in Kürze – soll ich dich vormerken?" und als Kundenwunsch eintragen.
+
+## Keramik & Töpfe
+
+Pflanzgefäße: siehe **Luca Lifestyle**. Für Geschirr und Keramik gilt: Spülmaschine, Mikrowelle, frostfest – nur zusagen, wenn es auf dem Etikett steht.
+
+## Worauf Kundschaft achtet – und was du sagst
+
+- **Spülmaschine / Mikrowelle?** → Steht meist auf dem Etikett. Wenn nicht: „Das schaue ich nach" – nicht raten.
+- **Für draußen? Frostfest?** → Nur zusagen, wenn es auf dem Etikett oder hier steht.
+- **Gibt es das passend dazu?** → Zeigen, was zusammenpasst (Farbe, Material) – das ist gute Beratung, kein Drängen.
+- **Woher kommt das?** → Herkunft ist bei uns ein echtes Argument (Finnland, Handarbeit, Bio-Sojawachs).`,
+};

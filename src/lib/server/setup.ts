@@ -24,6 +24,14 @@ export async function migrate() {
     await q("insert into kb_pages (slug, category, title_de, title_nl, body_de, position) values ($1,'verkauf',$2,$3,$4,$5) on conflict (slug) do nothing",
       [pg.slug, pg.title_de, pg.title_nl, pg.body_de, pg.position]);
   }
+  // v12: KOALA-, Vesper- und Häuschen-Seite mit Katalog-, Preis- und Händlerinfos neu geschrieben (einmalig überschreiben)
+  if (!(await q1("select 1 from settings where key = 'mig_v12_kb'"))) {
+    for (const slug of ["verkauf-koala-kitchens", "verkauf-vesper-kitchens", "verkauf-lueneburg-haeuschen"]) {
+      const pg = VERKAUF_PAGES.find((x) => x.slug === slug);
+      if (pg) await q("update kb_pages set body_de = $2, updated_at = now() where slug = $1", [slug, pg.body_de]);
+    }
+    await q("insert into settings (key, value) values ('mig_v12_kb', 'true'::jsonb) on conflict (key) do nothing");
+  }
   await q("insert into settings (key, value) values ('schema_version', $1::jsonb) on conflict (key) do update set value = excluded.value", [JSON.stringify(SCHEMA_VERSION)]);
 }
 

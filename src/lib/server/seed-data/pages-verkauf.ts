@@ -92,37 +92,77 @@ Zünde eines an, wenn ein Kunde zögert. Die Flamme verkauft sich selbst. Brenne
     position: 3,
     body_de: `## Was es ist
 
-Modulare Outdoor-Küchen aus den Niederlanden: Gestell aus verzinktem, pulverbeschichtetem Stahl, Arbeitsplatte aus **Dekton** (kratz-, hitze- und UV-fest, pflegefrei). Ganzjährig draußen, wetterfest. Mittleres Premium-Segment: ab etwa 4.500 €, mit allem Drum und Dran bis rund 20.000 €.
+Modulare Outdoor-Küchen aus den Niederlanden, von Hand gebaut: Gestell aus verzinktem, pulverbeschichtetem Stahl (auch innen in den Rohren beschichtet – kein Rost), Arbeitsplatte aus **Dekton** (nimmt kein Wasser und kein Fett an, hitze-, UV- und frostfest, 25 Jahre Herstellergarantie von Cosentino). Bleibt das ganze Jahr draußen stehen. **5 Jahre Garantie** auf Konstruktion und Verarbeitung. Für jede verkaufte Küche wird ein Baum gepflanzt.
 
-## Aufbau
-
-Module frei kombinieren: Grillmodul (Kamado oder Napoleon-Gasgrill), Spüle, Kühlschrank, Schubladen, Türen (Stahl oder Holz, z. B. Eiche), Arbeitsflächen. Fünf Gestellfarben: **Schwarz, Anthrazit, Grün, Champagne, Marrone**. Sechs Dekton-Dekore: Aura, Ava, Bromo, Entzo, Kelya, Laurent.
+Preise sind Endpreise **inkl. MwSt., Lieferung und Montage**: zwei Leute stellen die Küche auf, richten sie aus und nehmen die Verpackung mit. Im Umkreis von 65 km um Lüneburg ist das im Preis drin, weiter weg kommt die Anfahrt dazu (Bas und Lea nennen den Betrag). Der Kunde braucht nur einen ebenen Untergrund und einen Weg, der breit genug ist. Strom und Wasser (nur für Kühlschrank, Licht oder Spüle nötig) legt der Kunde mit seinem Elektriker / Installateur.
 
 ## Die drei Küchen im Showroom
 
-1. **Schwarz mit Dekton Kelya** – äußere Schränke mit Eichentüren, rechts Schubladen, in der Ecke das BBQ-Modul. Verkaufspreis 10.799 €.
-2. **Marrone mit Dekton Entzo** – links neben dem Kühlschrank die Napoleon-Module. Verkaufspreis 7.782,50 €.
-3. **Champagne mit Dekton Ava** – Verkaufspreis 4.847 €.
+Die Preise stehen auf dem Preisschild an der jeweiligen Küche – das ist die Referenz, nicht dein Gedächtnis.
 
-Preise inkl. MwSt., Stand März 2026. [[BAS PRÜFEN: Preise aktuell? Lieferung und Montage inklusive?]]
+1. **Schwarz mit Dekton Kelya** – äußere Schränke mit Eichentüren, rechts Schubladen, in der Ecke das BBQ-Modul.
+2. **Marrone mit Dekton Entzo** – links neben dem Kühlschrank die Napoleon-Module.
+3. **Champagne mit Dekton Ava** – der kompakte Einstieg.
 
-## Aktion bis Dezember
+## Aufbau und Möglichkeiten
 
-**10 % Vorbestell-Rabatt** für alle, die bis Ende Dezember bestellen. Bedingung: 50 % Anzahlung bei Bestellung, der Rest vor Lieferung. Lieferung dann **März / April** – pünktlich zur Saison. Das ist das Argument für den Winterkauf: „Jetzt planen, im Frühling grillen – und 10 % sparen."
+Alles basiert auf **60 × 60 cm Modulen** im 15-cm-Raster, Breiten von 60 bis 240 cm. Formen: gerade Zeile, L-Form (Ecke), Insel, U-Form oder zwei Zeilen gegenüber. Module: Türen, Schubladen, offenes Regal, Grillmodul, Spüle, Kühlschrank.
 
-## Ablauf und Zeiten
+- **Gestellfarben** (ohne Aufpreis): Schwarz, Anthrazit, Dunkelgrün, Champagne, Marrone.
+- **Fronten**: Holz in Fraké oder amerikanischer Eiche, als Planchet (Lamellen) oder Rhombus – oder ohne Holz, dann Stahl in der Gestellfarbe.
+- **Dekton-Dekore** (ohne Aufpreis): Laurent, Kelya, Bromo, Trevi, Sandik, Aura, Ava, Entzo.
+- **Unterbau**: Rollen, Stellfüße oder Sockelblende.
+- **Extras**: Spüle, Kühlschrank, Kamado (Moddern), Napoleon-Einbaugasgrill, Kochfeld, integrierte Steckdose, Spritzschutz. Grill und Kamado sind immer extra und werden vor der Lieferung eingepasst.
 
-Beratung bei uns oder beim Kunden zu Hause (Aufmaß, Platz, Wasser- und Stromanschluss). Planung und Angebot machen Bas und Lea. Lieferzeit ab Bestellung etwa 6 Wochen für die Gestelle, Arbeitsplatten etwa 4 Wochen nach endgültigem Aufmaß. Lieferung und Montage durch unser Team.
+Eine Musterbox mit Holz, Dekton und Lack kann der Kunde mitnehmen oder ausleihen.
+
+## Richtpreise (Konfigurator, inkl. MwSt., Lieferung und Montage)
+
+Standard: schwarzes Gestell, Stahlfronten, Dekton, auf Rollen. Kamado und Gasgrill extra.
+
+| Startmodell | Größe | ab |
+|---|---|---|
+| Kompakt | ca. 1,20 m, 2 Module | 3.470 € |
+| Kamado | ca. 1,30 m, mit Kamado-Modul | 4.320 € |
+| Grill × Kühlung | ca. 1,90 m, mit Kühlschrank | 6.270 € |
+| Full Service | ca. 2,50 m, mit Spüle | 8.700 € |
+| Corner | ca. 2,50 × 1,20 m, L-Form | 9.370 € |
+
+Mit Holzfronten, Kühlschrank, Spüle und Grill landet eine volle Küche meist zwischen 8.000 und 15.000 €. Der Konfigurator auf kanso-outdoor.com/konfigurator zeigt die Küche in 3D – der Kunde kann ohne Account starten, ein PDF speichern und zum Termin mitbringen.
+
+## Neu ab 2027: Organic und Pebble
+
+Zeig das Vorschau-PDF (Sneak Preview 2027) – es liegt im Laden und in der Hub:
+
+- **Organic** – abgerundete Ecken und fließende Übergänge, die Küche „verschmilzt mit dem Garten". Drei Bausteine: **Organic Sides** (runde Seitenteile inkl. Arbeitsplatte, **1.669 €** zusätzlich zur Küche), **Organic Open** (offene Ausführung) und **Organic Closed** (geschlossene Ausführung) – beide kosten so viel wie ein Standard-BBQ-Modul. Sides lassen sich mit Open oder Closed kombinieren.
+- **Pebble** – neue, warme, ruhige Farbe (Greige/Taupe) als sechste Gestellfarbe.
+- **Einstiegsmodell** – immer Organic Open in Pebble mit Dekton Keena: **zwei Module** (Standard + BBQ, links oder rechts) **2.695 €**, **drei Module** (Standard + BBQ + Standard, je mit oder ohne Ablage) **3.795 €**. Unverbindliche Preise inkl. MwSt.
+
+Argument: Wer jetzt mit dem Frühbucher-Rabatt bestellt, bekommt die Küche im Frühjahr – und wer sich für Organic interessiert, lässt sich von Bas und Lea beraten, ob und wie das schon in die Bestellung passt.
+
+## Saisonvorteil bis 31. Dezember
+
+**10 % Rabatt auf die komplette Outdoor-Küche** für alle, die bis 31. Dezember bestellen. Gilt auch für Kühlschrank, Spüle und Armatur – **nicht** für Gasgrill oder Kamado. Die Bestellung muss vor dem 1. Januar eingegangen und vollständig freigegeben sein. Bei uns: **50 % Anzahlung** bei Bestellung, der Rest vor Lieferung. **Lieferung im März oder April, garantiert** – pünktlich zur Saison. Das ist das Argument für den Winterkauf: „Jetzt planen, im Frühling grillen – und 10 % sparen." Den Flyer gibt es zum Mitgeben.
+
+## Ablauf
+
+1. Bedarf klären (siehe unten), Interesse als **Projekt-Interessent** in die Hub.
+2. Bas oder Lea planen: beim Kunden (Aufmaß, Platz, Anschlüsse) oder nach Fotos und Maßen. Zeichnung und Festpreis.
+3. Nach Freigabe wird gebaut: etwa **6–8 Wochen** ab Bestellung (außerhalb der Aktion).
+4. Lieferung und Montage durch unser Team; Terminvorschlag kommt mit der Bestellung.
+
+Bis zum ersten Frost: Wasserleitung entleeren, Grill abdecken. Schrank, Platte und Beschläge bleiben draußen.
 
 ## Dein Part im Gespräch
 
-Du klärst den Bedarf und machst Lust: Wie groß ist die Terrasse, wie oft wird gekocht, Gas oder Holzkohle, was ist das Budget, bis wann soll es stehen? Alles als **Projekt-Interessent** eintragen – eine Küche ist ein Projekt über 4.000 € und zählt für deine Provision. Keine Preiszusagen, keine Rabattzusagen außer der laufenden Aktion.
+Wie groß ist die Terrasse, wo soll die Küche stehen (frei, unter Dach, Pergola, Balkon)? Wie oft wird gekocht, Gas oder Holzkohle? Spüle und Kühlschrank gewünscht? Budget (bis 5.000 / 5–8 / 8–12 / über 12.000 €)? Bis wann soll sie stehen? Alles in die Hub – eine Küche ist ein Projekt über 4.000 € und zählt für deine Provision. Keine Preiszusagen außer den Richtpreisen, kein Rabatt außer dem Saisonvorteil.
 
 ## Einwände
 
-- „Das ist teuer." – Dekton und Stahl halten Jahrzehnte, keine Pflege, kein Abdecken. Vergleich: eine Innenküche kostet mehr und steht nicht im Regen.
-- „Rost?" – Verzinkt und pulverbeschichtet, dafür gebaut.
-- „Ich will erst sehen, wie es aussieht." – Genau dafür stehen drei Küchen im Laden. Und der Konfigurator von KOALA zeigt die Küche per AR auf der eigenen Terrasse.`,
+- „Das ist teuer." – Dekton und Stahl halten Jahrzehnte, keine Pflege, kein Abdecken, Lieferung und Montage sind drin. Eine Innenküche kostet mehr und steht nicht im Regen.
+- „Rost?" – Verzinkt und pulverbeschichtet, auch innen. Dafür gebaut.
+- „Ich will erst sehen, wie es aussieht." – Dafür stehen drei Küchen im Laden, und der Konfigurator zeigt sie in 3D. Musterbox mitgeben.
+- „Ich brauche eine Sonderform." – Dann ist **Vesper** die Antwort (eigene Seite).`,
   },
   {
     slug: "verkauf-vesper-kitchens",
@@ -131,22 +171,53 @@ Du klärst den Bedarf und machst Lust: Wie groß ist die Terrasse, wie oft wird 
     position: 4,
     body_de: `## Was es ist
 
-Unsere High-End-Linie: modulare Outdoor-Küchen aus **Edelstahl, in Europa gefertigt** und von Hand gebaut. Für Kunden, die das Beste wollen und bei denen Material und Verarbeitung zählen. Ab etwa 6.000 €.
+Unsere High-End-Linie: Designer-Outdoor-Küchen aus **Edelstahl, entwickelt und gefertigt in Italien**. Kein festes Raster – Vesper wird nach dem Grundriss des Kunden geplant, jede Abmessung und Form ist möglich (Ecken, Überstände, Inseln). Für Kunden mit höherem Budget, Architekten-Projekte und Terrassen, auf denen eine Modulküche nicht passt.
 
-## Module
+**Preise**: ab etwa 6.000 €, typische Konfigurationen liegen zwischen **8.000 und 35.000 €** – je nach Größe, Modulen und Geräten. Die Preise für die drei Showroom-Modelle stehen auf dem Preisschild. Lieferzeit ist länger als bei KOALA und wird mit dem Angebot genannt.
 
-Grill, Spüle und Stauraum, frei nach dem Grundriss des Kunden geplant. Drei Modelle im Showroom – Oberflächen Geist, Champagne und Braun. [[BAS PRÜFEN: Modellnamen, Ausstattung und Preise der drei Showroom-Modelle; Lieferzeit; Garantie]]
+## Material
+
+- Korpus aus Edelstahl **AISI 304 / 316** (je nach Bauteil), Fronten aus Edelstahl oder beschichtetem Zink-Magnesium mit integriertem Griff.
+- Arbeitsplatte standardmäßig **4 mm gebürsteter Edelstahl**, optional **Dekton** in mehreren Farben.
+- Höhenverstellbare Füße, Push-Latches im Yacht-Stil, Vollauszüge bis 60 cm auf Edelstahlführungen. Schubladenseiten weiß oder schwarz, Edelstahl optional.
+- Pflege: Edelstahl entlang der Schliffrichtung reinigen, kein Chlor, keine Säuren, kein Entkalker; beschichtete Flächen mit neutraler Seife.
+
+## Module und Breiten
+
+Türmodule 45 / 50 / 60 cm, Doppeltüren 90 / 120 cm · Schubladenmodule 50 / 60 / 90 / 120 cm · BBQ-Module 90 / 120 cm (Grill separat) · offene Module 90 / 120 cm · Hochschränke 60 cm breit, 120 cm hoch · Spülen- und Kochfeldmodule, Kühlschrankmodule, Eckmodule links/rechts, Wangen, Inselrückwände und -sockel, Schutzhüllen.
+
+**Geräte** (nicht im Preis, außer angegeben): Grills von Napoleon, Gaskochfelder Barazza, Induktion Electrolux, Weinkühler Vitrifrigo, Spülen, versenkbare Steckdosen, Holzöfen.
+
+## Farben und Setups aus dem Katalog
+
+Acht Farben, darunter: Olive Green, Brilliant White, Champagne, Satin Edelstahl, Oxide Brown. Fünf fertige Setups als Gesprächsgrundlage:
+
+| Setup | Farbe | Form | Besonderheit |
+|---|---|---|---|
+| Olive Compact | Olive Green | kompakt | Spüle, Stauraum, Schubladen, Platz für Kochfeld |
+| White Linear | Brilliant White | gerade Zeile | Spüle, Stauraum, Schubladen, Kochfeldbereich |
+| Champagne XL | Champagne | modular, groß | Holzofen, Spüle, integrierter BBQ |
+| Inox Corner | Satin Edelstahl | L-Form | Induktion, Spüle, Schubladen |
+| Oxide L-Shape | Oxide Brown | L-Form | Holzofen, Spüle, Schubladen |
+
+Katalog: kanso-outdoor.com/katalog/vesper (PDF, 17 Seiten) – zum Mitgeben oder Mailen.
 
 ## Vesper oder KOALA?
 
-- **KOALA**: pulverbeschichteter Stahl mit Dekton-Platte, viele Farben, bestes Preis-Leistungs-Verhältnis. Für die meisten Familien die richtige Wahl.
-- **Vesper**: massiver Edelstahl, Manufaktur-Qualität, das Küchen-Gefühl von drinnen nach draußen. Für Kunden mit höherem Budget oder Architekten-Projekten.
+- **KOALA**: pulverbeschichteter Stahl mit Dekton, festes Modulraster, 6–8 Wochen, ab 3.470 € inkl. Montage. Für die meisten Familien die richtige Wahl.
+- **Vesper**: Edelstahl-Manufaktur aus Italien, frei geplant, jede Form, Geräte genau dort, wo der Kunde sie will. Für Kunden, bei denen Material, Verarbeitung und Maßarbeit zählen.
 
-Frag nach Budget und Anspruch, dann zeig die passende Küche zuerst. Beide stehen im Laden.
+Frag nach Budget, Platz und Anspruch – dann zeig die passende Küche zuerst. Beide stehen im Laden.
+
+## Ablauf
+
+1. Bedarf, Raum und Maße aufnehmen (Foto der Terrasse hilft).
+2. Bas und Lea planen individuell, Zeichnung und Angebot.
+3. Nach Freigabe Produktion in Italien, dann Lieferung und Montage.
 
 ## Dein Part
 
-Wie bei KOALA: Bedarf klären, Lust machen, als **Projekt-Interessent** eintragen. Planung, Angebot, Preis und Rabatt machen Bas und Lea.`,
+Wie bei KOALA: Bedarf klären, Lust machen, als **Projekt-Interessent** eintragen – ein Vesper-Projekt liegt immer über 4.000 € und zählt für deine Provision. Planung, Preis und Rabatt machen Bas und Lea. Der KOALA-Saisonvorteil gilt **nicht** für Vesper.`,
   },
   {
     slug: "verkauf-lueneburg-haeuschen",
@@ -155,7 +226,7 @@ Wie bei KOALA: Bedarf klären, Lust machen, als **Projekt-Interessent** eintrage
     position: 5,
     body_de: `## Was es ist
 
-Unsere eigenen Windlichter: fünf Lüneburger Wahrzeichen aus 2 mm Stahlblech, lasergeschnitten und schwarz matt pulverbeschichtet. Ein Teelicht dahinter, und die Fenster leuchten. Das Lüneburg-Geschenk – für Einheimische, Ehemalige und Besucher.
+Unsere eigenen Windlichter: fünf Lüneburger Wahrzeichen aus 2 mm Stahlblech, lasergeschnitten und schwarz matt pulverbeschichtet. Entworfen in Lüneburg, gefertigt in den Niederlanden. Ein Teelicht dahinter, und die Fenster leuchten. Das Lüneburg-Geschenk – für Einheimische, Ehemalige und Besucher.
 
 ## Die fünf Motive
 
@@ -165,26 +236,40 @@ Unsere eigenen Windlichter: fünf Lüneburger Wahrzeichen aus 2 mm Stahlblech, l
 - **St. Johannis** – die Kirche mit dem schiefen Turm (das höchste, 20,5 cm)
 - **Wasserturm** – der neugotische Turm
 
-Zwischen 12 und 21 cm hoch, 120 bis 270 g. Passt jedes Teelicht bis 39 mm, auch LED.
+Zwischen 12 und 21 cm hoch, 120 bis 270 g. Passt jedes Teelicht bis 39 mm, auch LED. Motive frei kombinierbar.
 
-## Preise
+## Preise (Preiskarte)
 
-- Einzeln **27,90 €**
-- Zwei **52 €**, drei **75 €**
-- Alle fünf **109 €** [[BAS PRÜFEN: Website nennt an einer Stelle 119 €, an anderer 109 €]]
+| | mit Geschenkbox (Teelicht & Karte) | ohne Box |
+|---|---|---|
+| 1 Häuschen | **27,90 €** | 24,99 € |
+| 2er-Set | **52,00 €** | 48,99 € |
+| 3er-Set | **75,00 €** | 69,99 € |
+| 4er-Set | **98,00 €** | 89,99 € |
+| Alle 5 | **119,00 €** | 109,99 € |
 
-Jedes Häuschen kommt in einer braunen Klappschachtel mit Teelicht und einer Karte zum Beschriften – die Geschenkverpackung ist inklusive, das sagst du dazu.
+Standard ist **mit Box**: braune Klappschachtel, Teelicht und Karte zum Beschriften – die Geschenkverpackung ist inklusive, das sagst du dazu. „Ohne Box" nur, wenn der Kunde es ausdrücklich für sich selbst will. Kein weiterer Rabatt – eigenes Produkt, fairer Preis, die Sets sind der Rabatt.
 
 ## So verkaufst du es
 
 - „Welches ist deins?" – fast jeder Lüneburger hat eine Verbindung zu einem der Gebäude. Lass ihn wählen, dann kommt das zweite oft von selbst (zwei für 52 €).
 - Geschenkfrage: „Für wen soll es sein – wohnt die Person hier oder vermisst sie Lüneburg?" Das Häuschen reist gut, 4,90 € Versand in Deutschland, ab drei kostenlos.
 - Zeig es brennend. Ein Teelicht im Häuschen auf dem Counter macht mehr als jedes Wort.
-- Firmen und Vereine: alle fünf als Set, Weihnachtsgeschenk für Mitarbeiter. Interesse an größeren Mengen → an Bas und Lea weitergeben.
+- Rechne hoch: „Alle fünf für 119 € – das sind 23,80 € pro Häuschen statt 27,90 €."
+- Firmen und Vereine: alle fünf als Set, Weihnachtsgeschenk für Mitarbeiter oder Kunden. Mengen ab 10 → an Bas und Lea weitergeben.
+
+## Händler und Verkaufsstellen
+
+Die Häuschen gibt es nicht nur bei uns: Verkaufsstelle ist auch die **Tourist-Information (lueneburg.info)**, und wir suchen weitere – Hotels, Buchläden, Museumsshops, Cafés, Geschenkläden. Fragt ein Ladenbesitzer oder eine Hotelrezeption, gibt es zwei Modelle:
+
+1. **Kommission**: Wir stellen die Häuschen hin (in der Regel 4 pro Motiv, also 20), der Händler kauft nichts ein. Verkauft er ein Häuschen, bekommt er **15 % vom Verkaufspreis**, wir den Rest. Nachschub kommt von uns.
+2. **Einkauf**: Ab **30 Stück** kauft der Händler ein und bekommt **30 % Rabatt** pro Häuschen; dann gehören die Häuschen ihm und er verkauft sie auf eigene Rechnung.
+
+Du musst nichts verhandeln: Name, Geschäft, Kontakt und Interesse als **Projekt-Interessent** mit Produkt „Lüneburg-Häuschen Händler" in die Hub, Bas oder Lea melden sich. Eine neue Verkaufsstelle ist Werbung für uns in der ganzen Stadt – also ruhig aktiv fragen, wenn jemand erzählt, dass er einen Laden oder ein Hotel hat.
 
 ## Gut zu wissen
 
-Vorderseite wird handwarm, die Fensterränder heißer – nach dem Löschen ein paar Minuten warten. Draußen nur überdacht; die Schnittkante kann bei Dauerregen Flugrost ansetzen. Kein Rabatt – das ist unser eigenes Produkt mit fairem Preis.`,
+Vorderseite wird handwarm, die Fensterränder heißer – nach dem Löschen ein paar Minuten warten. Draußen nur überdacht; die Schnittkante kann bei Dauerregen Flugrost ansetzen.`,
   },
   {
     slug: "verkauf-rijpex-pergola",

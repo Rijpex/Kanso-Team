@@ -1,6 +1,6 @@
 /** Databaseschema. Alles is idempotent: opnieuw draaien kan altijd. */
 /** Ophogen bij elke schemawijziging: de app werkt de database dan zelf bij. */
-export const SCHEMA_VERSION = 11;
+export const SCHEMA_VERSION = 12;
 
 export const SCHEMA_SQL = `
 create extension if not exists pgcrypto;

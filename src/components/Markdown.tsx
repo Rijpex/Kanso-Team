@@ -18,12 +18,27 @@ function inline(text: string, key: string): React.ReactNode[] {
   return out;
 }
 
-/** Eenvoudige opmaak: ### kopje, - lijst, 1. lijst, **vet**, [[nog invullen]], links. */
+/** Eenvoudige opmaak: #/##/### kopje, - lijst, 1. lijst, | tabel |, **vet**, [[nog invullen]], links. */
 export function Markdown({ text }: { text: string }) {
   const lines = (text || "").split("\n");
   const blocks: React.ReactNode[] = [];
   let list: { ordered: boolean; items: string[] } | null = null;
+  let table: string[][] | null = null;
+  const flushTable = () => {
+    if (!table) return;
+    const [head, ...rows] = table;
+    blocks.push(
+      <div key={blocks.length} className="my-3 overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead><tr>{head.map((c, i) => <th key={i} className="border-b border-sand-300 px-2 py-1 text-left font-semibold">{inline(c, `th${blocks.length}-${i}`)}</th>)}</tr></thead>
+          <tbody>{rows.map((r, ri) => <tr key={ri} className="border-b border-sand-200 last:border-0">{r.map((c, i) => <td key={i} className="px-2 py-1 align-top">{inline(c, `td${blocks.length}-${ri}-${i}`)}</td>)}</tr>)}</tbody>
+        </table>
+      </div>,
+    );
+    table = null;
+  };
   const flush = () => {
+    flushTable();
     if (!list) return;
     const items = list.items.map((it, i) => <li key={i}>{inline(it, `li${blocks.length}-${i}`)}</li>);
     blocks.push(list.ordered ? <ol key={blocks.length}>{items}</ol> : <ul key={blocks.length}>{items}</ul>);
@@ -33,6 +48,15 @@ export function Markdown({ text }: { text: string }) {
     const line = raw.trimEnd();
     const ul = /^[-•]\s+(.*)$/.exec(line);
     const ol = /^\d+[.)]\s+(.*)$/.exec(line);
+    // Tabel: | a | b | – de Trennzeile |---|---| wird übersprungen
+    if (/^\|.*\|$/.test(line.trim())) {
+      if (list) flush();
+      const cells = line.trim().slice(1, -1).split("|").map((c) => c.trim());
+      if (cells.every((c) => /^:?-{2,}:?$/.test(c))) continue;
+      if (!table) table = [];
+      table.push(cells);
+      continue;
+    }
     if (ul || ol) {
       const ordered = !!ol;
       if (!list || list.ordered !== ordered) { flush(); list = { ordered, items: [] }; }
@@ -42,6 +66,8 @@ export function Markdown({ text }: { text: string }) {
     flush();
     if (!line.trim()) continue;
     if (line.startsWith("### ")) blocks.push(<h3 key={blocks.length}>{line.slice(4)}</h3>);
+    else if (line.startsWith("## ")) blocks.push(<h3 key={blocks.length}>{line.slice(3)}</h3>);
+    else if (line.startsWith("# ")) blocks.push(<h3 key={blocks.length}>{line.slice(2)}</h3>);
     else blocks.push(<p key={blocks.length}>{inline(line, `p${blocks.length}`)}</p>);
   }
   flush();

@@ -441,6 +441,56 @@ Das Starterpaket, das du jedem Kamado-Käufer vorschlägst: **Platesetter + Pizz
 
 Ein Kamado ist eine größere Anschaffung und oft Teil einer Outdoor-Küche. Frag: Wo soll er stehen, wie viele Leute, eher Steak oder eher Pizza und Ribs, kommt vielleicht eine Küche drumherum? Ab Küchen-Interesse als **Projekt-Interessent** eintragen (zählt für die Provision). Vorführung anbieten: Wir zünden ihn an, der Kunde darf probieren. Kein Rabatt auf Kamados; Zubehör ist der Mehrwert.`,
   },
+  {
+    slug: "verkauf-kanso-spices",
+    title_de: "KANSŌ SPICES – unsere Gewürze",
+    title_nl: "KANSŌ SPICES – onze kruiden",
+    position: 9,
+    body_de: `## Bald im Laden
+
+**KANSŌ SPICES** ist unsere eigene Gewürzlinie: 20 Mischungen, in Lüneburg abgefüllt, im Glas mit unserem eigenen Etikett. **Sie kommen in Kürze in den Laden** – bis dahin kannst du Kunden schon davon erzählen und Interesse als Kundenwunsch notieren.
+
+Jedes Glas hat dieselbe Etikettenlogik: Name groß, darunter drei Hauptzutaten, auf der Rückseite **Zutaten, passt zu, Anwendung, Füllmenge**. MHD steht auf dem Glasboden. Kühl, trocken und lichtgeschützt lagern.
+
+## Die 20 Sorten
+
+| Sorte | Art | Ideal für | Füllmenge |
+|---|---|---|---|
+| **Grillhähnchen Marinade** | Gewürzzubereitung | Geflügel, Kartoffeln, Grillgemüse | 85 g |
+| **Feuer & Flamme** | Gewürzzubereitung | scharf: Fleisch, Gemüse, Pasta, Marinaden | 80 g |
+| **Golden Chicken** | Gewürzzubereitung | orientalisch: Hähnchen, Currys, Reis | 90 g |
+| **Gartenkräuter** | Gewürzzubereitung | Salate, Dips, Quark, Kartoffeln | 40 g |
+| **Knusper Kartoffeln** | Gewürzsalz | Kartoffeln, Pommes, Ofengemüse | 125 g |
+| **Aglio, Olio & Chili** | Gewürzmischung | Pasta, Brot, Gemüse mit Olivenöl | 60 g |
+| **Zwiebel & Knoblauch** | Gewürzmischung | 2:1-Allrounder für Soßen, Dips, Fleisch | 90 g |
+| **Avocado Topping** | Gewürzzubereitung | Avocado, Guacamole, Bowls, Tacos | 100 g |
+| **Ofen- & Grillgemüse** | Gewürzsalz | Gemüse, Kartoffeln, Feta, Antipasti | 95 g |
+| **Chimichurri** | Gewürzzubereitung | Steak, Gemüse, Grillkäse | 70 g |
+| **Magic Dust BBQ-Rub** | Würzmischung | Ribs, Pulled Pork, Hähnchen – rauchig | 120 g |
+| **Dutch Oven** | Gewürzsalz | Schmorgerichte, Eintöpfe, Gegrilltes | 130 g |
+| **Salz & Pfeffer** | Gewürzsalz | grob, für die Mühle – passt zu allem | 160 g |
+| **Grillkäse** | Gewürzzubereitung | Grillkäse, Feta, mediterrane Marinaden | 80 g |
+| **Café de Paris** | Gewürzzubereitung | Kräuterbutter, Soßen, Steak | 50 g |
+| **Kräuterbutter** | Gewürzzubereitung | Butter, Brot, Fleisch, Fisch | 50 g |
+| **Pizza & Pasta** | Gewürzmischung | Pizza, Pasta, Tomatensoße, Bruschetta | 50 g |
+| **Tomate & Mozzarella** | Gewürzzubereitung | Caprese, Salate, Bruschetta | 80 g |
+| **Fisch & Garnelen** | Gewürzsalz | Fisch, Garnelen, mit Zitrone | 110 g |
+| **Crispy Burger** | Gewürzzubereitung | Burger, Patties, mit Röstzwiebel | [[BAS PRÜFEN: Füllmenge fehlt auf dem Etikett]] |
+
+## So verkaufst du sie
+
+- **Frag, was gekocht wird.** „Grillst du eher Fleisch, Gemüse oder Fisch?" – dann zwei, drei Sorten vorschlagen. Die Spalte „Ideal für" ist dein Spickzettel.
+- **Kombinieren mit dem, was im Laden steht.** Kamado-Kunde → Magic Dust BBQ-Rub und Dutch Oven. Pizzastein → Pizza & Pasta. Grillkäse-Fan → Grillkäse und Chimichurri. Outdoor-Küche → das Set als Einzugsgeschenk.
+- **Sets und Geschenke.** Drei Gläser als Geschenk (z. B. „Grillabend": Magic Dust, Chimichurri, Knusper Kartoffeln) – ideal zu Weihnachten und als Mitbringsel.
+- **Probieren lassen**, sobald Proben am Counter stehen (siehe „Gewürzproben für Kunden").
+- **Die Anwendung steht auf dem Glas** – meist „1 EL Gewürz mit 2 EL Öl verrühren, einreiben, ziehen lassen". Das kannst du so weitergeben.
+
+## Gut zu wissen
+
+- Allergene: **Senfsaat** in Golden Chicken und Crispy Burger. Bei Allergie-Fragen immer die Zutatenliste auf dem Glas zeigen – nicht aus dem Kopf antworten.
+- Kräuterbutter und Café de Paris sind für Butter gedacht, Gewürzsalze ersetzen das normale Salz – nicht zusätzlich salzen.
+- Preise stehen am Regal, sobald die Gläser da sind.`,
+  },
 ];
 
 /** Wissensseite Etikettendrucker (Kategorie "anleitungen"), neu geschrieben in v15. */

@@ -1,4 +1,5 @@
 import React from "react";
+import { slugify } from "@/lib/kb";
 
 function inline(text: string, key: string): React.ReactNode[] {
   const out: React.ReactNode[] = [];
@@ -24,6 +25,7 @@ export function Markdown({ text }: { text: string }) {
   const blocks: React.ReactNode[] = [];
   let list: { ordered: boolean; items: string[] } | null = null;
   let table: string[][] | null = null;
+  const seen = new Map<string, number>();
   const flushTable = () => {
     if (!table) return;
     const [head, ...rows] = table;
@@ -65,9 +67,13 @@ export function Markdown({ text }: { text: string }) {
     }
     flush();
     if (!line.trim()) continue;
-    if (line.startsWith("### ")) blocks.push(<h3 key={blocks.length}>{line.slice(4)}</h3>);
-    else if (line.startsWith("## ")) blocks.push(<h3 key={blocks.length}>{line.slice(3)}</h3>);
-    else if (line.startsWith("# ")) blocks.push(<h3 key={blocks.length}>{line.slice(2)}</h3>);
+    if (line.startsWith("### ")) blocks.push(<h3 key={blocks.length}>{inline(line.slice(4), `h3${blocks.length}`)}</h3>);
+    else if (/^#{1,2}\s/.test(line)) {
+      const title = line.replace(/^#{1,2}\s+/, "");
+      let id = slugify(title.replace(/\*\*/g, "").trim());
+      const n = seen.get(id) || 0; seen.set(id, n + 1); if (n) id = `${id}-${n + 1}`;
+      blocks.push(<h2 key={blocks.length} id={id} className="scroll-mt-24">{inline(title, `h2${blocks.length}`)}</h2>);
+    }
     else blocks.push(<p key={blocks.length}>{inline(line, `p${blocks.length}`)}</p>);
   }
   flush();

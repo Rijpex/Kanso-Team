@@ -3,6 +3,7 @@ import { q, q1, databaseUrl, pool } from "./db";
 import { SCHEMA_SQL, SCHEMA_VERSION } from "./schema";
 import { runSeed } from "./seed";
 import { ETIKETTEN_PAGE, KERZEN_PAGE, VERKAUF_PAGES } from "./seed-data/pages-verkauf";
+import { KB_PHOTOS, withPhotos } from "./seed-data/kb-photos";
 
 export async function migrate() {
   // In één transactie met een slot, zodat twee gelijktijdige starts elkaar niet in de weg zitten
@@ -59,6 +60,16 @@ export async function migrate() {
     await q("update kb_pages set body_de = $2, title_de = $3, title_nl = $4, body_nl = null, updated_at = now() where slug = $1",
       [KERZEN_PAGE.slug, KERZEN_PAGE.body_de, KERZEN_PAGE.title_de, KERZEN_PAGE.title_nl]);
     await q("insert into settings (key, value) values ('mig_v17_kb', 'true'::jsonb) on conflict (key) do nothing");
+  }
+  // v18: Produktfotos aus dem Webshop in die Wissensseiten (einmalig, nur unter vorhandenen Überschriften)
+  if (!(await q1("select 1 from settings where key = 'mig_v18_photos'"))) {
+    for (const slug of [...new Set(KB_PHOTOS.map((x) => x.slug))]) {
+      const row = await q1<{ body_de: string }>("select body_de from kb_pages where slug = $1", [slug]);
+      if (!row) continue;
+      const body = withPhotos(slug, row.body_de);
+      if (body !== row.body_de) await q("update kb_pages set body_de = $2, updated_at = now() where slug = $1", [slug, body]);
+    }
+    await q("insert into settings (key, value) values ('mig_v18_photos', 'true'::jsonb) on conflict (key) do nothing");
   }
   await q("insert into settings (key, value) values ('schema_version', $1::jsonb) on conflict (key) do update set value = excluded.value", [JSON.stringify(SCHEMA_VERSION)]);
 }

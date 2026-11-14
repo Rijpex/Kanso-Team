@@ -19,13 +19,32 @@ function inline(text: string, key: string): React.ReactNode[] {
   return out;
 }
 
-/** Eenvoudige opmaak: #/##/### kopje, - lijst, 1. lijst, | tabel |, **vet**, [[nog invullen]], links. */
+/** Eenvoudige opmaak: #/##/### kopje, - lijst, 1. lijst, | tabel |, ![bild](url), **vet**, [[nog invullen]], links. */
 export function Markdown({ text }: { text: string }) {
   const lines = (text || "").split("\n");
   const blocks: React.ReactNode[] = [];
   let list: { ordered: boolean; items: string[] } | null = null;
   let table: string[][] | null = null;
+  let gallery: { alt: string; src: string }[] | null = null;
   const seen = new Map<string, number>();
+  const flushGallery = () => {
+    if (!gallery) return;
+    const g = gallery;
+    blocks.push(
+      <div key={blocks.length} className={`not-prose my-4 grid gap-3 ${g.length === 1 ? "grid-cols-1 sm:max-w-sm" : g.length === 2 ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"}`}>
+        {g.map((im, i) => (
+          <figure key={i} className="overflow-hidden rounded-xl bg-white ring-1 ring-sand-200">
+            <a href={im.src} target="_blank" rel="noreferrer" className="block aspect-square bg-white">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={im.src} alt={im.alt} loading="lazy" className="h-full w-full object-contain p-1.5" />
+            </a>
+            {im.alt && <figcaption className="border-t border-sand-100 px-2.5 py-2 text-xs font-medium leading-snug text-stone-700">{im.alt}</figcaption>}
+          </figure>
+        ))}
+      </div>,
+    );
+    gallery = null;
+  };
   const flushTable = () => {
     if (!table) return;
     const [head, ...rows] = table;
@@ -41,6 +60,7 @@ export function Markdown({ text }: { text: string }) {
   };
   const flush = () => {
     flushTable();
+    flushGallery();
     if (!list) return;
     const items = list.items.map((it, i) => <li key={i}>{inline(it, `li${blocks.length}-${i}`)}</li>);
     blocks.push(list.ordered ? <ol key={blocks.length}>{items}</ol> : <ul key={blocks.length}>{items}</ul>);
@@ -50,6 +70,16 @@ export function Markdown({ text }: { text: string }) {
     const line = raw.trimEnd();
     const ul = /^[-•]\s+(.*)$/.exec(line);
     const ol = /^\d+[.)]\s+(.*)$/.exec(line);
+    // Bild: ![Beschriftung](https://…) – mehrere Zeilen hintereinander werden eine Galerie
+    const img = /^!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)$/.exec(line.trim());
+    if (img) {
+      if (list || table) flush();
+      if (!gallery) gallery = [];
+      gallery.push({ alt: img[1], src: img[2] });
+      continue;
+    }
+    if (!line.trim() && gallery) continue;
+    if (gallery) flushGallery();
     // Tabel: | a | b | – de Trennzeile |---|---| wird übersprungen
     if (/^\|.*\|$/.test(line.trim())) {
       if (list) flush();

@@ -24,7 +24,7 @@ export function headings(text: string): { id: string; title: string }[] {
 export function teaser(text: string, max = 110): string {
   for (const raw of (text || "").split("\n")) {
     const line = raw.trim();
-    if (!line || /^(#|\||[-•]\s|\d+[.)]\s)/.test(line)) continue;
+    if (!line || /^(#|\||!\[|[-•]\s|\d+[.)]\s)/.test(line)) continue;
     const clean = line.replace(/\*\*/g, "").replace(/\[\[[^\]]*\]\]/g, "").replace(/\s+/g, " ").trim();
     if (clean.length < 20) continue;
     return clean.length > max ? clean.slice(0, max).replace(/\s+\S*$/, "") + " …" : clean;

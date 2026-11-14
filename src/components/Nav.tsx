@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export type NavItem = { href: string; label: string; icon: string; badge?: number; main?: boolean; group?: string };
+export type NavItem = { href: string; label: string; icon: string; badge?: number; main?: boolean; group?: string; short?: string };
 
 const ICONS: Record<string, string> = {
   home: "M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z",
@@ -56,15 +56,15 @@ export function BottomNav({ items, moreLabel }: { items: NavItem[]; moreLabel: s
   const moreActive = !main.some((i) => isActive(path, i.href));
   const moreBadge = items.filter((i) => !i.main).reduce((n, i) => n + (i.badge || 0), 0);
   const cell = (href: string, icon: string, label: string, active: boolean, badge?: number) => (
-    <Link key={href} href={href} className={`relative flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] ${active ? "font-semibold text-ink" : "text-stone-500"}`}>
-      <Icon name={icon} className="h-6 w-6" />
-      {label}
-      {!!badge && <span className="absolute right-[22%] top-1 rounded-full bg-amber-400 px-1.5 text-[10px] font-semibold text-ink">{badge}</span>}
+    <Link key={href} href={href} className={`relative flex min-w-0 flex-1 flex-col items-center gap-1 pb-1.5 pt-2 text-xs leading-tight ${active ? "font-semibold text-ink" : "font-medium text-stone-600"}`}>
+      <span className={`flex h-8 w-12 items-center justify-center rounded-full ${active ? "bg-sand-200" : ""}`}><Icon name={icon} className="h-6 w-6" /></span>
+      <span className="max-w-full truncate px-0.5">{label}</span>
+      {!!badge && <span className="absolute right-[18%] top-1 rounded-full bg-amber-400 px-1.5 text-[10px] font-semibold text-ink">{badge}</span>}
     </Link>
   );
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-sand-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
-      {main.map((i) => cell(i.href, i.icon, i.label, isActive(path, i.href), i.badge))}
+    <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-sand-300 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(0,0,0,0.06)] lg:hidden">
+      {main.map((i) => cell(i.href, i.icon, i.short || i.label, isActive(path, i.href), i.badge))}
       {cell("/app/more", "more", moreLabel, moreActive, moreBadge)}
     </nav>
   );

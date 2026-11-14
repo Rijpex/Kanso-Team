@@ -1,5 +1,6 @@
 import React from "react";
 import { slugify } from "@/lib/kb";
+import { Gallery } from "@/components/Gallery";
 
 function inline(text: string, key: string): React.ReactNode[] {
   const out: React.ReactNode[] = [];
@@ -30,19 +31,7 @@ export function Markdown({ text }: { text: string }) {
   const flushGallery = () => {
     if (!gallery) return;
     const g = gallery;
-    blocks.push(
-      <div key={blocks.length} className={`not-prose my-4 grid gap-3 ${g.length === 1 ? "grid-cols-1 sm:max-w-sm" : g.length === 2 ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"}`}>
-        {g.map((im, i) => (
-          <figure key={i} className="overflow-hidden rounded-xl bg-white ring-1 ring-sand-200">
-            <a href={im.src} target="_blank" rel="noreferrer" className="block aspect-square bg-white">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={im.src} alt={im.alt} loading="lazy" className="h-full w-full object-contain p-1.5" />
-            </a>
-            {im.alt && <figcaption className="border-t border-sand-100 px-2.5 py-2 text-xs font-medium leading-snug text-stone-700">{im.alt}</figcaption>}
-          </figure>
-        ))}
-      </div>,
-    );
+    blocks.push(<Gallery key={blocks.length} images={g} />);
     gallery = null;
   };
   const flushTable = () => {

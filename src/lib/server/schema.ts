@@ -1,6 +1,6 @@
 /** Databaseschema. Alles is idempotent: opnieuw draaien kan altijd. */
 /** Ophogen bij elke schemawijziging: de app werkt de database dan zelf bij. */
-export const SCHEMA_VERSION = 18;
+export const SCHEMA_VERSION = 19;
 
 export const SCHEMA_SQL = `
 create extension if not exists pgcrypto;
@@ -531,6 +531,30 @@ begin
      where u.role = 'seller' and u.active and extract(isodow from d) in (5, 6)
     on conflict (user_id, date) do nothing;
     insert into settings (key, value) values ('mig_v11_breaks', 'true'::jsonb);
+  end if;
+end $$;
+
+-- v19: Checklisten-Reihenfolge (Markisen, Kühlschrank, Fernseher gehören zur Öffnungs- bzw. vor die Abschlussrunde),
+-- veraltete Wissensseite „Homeoffice-Montag“ entfernt (montags ist der Laden offen)
+do $$
+declare p_open int; p_close int;
+begin
+  if not exists (select 1 from settings where key = 'mig_v19_ux') then
+    update cleaning_tasks set position = position * 10;
+    select position into p_open from cleaning_tasks where moment = 'open' and title_de like 'Licht an%' limit 1;
+    if p_open is not null then
+      update cleaning_tasks set position = p_open + 1 where title_de = 'Markisen ausfahren';
+      update cleaning_tasks set position = p_open + 2 where title_de like 'Kühlschrank in der Ausstellungsküche einstecken%';
+      update cleaning_tasks set position = p_open + 3 where title_de = 'Fernseher im Schaufenster nach innen drehen';
+    end if;
+    select position into p_close from cleaning_tasks where moment = 'close' and title_de like 'Abschlussrunde%' limit 1;
+    if p_close is not null then
+      update cleaning_tasks set position = p_close - 3 where title_de = 'Markisen einfahren';
+      update cleaning_tasks set position = p_close - 2 where title_de like 'Kühlschrank in der Ausstellungsküche: Stecker ziehen%';
+      update cleaning_tasks set position = p_close - 1 where title_de = 'Fernseher im Schaufenster nach außen drehen';
+    end if;
+    delete from kb_pages where slug = 'homeoffice-montag';
+    insert into settings (key, value) values ('mig_v19_ux', 'true'::jsonb);
   end if;
 end $$;
 

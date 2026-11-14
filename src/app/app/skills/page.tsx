@@ -47,11 +47,11 @@ export default async function Skills() {
                   const cur = lv(s.id, p.id);
                   const value = isAdmin ? cur?.confirmed ?? 0 : cur?.level ?? 0;
                   return (
-                    <form key={p.id} action={setSkillLevel} className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                    <form key={p.id} action={setSkillLevel} className="mt-2 grid grid-cols-4 items-center gap-1.5 sm:flex sm:flex-wrap">
                       <input type="hidden" name="skill_id" value={s.id} /><input type="hidden" name="user_id" value={p.id} />
-                      {isAdmin && <span className="w-16 shrink-0 text-xs font-semibold" style={{ color: p.color }}>{p.name}</span>}
-                      {labels.map((l, i) => <button key={i} name="level" value={i} className={`rounded-md px-2 py-1 text-xs ring-1 ${value === i ? "bg-ink text-white ring-ink" : "bg-white text-stone-600 ring-sand-300 hover:bg-sand-100"}`}>{l}</button>)}
-                      {isAdmin ? <span className="text-xs text-stone-400">{tr("selbst", "zelf")}: {labels[cur?.level ?? 0]}</span> : (cur?.confirmed ?? 0) > 0 && <span className="badge bg-emerald-100 text-emerald-800">{tr("bestätigt", "bevestigd")}: {labels[cur!.confirmed]}</span>}
+                      {isAdmin && <span className="col-span-4 text-xs font-semibold sm:w-16 sm:shrink-0" style={{ color: p.color }}>{p.name}</span>}
+                      {labels.map((l, i) => <button key={i} name="level" value={i} className={`rounded-md px-1 py-1.5 text-[11px] ring-1 sm:px-2 sm:py-1 sm:text-xs ${value === i ? "bg-ink text-white ring-ink" : "bg-white text-stone-600 ring-sand-300 hover:bg-sand-100"}`}>{l}</button>)}
+                      {isAdmin ? <span className="col-span-4 text-xs text-stone-400">{tr("selbst", "zelf")}: {labels[cur?.level ?? 0]}</span> : (cur?.confirmed ?? 0) > 0 && <span className="badge bg-emerald-100 text-emerald-800">{tr("bestätigt", "bevestigd")}: {labels[cur!.confirmed]}</span>}
                     </form>
                   );
                 })}

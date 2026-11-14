@@ -4,7 +4,7 @@ import { addDays, monday, weekday } from "@/lib/dates";
 import { shiftMinutes } from "@/lib/hours";
 
 export type TeamUser = { id: string; name: string; role: "admin" | "intern" | "seller"; color: string; username: string; lang: "de" | "nl"; active: boolean };
-export const team = (onlyActive = true) => q<TeamUser>(`select id, name, role, color, username, lang, active from users ${onlyActive ? "where active" : ""} order by role desc, created_at`);
+export const team = (onlyActive = true) => q<TeamUser>(`select id, name, role, color, username, lang, active from users ${onlyActive ? "where active" : ""} order by case role when 'intern' then 0 when 'seller' then 1 else 2 end, created_at`);
 
 export type CleaningRow = { id: string; title_de: string; title_nl: string | null; freq: string; weekday: number | null; moment: string; zone: string | null; done_by: string | null; done_color: string | null };
 export async function cleaningFor(date: string): Promise<CleaningRow[]> {

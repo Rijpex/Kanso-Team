@@ -196,7 +196,7 @@ export default async function Today() {
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
               {myTasks.slice(0, 6).map((t) => <TaskCard key={t.id} t={t} lang={user.lang} showStatus />)}
-              {!myTasks.length && <p className="text-sm text-stone-500">{tr("Nichts offen – super!", "Niets open – top!")}</p>}
+              {!myTasks.length && <p className="text-sm text-stone-500">{tr("Nichts offen.", "Niets open.")}</p>}
             </div>
           </section>
         </div>

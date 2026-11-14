@@ -16,7 +16,7 @@ export default async function Questions() {
        from questions qu left join users u on u.id = qu.user_id order by (qu.status = 'open') desc, qu.created_at desc limit 100`);
   return (
     <div className="max-w-3xl">
-      <PageHeader title={tr("Fragen", "Vragen")} sub={tr("Es gibt keine dummen Fragen. Schreib einfach – Bas oder Lea antworten.", "Domme vragen bestaan niet. Schrijf het gewoon op – Bas of Lea antwoorden.")} />
+      <PageHeader title={tr("Fragen", "Vragen")} sub={tr("Stell hier deine Frage – Bas oder Lea antworten so schnell wie möglich.", "Stel hier je vraag – Bas of Lea antwoorden zo snel mogelijk.")} />
       <form action={askQuestion} className="card mb-5 space-y-3">
         <input name="title" className="input" placeholder={tr("Deine Frage in einem Satz …", "Je vraag in één zin …")} required />
         <textarea name="body" className="input" rows={2} placeholder={tr("Mehr Details (optional)", "Meer details (optioneel)")} />

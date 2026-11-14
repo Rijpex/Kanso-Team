@@ -102,8 +102,25 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
         </div>
       </div>
 
+      {view === "week" && (
+        <div className="mb-1 grid gap-1.5 md:hidden" style={{ gridTemplateColumns: `repeat(${weekDays.length}, minmax(0, 1fr))` }}>
+          {weekDays.map((d) => {
+            const on = d === sel;
+            return (
+              <Link key={d} href={dayUrl(d)} scroll={false} className={`flex flex-col items-center rounded-xl px-1 py-2 ring-1 ${on ? "bg-ink text-white ring-ink" : closed(d) ? "bg-sand-100 text-stone-400 ring-sand-200" : "bg-white ring-sand-200"}`}>
+                <span className={`text-[11px] capitalize ${on ? "text-white/70" : "text-stone-500"}`}>{dayName(d, user.lang)}</span>
+                <span className={`text-base font-semibold leading-tight ${d === now && !on ? "underline decoration-2 underline-offset-4" : ""}`}>{Number(d.slice(8))}</span>
+                <span className="mt-1.5 flex h-2 items-center gap-0.5">
+                  {shOn(d).filter((x) => x.kind === "shop" || x.kind === "home").slice(0, 5).map((x) => <span key={x.user_id} className={`h-1.5 w-1.5 rounded-full ${x.user_id === user.id ? "ring-1 ring-offset-1" : ""}`} style={{ background: x.color }} />)}
+                </span>
+                {evOn(d).length > 0 && <span className={`mt-1 h-1 w-4 rounded-full ${on ? "bg-white/70" : "bg-brand"}`} />}
+              </Link>
+            );
+          })}
+        </div>
+      )}
       {view === "week" ? (
-        <div className={`grid gap-2 md:grid-cols-3 ${weekDays.length > 6 ? "xl:grid-cols-7" : "xl:grid-cols-6"}`}>
+        <div className={`hidden gap-2 md:grid md:grid-cols-3 ${weekDays.length > 6 ? "xl:grid-cols-7" : "xl:grid-cols-6"}`}>
           {weekDays.map((d) => {
             const cp = cleanProgress.find((c) => c.date === d)?.n || 0;
             const mine = mineOn(d);
@@ -153,7 +170,7 @@ export default async function Calendar({ searchParams }: { searchParams: { view?
       )}
 
       {/* ── Gekozen dag ── */}
-      <h2 className="mb-3 mt-7 capitalize">{longDate(sel, user.lang)}{sel === now ? ` · ${tr("heute", "vandaag")}` : ""}</h2>
+      <h2 className="mb-3 mt-5 capitalize md:mt-7">{longDate(sel, user.lang)}{sel === now ? ` · ${tr("heute", "vandaag")}` : ""}</h2>
       <div className={`grid gap-5 ${isSeller ? "" : "lg:grid-cols-3"}`}>
         <section className="card">
           <div className={isSeller ? "grid gap-5 sm:grid-cols-2" : ""}><div>

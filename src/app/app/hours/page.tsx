@@ -67,14 +67,14 @@ export default async function Hours({ searchParams }: { searchParams: { saved?: 
                 </dl>
                 {r.months.length > 0 && (
                   <table className="mt-4 w-full text-sm">
-                    <thead><tr className="text-left text-xs uppercase tracking-wide text-stone-400"><th className="font-medium">{tr("Monat", "Maand")}</th><th className="font-medium">{tr("Stunden", "Uren")}</th><th className="font-medium">{tr("Schichten", "Diensten")}</th></tr></thead>
+                    <thead><tr className="text-left text-xs uppercase tracking-wide text-stone-400"><th className="py-1 pr-3 font-medium">{tr("Monat", "Maand")}</th><th className="py-1 pr-3 font-medium">{tr("Stunden", "Uren")}</th><th className="py-1 pr-3 font-medium">{tr("Schichten", "Diensten")}</th></tr></thead>
                     <tbody>{r.months.map((m) => <tr key={m.month} className="border-t border-sand-200"><td className="py-1.5 capitalize">{monthName(m.month, user.lang)}</td><td className="font-semibold tabular-nums">{fmtHours(m.minutes)}</td><td className="tabular-nums text-stone-500">{m.days}</td></tr>)}</tbody>
                   </table>
                 )}
                 <details className="mt-4">
                   <summary className="cursor-pointer text-sm font-semibold">{tr("Schicht für Schicht", "Dienst voor dienst")} ({days.length})</summary>
                   <table className="mt-2 w-full text-sm">
-                    <thead><tr className="text-left text-xs uppercase tracking-wide text-stone-400"><th className="font-medium">{tr("Tag", "Dag")}</th><th className="font-medium">{tr("Zeit", "Tijd")}</th><th className="font-medium">{tr("Stunden", "Uren")}</th>{isAdmin && <th className="font-medium">{tr("Korrektur", "Correctie")}</th>}</tr></thead>
+                    <thead><tr className="text-left text-xs uppercase tracking-wide text-stone-400"><th className="py-1 pr-3 font-medium">{tr("Tag", "Dag")}</th><th className="py-1 pr-3 font-medium">{tr("Zeit", "Tijd")}</th><th className="py-1 pr-3 font-medium">{tr("Stunden", "Uren")}</th>{isAdmin && <th className="py-1 pr-3 font-medium">{tr("Korrektur", "Correctie")}</th>}</tr></thead>
                     <tbody>{days.map((d) => (
                       <tr key={d.date} className="border-t border-sand-200">
                         <td className="py-1.5 capitalize">{shortDate(d.date, user.lang)}</td>
@@ -151,7 +151,7 @@ export default async function Hours({ searchParams }: { searchParams: { saved?: 
 
               {r.months.length > 0 && (
                 <table className="mt-4 w-full text-sm">
-                  <thead><tr className="text-left text-xs uppercase tracking-wide text-stone-400"><th className="font-medium">{tr("Monat", "Maand")}</th><th className="font-medium">{tr("Stunden", "Uren")}</th><th className="font-medium">{tr("Tage", "Dagen")}</th><th className="font-medium">{tr("Schnitt pro Tag", "Gemiddeld per dag")}</th></tr></thead>
+                  <thead><tr className="text-left text-xs uppercase tracking-wide text-stone-400"><th className="py-1 pr-3 font-medium">{tr("Monat", "Maand")}</th><th className="py-1 pr-3 font-medium">{tr("Stunden", "Uren")}</th><th className="py-1 pr-3 font-medium">{tr("Tage", "Dagen")}</th><th className="py-1 pr-3 font-medium">{tr("Schnitt pro Tag", "Gemiddeld per dag")}</th></tr></thead>
                   <tbody>
                     {r.months.map((m) => (
                       <tr key={m.month} className="border-t border-sand-200">
@@ -168,7 +168,7 @@ export default async function Hours({ searchParams }: { searchParams: { saved?: 
               <details className="mt-4">
                 <summary className="cursor-pointer text-sm font-semibold">{tr("Tag für Tag", "Dag voor dag")} ({counted.length} {tr("gezählte Tage", "getelde dagen")}{planned > 0 && <> · {planned} {tr("noch geplant", "nog gepland")}</>})</summary>
                 <table className="mt-2 w-full text-sm">
-                  <thead><tr className="text-left text-xs uppercase tracking-wide text-stone-400"><th className="font-medium">{tr("Tag", "Dag")}</th><th className="font-medium">{tr("Im Dienstplan", "In het rooster")}</th><th className="font-medium">{tr("Stunden", "Uren")}</th>{isAdmin && <th className="font-medium">{tr("Korrektur", "Correctie")}</th>}</tr></thead>
+                  <thead><tr className="text-left text-xs uppercase tracking-wide text-stone-400"><th className="py-1 pr-3 font-medium">{tr("Tag", "Dag")}</th><th className="py-1 pr-3 font-medium">{tr("Im Dienstplan", "In het rooster")}</th><th className="py-1 pr-3 font-medium">{tr("Stunden", "Uren")}</th>{isAdmin && <th className="py-1 pr-3 font-medium">{tr("Korrektur", "Correctie")}</th>}</tr></thead>
                   <tbody>
                     {shown.map((d) => (
                       <tr key={d.date} className={`border-t border-sand-200 ${d.counts ? "" : "text-stone-400"}`}>
@@ -238,7 +238,7 @@ export default async function Hours({ searchParams }: { searchParams: { saved?: 
       )}
 
       {!isAdmin && (
-        <p className="mt-6 rounded-xl bg-sand-100 p-3 text-sm text-stone-600">{tr(
+        <p className="mt-6 rounded-xl bg-sand-100 p-3 text-sm text-stone-600">{user.role === "seller" ? tr("Stimmt eine Schicht nicht? Sag es Lea oder Bas, dann korrigieren wir sie hier.", "Klopt een dienst niet? Zeg het tegen Lea of Bas, dan corrigeren we hem hier.") : tr(
           "Stimmt ein Tag nicht? Sag es Lea oder Bas, dann korrigieren wir ihn hier. Krank- und Schultage zählen nicht mit – trag sie unter „Abwesenheit“ ein.",
           "Klopt een dag niet? Zeg het tegen Lea of Bas, dan corrigeren we hem hier. Ziekte- en schooldagen tellen niet mee – zet ze bij \"Afwezigheid\".",
         )}</p>

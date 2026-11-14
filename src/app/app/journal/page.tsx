@@ -45,7 +45,7 @@ export default async function CustomerRequests({ searchParams }: { searchParams:
 
   return (
     <div className="max-w-3xl">
-      <PageHeader title={tr("Kundenfragen", "Klantvragen")} sub={tr("Was Kundinnen und Kunden fragen, suchen oder sagen – aufschreiben, damit wir später etwas daraus machen können.", "Wat klanten vragen, zoeken of zeggen – opschrijven, zodat we er later iets mee kunnen doen.")} />
+      <PageHeader title={user.role === "seller" ? tr("Kundenfragen & Leads", "Klantvragen & leads") : tr("Kundenfragen", "Klantvragen")} sub={tr("Was Kundinnen und Kunden fragen, suchen oder sagen – aufschreiben, damit wir später etwas daraus machen können.", "Wat klanten vragen, zoeken of zeggen – opschrijven, zodat we er later iets mee kunnen doen.")} />
 
       <section className="card mb-5">
         <h2 className="mb-1">{editing ? tr("Eintrag ändern", "Invoer wijzigen") : tr("Neu aufschreiben", "Nieuw vastleggen")}</h2>
@@ -55,7 +55,7 @@ export default async function CustomerRequests({ searchParams }: { searchParams:
           <input type="hidden" name="back" value="/app/journal" />
           <div className="grid gap-3 sm:grid-cols-3">
             <div><label className="label">{tr("Art", "Soort")}</label>
-              <select name="kind" className="input" defaultValue={editing?.kind || "question"}>{Object.entries(REQUEST_KIND).map(([k, l]) => <option key={k} value={k}>{lbl(user.lang, l)}</option>)}</select></div>
+              <select name="kind" className="input" defaultValue={editing?.kind || (user.role === "seller" ? "lead" : "question")}>{Object.entries(REQUEST_KIND).map(([k, l]) => <option key={k} value={k}>{lbl(user.lang, l)}</option>)}</select></div>
             <div><label className="label">{tr("Datum", "Datum")}</label><input type="date" name="date" className="input" defaultValue={editing?.date || today()} required /></div>
             <div><label className="label">{tr("Produkt / Thema", "Product / onderwerp")}</label><input name="product" className="input" defaultValue={editing?.product || ""} placeholder={tr("z. B. Tenderflame, Pergola, Gewürze", "bv. Tenderflame, pergola, spices")} /></div>
           </div>

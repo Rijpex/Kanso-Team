@@ -73,7 +73,7 @@ export async function SellerToday({ user }: { user: User }) {
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="space-y-5">
           <section className="card">
-            <div className="mb-1 flex items-center justify-between"><h2>{tr("Kundenfrage oder Lead notieren", "Klantvraag of lead noteren")}</h2><Link href="/app/journal" className="text-sm text-brand hover:underline">{tr("Alle", "Alle")} →</Link></div>
+            <div className="mb-1 flex items-start justify-between gap-3"><h2>{tr("Kundenfrage oder Lead notieren", "Klantvraag of lead noteren")}</h2><Link href="/app/journal" className="shrink-0 pt-1 text-sm text-brand hover:underline">{tr("Alle", "Alle")} →</Link></div>
             <p className="mb-3 text-xs text-stone-500">{tr(
               "Lead = jemand mit Interesse an Küche, Pergola oder Einrichtung. Notiere Name, Kontakt und Bedarf – das zählt für deine Projektprovision.",
               "Lead = iemand met interesse in keuken, pergola of inrichting. Noteer naam, contact en wens – dat telt voor je projectprovisie.",

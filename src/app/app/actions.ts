@@ -692,7 +692,7 @@ export async function saveInternship(fd: FormData) {
   await q(
     "update users set start_date = $1, end_date = $2, target_hours = $3, before_minutes = $4 where id = $5",
     [isDate(opt(fd, "start_date")) ? s(fd, "start_date") : null, isDate(opt(fd, "end_date")) ? s(fd, "end_date") : null,
-     target != null ? Math.round(target) : 900, before != null ? Math.round(before * 60) : 0, id],
+     target != null ? Math.round(target) : 800, before != null ? Math.round(before * 60) : 0, id],
   );
   revalidatePath("/app", "layout");
   redirect("/app/hours?saved=1");

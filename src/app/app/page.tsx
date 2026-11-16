@@ -80,51 +80,50 @@ export default async function Today() {
   const storiesDone = storyWeek?.n ?? 0;
   // Wissenshappen: jeden Tag eine andere Seite, für alle gleich.
   const tipPage = tip.length ? tip[Number(d.slice(8)) % tip.length] : null;
+  // Welcher Abschnitt der Checkliste ist gerade dran?
+  const nowMin = hour * 60 + Number(new Intl.DateTimeFormat("en-GB", { minute: "numeric", timeZone: "Europe/Berlin" }).format(new Date()));
+  const toM = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
+  const phase: "open" | "day" | "close" = !openToday ? "open" : nowMin < toM(openToday.open) + 45 ? "open" : nowMin >= toM(openToday.close) - 45 ? "close" : "day";
 
   return (
     <div className="space-y-5">
-      {/* ── Kopzone: datum, openingstijden, wie er vandaag is ── */}
-      <section className="card !bg-white">
-        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-          <div>
-            <p className="muted capitalize">{longDate(d, user.lang)}</p>
-            <h1>{greet}, {user.name}</h1>
-            <p className="mt-1 text-sm">
-              {openToday
-                ? <><span className="font-medium text-emerald-700">{tr("Heute geöffnet", "Vandaag open")} {openToday.open}–{openToday.close}</span></>
-                : <span className="font-medium text-stone-500">{tr("Heute geschlossen", "Vandaag gesloten")}</span>}
-              <span className="text-stone-400"> · {tr("morgen", "morgen")} {openTomorrow ? `${openTomorrow.open}–${openTomorrow.close}` : tr("geschlossen", "gesloten")}
-                {tomorrowShifts.length > 0 && <> ({tomorrowShifts.map((s) => s.name).join(", ")})</>}</span>
-            </p>
+      {/* ── Kopf: Begrüßung, dann vier gleich große Kacheln ── */}
+      <section>
+        <p className="muted capitalize">{longDate(d, user.lang)}</p>
+        <h1>{greet}, {user.name}</h1>
+        <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="card !p-4">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">{tr("Deine Schicht", "Jouw dienst")}</div>
             {mine && (mine.kind === "shop" || mine.kind === "home") ? (
-              <p className="mt-2 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-brand-light px-3 py-2 text-sm">
-                <b>{tr("Deine Schicht", "Jouw dienst")}</b> {hm(mine.start_time)}–{hm(mine.end_time)}
-                <Badge l={SHIFT_KIND[mine.kind]} lang={user.lang} />
-                {breakText(mine, user.role, user.lang) && <span className="text-stone-600">{breakText(mine, user.role, user.lang)}</span>}
-                {mine.note && <span className="text-stone-600">· {mine.note}</span>}
-              </p>
-            ) : mine ? (
-              <p className="mt-2 inline-block rounded-xl bg-sand-100 px-3 py-2 text-sm"><b>{tr("Heute", "Vandaag")}:</b> {lbl(user.lang, SHIFT_KIND[mine.kind])}</p>
-            ) : !isAdmin ? (
-              <p className="mt-2 inline-block rounded-xl bg-sand-100 px-3 py-2 text-sm text-stone-500">{tr("Für heute ist keine Schicht eingetragen.", "Voor vandaag staat er geen dienst.")}</p>
-            ) : null}
+              <>
+                <div className="mt-1 text-lg font-semibold tabular-nums sm:text-xl">{hm(mine.start_time)}–{hm(mine.end_time)}</div>
+                <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-stone-500"><Badge l={SHIFT_KIND[mine.kind]} lang={user.lang} />{breakText(mine, user.role, user.lang)}{mine.note && <span>· {mine.note}</span>}</div>
+              </>
+            ) : (
+              <div className="mt-1 text-lg font-semibold text-stone-400 sm:text-xl">{mine ? lbl(user.lang, SHIFT_KIND[mine.kind]) : tr("Keine Schicht", "Geen dienst")}</div>
+            )}
           </div>
-          <div className="sm:min-w-[14rem]">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <span className="text-xs font-semibold uppercase tracking-wide text-stone-400">{tr("Heute im Team", "Vandaag in het team")}</span>
+          <div className="card !p-4">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">{tr("Laden heute", "Winkel vandaag")}</div>
+            <div className={`mt-1 text-lg font-semibold tabular-nums sm:text-xl ${openToday ? "" : "text-stone-400"}`}>{openToday ? `${openToday.open}–${openToday.close}` : tr("Geschlossen", "Gesloten")}</div>
+            <div className="mt-0.5 text-xs text-stone-500">{tr("Morgen", "Morgen")}: {openTomorrow ? `${openTomorrow.open}–${openTomorrow.close}` : tr("geschlossen", "gesloten")}</div>
+          </div>
+          <div className="card col-span-2 !p-4">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">{tr("Heute im Team", "Vandaag in het team")}</span>
               <Link href="/app/roster" className="text-xs text-brand hover:underline">{tr("Dienstplan", "Rooster")} →</Link>
             </div>
-            <ul className="space-y-1.5 text-sm">
+            <ul className="mt-2 grid gap-x-4 gap-y-1.5 text-sm sm:grid-cols-2">
               {working.map((s) => (
-                <li key={s.user_id} className={`flex items-center gap-2 rounded-lg px-1.5 py-1 ${s.user_id === user.id ? "bg-sand-100" : ""}`}>
+                <li key={s.user_id} className="flex items-center gap-2">
                   <Avatar name={s.name} color={s.color} size="h-6 w-6 text-[10px]" />
-                  <span className="font-medium">{s.name}</span>
-                  {s.kind !== "shop" && <Badge l={SHIFT_KIND[s.kind]} lang={user.lang} />}
-                  <span className="ml-auto tabular-nums text-stone-500">{s.start_time ? `${hm(s.start_time)}–${hm(s.end_time)}` : ""}</span>
+                  <span className={s.user_id === user.id ? "font-semibold" : "font-medium"}>{s.name}</span>
+                  <span className="ml-auto tabular-nums text-xs text-stone-500">{s.kind !== "shop" ? lbl(user.lang, SHIFT_KIND[s.kind]) : s.start_time ? `${hm(s.start_time)}–${hm(s.end_time)}` : ""}</span>
                 </li>
               ))}
               {!working.length && <li className="text-stone-500">{tr("Niemand eingetragen.", "Niemand ingepland.")}</li>}
             </ul>
+            {tomorrowShifts.length > 0 && <p className="mt-2 border-t border-sand-100 pt-2 text-xs text-stone-500">{tr("Morgen", "Morgen")}: {tomorrowShifts.filter((x) => x.kind === "shop").map((x) => x.name).join(", ") || "–"}</p>}
           </div>
         </div>
       </section>
@@ -170,7 +169,7 @@ export default async function Today() {
       {/* ── Hoofdkolommen: de dag links, de rest rechts ── */}
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <div className="space-y-5">
-          <DayChecklist date={d} lang={user.lang} cleaning={cleaning} plans={plansToday} daily={dailyChecks} storyWeek={{ done: storiesDone, goal: storiesGoal }} zones={zones} me={user} isAdmin={isAdmin} closed={shopClosed} />
+          <DayChecklist date={d} lang={user.lang} cleaning={cleaning} plans={plansToday} daily={dailyChecks} storyWeek={{ done: storiesDone, goal: storiesGoal }} zones={zones} me={user} isAdmin={isAdmin} closed={shopClosed} phase={phase} />
 
           <section className="card">
             <div className="mb-3 flex items-center justify-between"><h2>{tr("Heute im Laden", "Vandaag in de winkel")}</h2><Link href="/app/journal" className="text-sm text-brand hover:underline">{tr("Kundenfragen", "Klantvragen")} →</Link></div>

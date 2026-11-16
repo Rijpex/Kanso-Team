@@ -116,7 +116,7 @@ export default async function Hours({ searchParams }: { searchParams: { saved?: 
                 {f.left > 0
                   ? tr(`Noch ${fmtHours(f.left)} Stunden. Im Dienstplan stehen davon schon ${fmtHours(r.futureMinutes)} Stunden (hell im Balken).`,
                        `Nog ${fmtHours(f.left)} uur. Daarvan staat al ${fmtHours(r.futureMinutes)} uur in het rooster (licht in de balk).`)
-                  : tr("Die 900 Stunden sind voll.", "De uren zijn vol.")}
+                  : tr("Die Stunden sind voll.", "De uren zijn vol.")}
               </p>
 
               <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">

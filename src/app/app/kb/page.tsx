@@ -15,7 +15,8 @@ export default async function Kb({ searchParams }: { searchParams: { q?: string;
       where $1 = '' or title_de ilike '%' || $1 || '%' or body_de ilike '%' || $1 || '%' or coalesce(body_nl,'') ilike '%' || $1 || '%'
       order by position, title_de`, [term]);
   const allCats = [...Object.keys(KB_CATEGORY), ...new Set(pages.map((p) => p.category).filter((c) => !KB_CATEGORY[c]))];
-  const visible = isSeller ? ["verkauf", "produkte", "anleitungen"] : allCats;
+  // Verkäufer sieht nur Verkauf/Produkte/Anleitungen; alle anderen sehen dasselbe Produktwissen zuerst, danach den Rest
+  const visible = isSeller ? ["verkauf", "produkte", "anleitungen"] : [...["verkauf", "produkte"], ...allCats.filter((c) => c !== "verkauf" && c !== "produkte")];
   const withPages = visible.filter((c) => pages.some((p) => p.category === c));
   const active = searchParams.c && withPages.includes(searchParams.c) ? searchParams.c : "";
   const cats = active ? [active] : withPages;

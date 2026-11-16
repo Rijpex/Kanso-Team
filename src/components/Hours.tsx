@@ -18,7 +18,7 @@ export function GoalBarHours({ done, planned, target }: { done: number; planned:
 
 /**
  * Urenteller op Vandaag en onder het rooster.
- * Stagiaire ziet haar eigen stand naar de 900 uur, Bas en Lea zien beide stagiaires.
+ * Stagiaire ziet haar eigen stand naar het urendoel (800 uur), Bas en Lea zien beide stagiaires.
  * De details (per maand, per dag, correcties) staan op /app/hours.
  */
 export function HoursCard({ rows, lang, me, isAdmin }: { rows: HoursRow[]; lang: Lang; me: { id: string }; isAdmin: boolean }) {

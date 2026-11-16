@@ -1,6 +1,6 @@
 /** Databaseschema. Alles is idempotent: opnieuw draaien kan altijd. */
 /** Ophogen bij elke schemawijziging: de app werkt de database dan zelf bij. */
-export const SCHEMA_VERSION = 20;
+export const SCHEMA_VERSION = 21;
 
 export const SCHEMA_SQL = `
 create extension if not exists pgcrypto;
@@ -420,7 +420,7 @@ alter table users add column if not exists end_date date;         -- geplantes E
 alter table users add column if not exists target_hours int;      -- Stundenziel (Standard 900)
 alter table users add column if not exists before_minutes int not null default 0; -- Stunden vor dem Hub, von Hand eingetragen
 alter table shifts add column if not exists worked_minutes int;   -- Korrektur: tatsächlich gearbeitete Minuten an diesem Tag
-update users set target_hours = 900 where role = 'intern' and target_hours is null;
+update users set target_hours = 800 where role = 'intern' and target_hours is null;
 do $$
 begin
   if not exists (select 1 from settings where key = 'mig_internship_start') then
@@ -578,6 +578,17 @@ begin
         '- **30 Minuten vor Öffnung** –', '- **Zur Öffnung** –'), updated_at = now()
      where body_de like '%30 Minuten vor Öffnung%';
     insert into settings (key, value) values ('mig_v20_start', 'true'::jsonb);
+  end if;
+end $$;
+
+-- v21: Die Schule hat das Praktikum von 900 auf 800 Stunden gesetzt (Brief November 2026).
+do $$
+begin
+  if not exists (select 1 from settings where key = 'mig_v21_800h') then
+    update users set target_hours = 800 where role = 'intern' and (target_hours is null or target_hours = 900);
+    update kb_pages set body_de = replace(body_de, '900 Stunden', '800 Stunden'), updated_at = now() where body_de like '%900 Stunden%';
+    update kb_pages set body_nl = replace(body_nl, '900 uur', '800 uur'), updated_at = now() where body_nl like '%900 uur%';
+    insert into settings (key, value) values ('mig_v21_800h', 'true'::jsonb);
   end if;
 end $$;
 

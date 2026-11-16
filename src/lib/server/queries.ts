@@ -104,7 +104,7 @@ export async function internHours(date: string): Promise<HoursRow[]> {
     const cur = map.get(r.user_id) ?? {
       user_id: r.user_id, name: r.name, color: r.color, role: r.role,
       startDate: r.start_date, endDate: r.end_date,
-      targetMinutes: r.role === "intern" ? (r.target_hours ?? 900) * 60 : 0, beforeMinutes: r.before_minutes || 0,
+      targetMinutes: r.role === "intern" ? (r.target_hours ?? 800) * 60 : 0, beforeMinutes: r.before_minutes || 0,
       weekDone: 0, weekPlanned: 0, monthDone: 0, monthPlanned: 0,
       rosterMinutes: 0, doneMinutes: 0, futureMinutes: 0, days: 0, firstDate: null, lastDate: null, months: [],
     };

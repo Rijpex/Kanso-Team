@@ -43,9 +43,9 @@ function Check({ it, date, lang }: { it: Item; date: string; lang: Lang }) {
  * Eén dagchecklist: morgen → ingeplande opdrachten → overdag → afsluiten.
  * Vaste punten (Tag geplant, Story) komen uit daily_checks; Storepflege uit cleaning_tasks; werkblokken uit task_plans.
  */
-export function DayChecklist({ date, lang, cleaning, plans, daily, storyWeek, zones, me, isAdmin, closed }: {
+export function DayChecklist({ date, lang, cleaning, plans, daily, storyWeek, zones, me, isAdmin, closed, phase = "open" }: {
   date: string; lang: Lang; cleaning: CleaningRow[]; plans: PlanRow[]; daily: { key: string; name: string | null }[]; storyWeek: { done: number; goal: number };
-  zones?: { a?: Owner; b?: Owner }; me: { id: string }; isAdmin: boolean; closed: boolean;
+  zones?: { a?: Owner; b?: Owner }; me: { id: string }; isAdmin: boolean; closed: boolean; phase?: "open" | "day" | "close";
 }) {
   const tr = T(lang);
   const dk = (key: string) => daily.find((d) => d.key === key);
@@ -59,13 +59,13 @@ export function DayChecklist({ date, lang, cleaning, plans, daily, storyWeek, zo
     hint: tr(`diese Woche ${storyWeek.done} von ${storyWeek.goal}`, `deze week ${storyWeek.done} van ${storyWeek.goal}`),
   };
 
-  const groups: { title: string; items: Item[] }[] = closed
-    ? [{ title: tr("Homeoffice", "Thuiswerk"), items: [planCheck, ...planItems, ...(storyOpen ? [storyCheck] : [])] }]
+  const groups: { key: string; title: string; items: Item[] }[] = closed
+    ? [{ key: "home", title: tr("Homeoffice", "Thuiswerk"), items: [planCheck, ...planItems, ...(storyOpen ? [storyCheck] : [])] }]
     : [
-        { title: tr("Morgens", "'s Ochtends"), items: [...cleanItems("open"), planCheck] },
-        { title: tr("Heute eingeplant", "Vandaag ingepland"), items: planItems },
-        { title: tr("Tagsüber", "Overdag"), items: [...(storyOpen ? [storyCheck] : []), ...cleanItems("day")] },
-        { title: tr("Zum Feierabend", "Bij sluiten"), items: cleanItems("close") },
+        { key: "open", title: tr("Vor dem Öffnen", "Voor opening"), items: [...cleanItems("open"), planCheck] },
+        { key: "plan", title: tr("Heute eingeplant", "Vandaag ingepland"), items: planItems },
+        { key: "day", title: tr("Tagsüber", "Overdag"), items: [...(storyOpen ? [storyCheck] : []), ...cleanItems("day")] },
+        { key: "close", title: tr("Zum Feierabend", "Bij sluiten"), items: cleanItems("close") },
       ];
   const all = groups.flatMap((g) => g.items);
   const done = all.filter((i) => i.done).length;
@@ -76,14 +76,25 @@ export function DayChecklist({ date, lang, cleaning, plans, daily, storyWeek, zo
         <span className={`text-sm font-semibold tabular-nums ${done === all.length && all.length ? "text-emerald-700" : "text-stone-500"}`}>{done} / {all.length}</span>
       </div>
       <div className="mb-3 h-2 overflow-hidden rounded-full bg-sand-100"><div className={`h-full rounded-full transition-all ${done === all.length && all.length ? "bg-emerald-600" : "bg-ink"}`} style={{ width: `${all.length ? (done / all.length) * 100 : 0}%` }} /></div>
-      <div className="space-y-3">
-        {groups.map((g) => (
-          <div key={g.title}>
-            <div className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-stone-400">{g.title}</div>
-            {g.items.length ? <ul className="divide-y divide-sand-200">{g.items.map((it) => <Check key={`${it.form}-${it.id}`} it={it} date={date} lang={lang} />)}</ul>
-              : <p className="py-1 text-sm text-stone-400">{tr("Noch nichts eingeplant –", "Nog niets ingepland –")} <Link href="/app/calendar" className="text-brand underline">{tr("in der Agenda einplanen", "inplannen in de agenda")}</Link></p>}
-          </div>
-        ))}
+      <div className="divide-y divide-sand-200 border-t border-sand-200">
+        {groups.map((g) => {
+          const n = g.items.filter((i) => i.done).length;
+          const complete = g.items.length > 0 && n === g.items.length;
+          // Aufgeklappt: der aktuelle Tagesabschnitt und die eingeplanten Aufgaben, solange noch etwas offen ist
+          const open = closed || (!complete && (g.key === phase || g.key === "plan"));
+          return (
+            <details key={g.key} open={open} className="group py-1">
+              <summary className="flex cursor-pointer list-none items-center gap-2 py-2 text-sm">
+                <span className="text-stone-400 transition group-open:rotate-90">›</span>
+                <span className="font-semibold">{g.title}</span>
+                {g.key === phase && !closed && <span className="badge bg-brand-light text-brand-dark">{tr("jetzt", "nu")}</span>}
+                <span className={`ml-auto text-xs tabular-nums ${complete ? "font-semibold text-emerald-700" : "text-stone-400"}`}>{g.items.length ? `${n} / ${g.items.length}` : "–"}</span>
+              </summary>
+              {g.items.length ? <ul className="divide-y divide-sand-100 pb-1 pl-5">{g.items.map((it) => <Check key={`${it.form}-${it.id}`} it={it} date={date} lang={lang} />)}</ul>
+                : <p className="pb-2 pl-5 text-sm text-stone-400">{tr("Noch nichts eingeplant –", "Nog niets ingepland –")} <Link href="/app/calendar" className="text-brand underline">{tr("in der Agenda einplanen", "inplannen in de agenda")}</Link></p>}
+            </details>
+          );
+        })}
       </div>
     </section>
   );

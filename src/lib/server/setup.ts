@@ -4,6 +4,7 @@ import { SCHEMA_SQL, SCHEMA_VERSION } from "./schema";
 import { runSeed } from "./seed";
 import { ETIKETTEN_PAGE, KERZEN_PAGE, VERKAUF_PAGES } from "./seed-data/pages-verkauf";
 import { KB_PHOTOS, withPhotos } from "./seed-data/kb-photos";
+import { SKILLS_V2 } from "./seed-data/skills";
 
 export async function migrate() {
   // In één transactie met een slot, zodat twee gelijktijdige starts elkaar niet in de weg zitten
@@ -70,6 +71,25 @@ export async function migrate() {
       if (body !== row.body_de) await q("update kb_pages set body_de = $2, updated_at = now() where slug = $1", [slug, body]);
     }
     await q("insert into settings (key, value) values ('mig_v18_photos', 'true'::jsonb) on conflict (key) do nothing");
+  }
+  // v22: Lernziele neu – weniger, konkreter, mit Erklärung. Einschätzungen alter Ziele werden übernommen (jeweils das niedrigere Niveau).
+  if (!(await q1("select 1 from settings where key = 'mig_v22_skills'"))) {
+    if (!(await q1("select 1 from skills where hint_de is not null"))) {
+      const old = await q<{ id: string; title_de: string }>("select id, title_de from skills");
+      let pos = 0;
+      for (const s of SKILLS_V2) {
+        const row = await q1<{ id: string }>("insert into skills (area, title_de, hint_de, position) values ($1,$2,$3,$4) returning id", [s.area, s.title, s.hint, 1000 + pos++]);
+        const ids = old.filter((o) => (s.from ?? []).includes(o.title_de)).map((o) => o.id);
+        if (ids.length) await q(
+          `insert into skill_levels (skill_id, user_id, level, confirmed, confirmed_by, updated_at)
+             select $1, user_id, min(level), min(confirmed), (array_agg(confirmed_by))[1], max(updated_at)
+             from skill_levels where skill_id = any($2::uuid[]) group by user_id
+           on conflict (skill_id, user_id) do nothing`, [row!.id, ids]);
+      }
+      if (old.length) await q("delete from skills where id = any($1::uuid[])", [old.map((o) => o.id)]);
+      await q("update skills set position = position - 1000 where position >= 1000");
+    }
+    await q("insert into settings (key, value) values ('mig_v22_skills', 'true'::jsonb) on conflict (key) do nothing");
   }
   await q("insert into settings (key, value) values ('schema_version', $1::jsonb) on conflict (key) do update set value = excluded.value", [JSON.stringify(SCHEMA_VERSION)]);
 }

@@ -736,7 +736,7 @@ export async function saveSkill(fd: FormData) {
   await requireAdmin();
   const title = s(fd, "title_de");
   if (!title) return;
-  await q("insert into skills (area, title_de, position) values ($1,$2,(select coalesce(max(position),0)+1 from skills))", [s(fd, "area") || "Laden", title]);
+  await q("insert into skills (area, title_de, hint_de, position) values ($1,$2,$3,(select coalesce(max(position),0)+1 from skills))", [s(fd, "area") || "Laden", title, s(fd, "hint_de") || null]);
   revalidatePath("/app", "layout");
 }
 export async function deleteSkill(fd: FormData) {

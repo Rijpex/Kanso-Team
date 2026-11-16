@@ -1,6 +1,6 @@
 /** Databaseschema. Alles is idempotent: opnieuw draaien kan altijd. */
 /** Ophogen bij elke schemawijziging: de app werkt de database dan zelf bij. */
-export const SCHEMA_VERSION = 21;
+export const SCHEMA_VERSION = 22;
 
 export const SCHEMA_SQL = `
 create extension if not exists pgcrypto;
@@ -307,6 +307,7 @@ create table if not exists skills (
   title_nl  text,
   position  int not null default 0
 );
+alter table skills add column if not exists hint_de text;
 create table if not exists skill_levels (
   skill_id     uuid not null references skills(id) on delete cascade,
   user_id      uuid not null references users(id) on delete cascade,

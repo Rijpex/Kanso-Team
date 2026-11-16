@@ -13,7 +13,7 @@ export default async function Skills() {
   const tr = T(user.lang);
   const isAdmin = user.role === "admin";
   const [skills, levels, users] = await Promise.all([
-    q<{ id: string; area: string; title_de: string; title_nl: string | null }>("select * from skills order by position"),
+    q<{ id: string; area: string; title_de: string; title_nl: string | null; hint_de: string | null }>("select * from skills order by position"),
     q<{ skill_id: string; user_id: string; level: number; confirmed: number }>("select skill_id, user_id, level, confirmed from skill_levels"),
     team(),
   ]);
@@ -41,8 +41,9 @@ export default async function Skills() {
           <h2 className="mb-2">{a}</h2>
           <ul className="divide-y divide-sand-200">
             {skills.filter((s) => s.area === a).map((s) => (
-              <li key={s.id} className="py-2.5">
+              <li key={s.id} className="py-3.5">
                 <div className="flex items-start justify-between gap-2 text-sm font-medium">{pick(user.lang, s.title_de, s.title_nl)}{isAdmin && <form action={deleteSkill}><input type="hidden" name="id" value={s.id} /><ConfirmSubmit className="px-1 text-stone-300 hover:text-red-600" confirm="?">×</ConfirmSubmit></form>}</div>
+                {s.hint_de && <p className="mt-0.5 max-w-2xl text-sm leading-relaxed text-stone-500">{s.hint_de}</p>}
                 {people.map((p) => {
                   const cur = lv(s.id, p.id);
                   const value = isAdmin ? cur?.confirmed ?? 0 : cur?.level ?? 0;
@@ -62,7 +63,7 @@ export default async function Skills() {
       ))}
       {isAdmin && (
         <details className="card"><summary className="cursor-pointer font-semibold">{tr("Lernziel hinzufügen", "Leerdoel toevoegen")}</summary>
-          <form action={saveSkill} className="mt-3 grid gap-2 sm:grid-cols-[12rem_1fr_auto]" key={skills.length}><input name="area" list="areas" className="input" placeholder={tr("Bereich", "Gebied")} required /><datalist id="areas">{areas.map((a) => <option key={a} value={a} />)}</datalist><input name="title_de" className="input" placeholder={tr("Lernziel", "Leerdoel (Duits)")} required /><Submit>{tr("Hinzufügen", "Toevoegen")}</Submit></form>
+          <form action={saveSkill} className="mt-3 grid gap-2 sm:grid-cols-[12rem_1fr_auto]" key={skills.length}><input name="area" list="areas" className="input" placeholder={tr("Bereich", "Gebied")} required /><datalist id="areas">{areas.map((a) => <option key={a} value={a} />)}</datalist><input name="title_de" className="input" placeholder={tr("Lernziel", "Leerdoel (Duits)")} required /><Submit>{tr("Hinzufügen", "Toevoegen")}</Submit><input name="hint_de" className="input sm:col-span-3" placeholder={tr("Woran erkennt man „selbstständig“? (optional)", "Waaraan zie je „zelfstandig“? (optioneel, Duits)")} /></form>
         </details>
       )}
     </div>

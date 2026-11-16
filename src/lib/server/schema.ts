@@ -1,6 +1,6 @@
 /** Databaseschema. Alles is idempotent: opnieuw draaien kan altijd. */
 /** Ophogen bij elke schemawijziging: de app werkt de database dan zelf bij. */
-export const SCHEMA_VERSION = 19;
+export const SCHEMA_VERSION = 20;
 
 export const SCHEMA_SQL = `
 create extension if not exists pgcrypto;
@@ -555,6 +555,29 @@ begin
     end if;
     delete from kb_pages where slug = 'homeoffice-montag';
     insert into settings (key, value) values ('mig_v19_ux', 'true'::jsonb);
+  end if;
+end $$;
+
+-- v20: Ab 16.11.2026 beginnen alle zur Öffnung (10:30 bzw. 09:30) statt 30 Minuten vorher.
+-- Nur Standardzeiten im Laden werden verschoben; von Hand geänderte Zeiten bleiben.
+do $$
+begin
+  if not exists (select 1 from settings where key = 'mig_v20_start') then
+    -- Praktikantinnen samstags: 09:00–17:30 → 09:30–18:00 (max. 8,5 Std. Anwesenheit)
+    update shifts s set start_time = '09:30', end_time = '18:00' from users u
+     where u.id = s.user_id and u.role = 'intern' and s.kind = 'shop' and s.date >= date '2026-11-16'
+       and extract(isodow from s.date) = 6 and s.start_time = '09:00' and s.end_time = '17:30';
+    update shifts s set start_time = '10:30' from users u
+     where u.id = s.user_id and u.role in ('admin','intern') and s.kind = 'shop' and s.date >= date '2026-11-16'
+       and extract(isodow from s.date) in (1,2,4,5) and s.start_time = '10:00';
+    update shifts s set start_time = '09:30' from users u
+     where u.id = s.user_id and u.role in ('admin','intern') and s.kind = 'shop' and s.date >= date '2026-11-16'
+       and extract(isodow from s.date) in (3,6) and s.start_time = '09:00';
+    update kb_pages set body_de = replace(replace(body_de,
+        'Wir sind alle 30 Minuten vor Öffnung da – diese halbe Stunde ist die Öffnungsrunde. ', 'Wir beginnen zur Öffnung. '),
+        '- **30 Minuten vor Öffnung** –', '- **Zur Öffnung** –'), updated_at = now()
+     where body_de like '%30 Minuten vor Öffnung%';
+    insert into settings (key, value) values ('mig_v20_start', 'true'::jsonb);
   end if;
 end $$;
 

@@ -39,7 +39,7 @@ Immer **Du**. Keine Emojis, keine Ausrufezeichen-Ketten, kein Rabatt-Geschrei, k
 - **Anruf** – Wenn ein Mensch wartet oder etwas kaputt ist. Sonst nicht.
 
 ### Ein Ladentag
-- **30 Minuten vor Öffnung** – Bas oder Lea: Ankommen, Licht, Musik leise, Kasse und Stripe-Terminal an.
+- **Zur Öffnung** – Bas oder Lea: Ankommen, Licht, Musik leise, Kasse und Stripe-Terminal an.
 - **Öffnung – ihr kommt** – Jacke weg, im Hub: Was steht heute an? Dann Öffnungsrunde: Boden, Flächen, Glas, Eingang, Schaufenster von innen.
 - **Tür auf** (Di/Do 10:30, Mi/Sa 09:30, Fr 10:30) – Kundinnen haben Vorrang vor allem anderen – immer.
 - **Zwischendurch** – Storepflege nach Wochenaufteilung, Produkte nach Kundenbesuchen wieder ausrichten, Preisschilder prüfen, Counter frei halten, Gewürzproben nachfüllen, Content sammeln (Fotos, Reel-Material, ein Kundensatz fürs Markentagebuch).
@@ -98,7 +98,7 @@ Jede ist Junior Product Ownerin einer eigenen Linie und Projektpartnerin der and
 
 ### Der Laden
 KANSO Outdoor GmbH · Bardowicker Str. 8 · 21335 Lüneburg
-Montag 10:30–18:30, Dienstag 10:30–18:30, Mittwoch 09:30–17:30, Donnerstag 10:30–18:30, Freitag 10:30–18:30, Samstag 09:30–18:30. Wir sind alle 30 Minuten vor Öffnung da – diese halbe Stunde ist die Öffnungsrunde. Kartenzahlung: Stripe-Terminal an der Kasse.
+Montag 10:30–18:30, Dienstag 10:30–18:30, Mittwoch 09:30–17:30, Donnerstag 10:30–18:30, Freitag 10:30–18:30, Samstag 09:30–18:30. Wir beginnen zur Öffnung. Kartenzahlung: Stripe-Terminal an der Kasse.
 
 ### Im Notfall
 **112** Feuerwehr und Rettungsdienst, **110** Polizei. Erste-Hilfe-Kasten und Sicherungskasten zeigt dir Lea beim Rundgang. [[Hausverwaltung: Nummer eintragen]]`,

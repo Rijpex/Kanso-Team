@@ -30,15 +30,17 @@ export const internShiftFor = shiftFor;
 export const shiftForRole = (wd: number, _role?: string) => shiftFor(wd);
 /**
  * Standaarddienst op een datum, per rol:
- * - Bas en Lea: 30 minuten voor opening tot sluiting.
+ * - Bas en Lea: van opening tot sluiting (t/m 15 nov 2026: 30 minuten voor opening).
  * - Stagiaires: idem, maar maximaal 8,5 uur aanwezig (8 uur netto bij 1 uur pauze is het wettelijke maximum).
  * - Verkoper (Mathias): de laatste 4 uur van de dag.
  */
+export const START_AT_OPENING_FROM = "2026-11-16";
 export function shiftOn(date: string, role?: string) {
   const o = openingOn(date)[weekday(date)];
   if (!o) return null;
   if (role === "seller") return { start: addMin(o.close, -240), end: o.close };
-  const start = minus30(o.open);
+  // Vanaf 16 nov 2026 begint iedereen bij opening (10:30 of 09:30), niet meer een half uur eerder.
+  const start = date >= START_AT_OPENING_FROM ? o.open : minus30(o.open);
   let end = o.close;
   if (role === "intern" && spanMin(start, end) > 510) end = addMin(start, 510);
   return { start, end };

@@ -172,7 +172,7 @@ export default async function Roster({ searchParams }: { searchParams: { w?: str
                 </tbody>
               </table>
             </div>
-            <p className="rounded-lg bg-sand-100 p-3 text-xs text-stone-600">{tr("Alle sind 30 Minuten vor Öffnung da und bleiben bis Ladenschluss. Die Praktikantinnen haben eine Stunde Pause am Tag und legen sie selbst – im Plan steht nur „1 Std. Pause“, die Stundenzählung zieht sie automatisch ab (7,5 Stunden an einem vollen Tag).", "Iedereen is 30 minuten voor opening aanwezig en blijft tot sluiting. De stagiaires hebben een uur pauze per dag en plannen die zelf – in het rooster staat alleen \"1 uur pauze\", de urenteller trekt hem automatisch af (7,5 uur op een volle dag).")} {OPENING_TEXT_DE}</p>
+            <p className="rounded-lg bg-sand-100 p-3 text-xs text-stone-600">{tr("Alle beginnen zur Öffnung und bleiben bis Ladenschluss. Die Praktikantinnen haben eine Stunde Pause am Tag und legen sie selbst – im Plan steht nur „1 Std. Pause“, die Stundenzählung zieht sie automatisch ab (7 Stunden an einem vollen Tag).", "Iedereen begint bij opening en blijft tot sluiting. De stagiaires hebben een uur pauze per dag en plannen die zelf – in het rooster staat alleen \"1 uur pauze\", de urenteller trekt hem automatisch af (7 uur op een volle dag).")} {OPENING_TEXT_DE}</p>
             {users.some((u) => u.role === "seller") && (
               <div className="space-y-2">
                 {users.filter((u) => u.role === "seller").map((u) => (

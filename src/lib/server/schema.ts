@@ -1,6 +1,6 @@
 /** Databaseschema. Alles is idempotent: opnieuw draaien kan altijd. */
 /** Ophogen bij elke schemawijziging: de app werkt de database dan zelf bij. */
-export const SCHEMA_VERSION = 22;
+export const SCHEMA_VERSION = 23;
 
 export const SCHEMA_SQL = `
 create extension if not exists pgcrypto;
@@ -476,7 +476,21 @@ end $$;
 alter table users drop constraint if exists users_role_check;
 alter table users add constraint users_role_check check (role in ('admin','intern','seller'));
 alter table customer_requests drop constraint if exists customer_requests_kind_check;
-alter table customer_requests add constraint customer_requests_kind_check check (kind in ('question','wish','complaint','quote','lead'));
+alter table customer_requests add constraint customer_requests_kind_check check (kind in ('question','wish','complaint','quote','lead','idea'));
+-- v23: Leads mit Kontaktdaten und Status, Ideen aus dem Laden (mit Fotos/Skizzen)
+alter table customer_requests add column if not exists contact_name text;
+alter table customer_requests add column if not exists phone text;
+alter table customer_requests add column if not exists email text;
+alter table customer_requests add column if not exists interest text;
+alter table customer_requests add column if not exists budget text;
+alter table customer_requests add column if not exists timing text;
+alter table customer_requests add column if not exists next_step text;
+alter table customer_requests add column if not exists stage text not null default 'new';
+alter table customer_requests add column if not exists title text;
+alter table customer_requests add column if not exists link text;
+alter table customer_requests add column if not exists stage_note text;
+alter table files add column if not exists request_id uuid references customer_requests(id) on delete cascade;
+create index if not exists files_request_idx on files (request_id);
 do $$
 begin
   if not exists (select 1 from settings where key = 'mig_v10_roster') then

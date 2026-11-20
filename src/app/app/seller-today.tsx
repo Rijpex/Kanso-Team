@@ -2,12 +2,11 @@ import Link from "next/link";
 import type { User } from "@/lib/server/auth";
 import { q } from "@/lib/server/db";
 import { internHours } from "@/lib/server/queries";
-import { EVENT_KIND, REQUEST_KIND, SHIFT_KIND, T, lbl, pick } from "@/lib/i18n";
+import { EVENT_KIND, REQUEST_KIND, SHIFT_KIND, T, pick } from "@/lib/i18n";
 import { addDays, hm, longDate, shortDate, today, weekday } from "@/lib/dates";
 import { openingOn } from "@/lib/hours";
 import { Avatar, Badge } from "@/components/ui";
 import { HoursCard } from "@/components/Hours";
-import { saveCustomerRequest } from "./actions";
 
 /**
  * Kompakte Startseite für den Verkäufer (Mathias): heute im Laden, Kundenfragen und Leads,
@@ -23,8 +22,8 @@ export async function SellerToday({ user }: { user: User }) {
     q<{ name: string }>("select u.name from shifts s join users u on u.id = s.user_id where s.date = $1 and u.active and s.kind = 'shop' order by u.created_at", [tomorrow]),
     q<{ id: string; title: string; date: string; start_time: string | null; kind: string }>(
       "select id, title, date, start_time, kind from events where coalesce(end_date, date) >= $1 and date <= $2 order by date, start_time nulls first limit 6", [d, addDays(d, 14)]),
-    q<{ id: string; date: string; kind: string; text: string; product: string | null; status: string; action_needed: boolean }>(
-      "select id, date::text as date, kind, text, product, status, action_needed from customer_requests where user_id = $1 order by created_at desc limit 8", [user.id]),
+    q<{ id: string; date: string; kind: string; text: string; product: string | null; status: string; action_needed: boolean; contact_name: string | null; title: string | null }>(
+      "select id, date::text as date, kind, text, product, status, action_needed, contact_name, title from customer_requests where user_id = $1 order by created_at desc limit 8", [user.id]),
     internHours(d),
     q<{ slug: string; title_de: string; title_nl: string | null }>("select slug, title_de, title_nl from kb_pages where category = 'verkauf' order by position, title_de"),
   ]);
@@ -73,18 +72,16 @@ export async function SellerToday({ user }: { user: User }) {
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="space-y-5">
           <section className="card">
-            <div className="mb-1 flex items-start justify-between gap-3"><h2>{tr("Kundenfrage oder Lead notieren", "Klantvraag of lead noteren")}</h2><Link href="/app/journal" className="shrink-0 pt-1 text-sm text-brand hover:underline">{tr("Alle", "Alle")} →</Link></div>
+            <div className="mb-1 flex items-start justify-between gap-3"><h2>{tr("Aus dem Laden notieren", "Uit de winkel noteren")}</h2><Link href="/app/journal" className="shrink-0 pt-1 text-sm text-brand hover:underline">{tr("Alle", "Alle")} →</Link></div>
             <p className="mb-3 text-xs text-stone-500">{tr(
-              "Lead = jemand mit Interesse an Küche, Pergola oder Einrichtung. Notiere Name, Kontakt und Bedarf – das zählt für deine Projektprovision.",
-              "Lead = iemand met interesse in keuken, pergola of inrichting. Noteer naam, contact en wens – dat telt voor je projectprovisie.",
+              "Lead = Interesse an Küche, Pergola, Kamado oder Einrichtung: Name und Telefonnummer sind das Wichtigste (zählt für deine Projektprovision). Fragen, die du nicht beantworten konntest, und deine Ideen für den Laden kommen hier auch rein.",
+              "Lead = interesse in keuken, pergola, kamado of inrichting: naam en telefoonnummer zijn het belangrijkst (telt voor je projectprovisie). Vragen die je niet kon beantwoorden en je ideeën voor de winkel komen hier ook in.",
             )}</p>
-            <form action={saveCustomerRequest} className="grid gap-2 sm:grid-cols-[auto_1fr]" key={mine.length}>
-              <input type="hidden" name="date" value={d} /><input type="hidden" name="back" value="/app" />
-              <select name="kind" className="input !w-auto" defaultValue="lead">{Object.entries(REQUEST_KIND).map(([k, l]) => <option key={k} value={k}>{lbl(user.lang, l)}</option>)}</select>
-              <input name="product" className="input" placeholder={tr("Produkt / Projekt (z. B. KOALA Küche)", "Product / project (bijv. KOALA keuken)")} />
-              <textarea name="text" rows={2} className="input sm:col-span-2" placeholder={tr("Name, Telefon oder E-Mail, was gewünscht ist, Budget, wann", "Naam, telefoon of e-mail, wat gewenst is, budget, wanneer")} required />
-              <div className="sm:col-span-2 flex items-center gap-3"><label className="flex items-center gap-2 text-sm"><input type="checkbox" name="action_needed" defaultChecked /> {tr("Bas oder Lea sollen nachfassen", "Bas of Lea moeten opvolgen")}</label><button className="btn-primary ml-auto">{tr("Speichern", "Opslaan")}</button></div>
-            </form>
+            <div className="grid grid-cols-3 gap-2">
+              <Link href="/app/journal?tab=lead&new=1" className="flex flex-col items-center justify-center gap-1 rounded-xl bg-emerald-50 px-2 py-4 text-center ring-1 ring-emerald-200 transition hover:bg-emerald-100"><span className="text-2xl leading-none">+</span><span className="text-sm font-semibold">{tr("Lead", "Lead")}</span><span className="text-[11px] leading-tight text-stone-500">{tr("Name & Telefon", "Naam & telefoon")}</span></Link>
+              <Link href="/app/journal?tab=question&new=1" className="flex flex-col items-center justify-center gap-1 rounded-xl bg-sky-50 px-2 py-4 text-center ring-1 ring-sky-200 transition hover:bg-sky-100"><span className="text-2xl leading-none">+</span><span className="text-sm font-semibold">{tr("Kundenfrage", "Klantvraag")}</span><span className="text-[11px] leading-tight text-stone-500">{tr("gefragt, gesucht", "gevraagd, gezocht")}</span></Link>
+              <Link href="/app/journal?tab=idea&new=1" className="flex flex-col items-center justify-center gap-1 rounded-xl bg-violet-50 px-2 py-4 text-center ring-1 ring-violet-200 transition hover:bg-violet-100"><span className="text-2xl leading-none">+</span><span className="text-sm font-semibold">{tr("Idee", "Idee")}</span><span className="text-[11px] leading-tight text-stone-500">{tr("mit Foto oder Skizze", "met foto of schets")}</span></Link>
+            </div>
           </section>
 
           {mine.length > 0 && (
@@ -94,7 +91,7 @@ export async function SellerToday({ user }: { user: User }) {
                 {mine.map((r) => (
                   <li key={r.id} className="flex items-start gap-2 py-1.5">
                     <Badge l={REQUEST_KIND[r.kind]} lang={user.lang} />
-                    <span className="min-w-0 flex-1">{r.product && <b>{r.product} · </b>}{r.text}</span>
+                    <Link href={`/app/journal?edit=${r.id}`} className="min-w-0 flex-1 hover:underline">{r.kind === "lead" ? <b>{r.contact_name || r.text}</b> : r.kind === "idea" ? <b>{r.title || r.text}</b> : <>{r.product && <b>{r.product} · </b>}{r.text}</>}</Link>
                     <span className="shrink-0 text-xs text-stone-400">{shortDate(r.date, user.lang)}{r.status === "done" && " ✓"}</span>
                   </li>
                 ))}

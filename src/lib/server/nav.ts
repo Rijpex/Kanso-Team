@@ -10,7 +10,7 @@ export async function navItems(user: { id: string; role: string; lang: "de" | "n
     return [
       { href: "/app", label: tr("Heute", "Vandaag"), icon: "home", main: true },
       { href: "/app/roster", label: tr("Dienstplan", "Rooster"), icon: "clock", main: true },
-      { href: "/app/journal", label: tr("Kundenfragen & Leads", "Klantvragen & leads"), short: tr("Leads", "Leads"), icon: "chat", main: true },
+      { href: "/app/journal", label: tr("Leads, Fragen & Ideen", "Leads, vragen & ideeën"), short: tr("Leads", "Leads"), icon: "chat", main: true },
       { href: "/app/kb", label: tr("Produktwissen", "Productkennis"), short: tr("Wissen", "Kennis"), icon: "book", main: true },
       { href: "/app/calendar", label: tr("Agenda", "Agenda"), icon: "calendar" },
       { href: "/app/hours", label: tr("Meine Stunden", "Mijn uren"), icon: "clock" },
@@ -18,6 +18,7 @@ export async function navItems(user: { id: string; role: string; lang: "de" | "n
   }
   const openQ = user.role === "admin" ? (await q1<{ n: number }>("select count(*)::int as n from questions where status = 'open'"))?.n ?? 0 : 0;
   const review = user.role === "admin" ? (await q1<{ n: number }>("select count(*)::int as n from tasks where status = 'review'"))?.n ?? 0 : 0;
+  const newLeads = user.role === "admin" ? (await q1<{ n: number }>("select count(*)::int as n from customer_requests where kind in ('lead','idea') and stage = 'new'"))?.n ?? 0 : 0;
   const pendingAbs = user.role === "admin" ? (await q1<{ n: number }>("select count(*)::int as n from absences where status = 'requested'"))?.n ?? 0 : 0;
   const G = { shop: tr("Laden", "Winkel"), proj: tr("Projekte", "Projecten"), me: user.role === "admin" ? tr("Praktikantinnen", "Stagiairs") : tr("Mein Praktikum", "Mijn stage"), admin: tr("Verwaltung", "Beheer") };
   const items: NavItem[] = [
@@ -30,7 +31,7 @@ export async function navItems(user: { id: string; role: string; lang: "de" | "n
     { href: "/app/kb", label: tr("Wissen", "Kennis"), icon: "book", group: G.shop },
     { href: "/app/content", label: tr("Content-Plan", "Contentplan"), icon: "video", group: G.proj },
     { href: "/app/ideas", label: tr("Produktideen", "Productideeën"), icon: "bulb", group: G.proj },
-    { href: "/app/journal", label: tr("Kundenfragen", "Klantvragen"), icon: "chat", group: G.proj },
+    { href: "/app/journal", label: tr("Leads & Kundenfragen", "Leads & klantvragen"), icon: "chat", group: G.proj, badge: newLeads },
     { href: "/app/hours", label: tr("Stunden", "Uren"), icon: "clock", group: G.me },
     { href: "/app/reflect", label: tr("Wochenrückblick", "Weekboek"), icon: "book", group: G.me },
     { href: "/app/skills", label: tr("Lernziele", "Leerdoelen"), icon: "flag", group: G.me },

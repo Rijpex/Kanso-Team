@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/server/auth";
 import { q, q1 } from "@/lib/server/db";
 import { cleaningFor, internHours, MINE, tasksQuery, zoneOwners } from "@/lib/server/queries";
-import { EVENT_KIND, REQUEST_KIND, SHIFT_KIND, T, lbl, pick } from "@/lib/i18n";
+import { EVENT_KIND, LEAD_INTEREST, REQUEST_KIND, SHIFT_KIND, T, lbl, pick } from "@/lib/i18n";
 import { addDays, dateTime, hm, longDate, monday, shortDate, today, weekday } from "@/lib/dates";
 import { openingOn, breakText } from "@/lib/hours";
 import { ConfirmSubmit } from "@/components/client";
@@ -47,7 +47,7 @@ export default async function Today() {
     q<{ id: string; date: string; kind: string; text: string | null }>("select id, date, kind, text from (select id, date, 'online' as kind, null::text as text, created_at from journal where kind = 'online' and date = $1 union all select id, date, kind, text, created_at from customer_requests where date > $2) x order by created_at desc", [d, addDays(d, -7)]),
     zoneOwners(d),
   ]);
-  const [plansToday, hasReflection, dailyChecks, storyWeek, hours, tomorrowShifts, openActions, absenceReq, waiting, tip] = await Promise.all([
+  const [plansToday, hasReflection, dailyChecks, storyWeek, hours, tomorrowShifts, openActions, newLeads, absenceReq, waiting, tip] = await Promise.all([
     q<PlanRow>(
       `select p.id, p.task_id, t.title, p.start_time, p.end_time, p.done, u.name, u.color, p.user_id from task_plans p join tasks t on t.id = p.task_id join users u on u.id = p.user_id
         where p.date = $1 ${isAdmin ? "" : "and p.user_id = $2"} order by p.start_time nulls last`, isAdmin ? [d] : [d, user.id]),
@@ -58,7 +58,9 @@ export default async function Today() {
     q<{ name: string; color: string; kind: string; start_time: string | null; end_time: string | null }>(
       "select u.name, u.color, s.kind, s.start_time, s.end_time from shifts s join users u on u.id = s.user_id where s.date = $1 and u.active and s.kind <> 'off' order by u.created_at", [tomorrow]),
     q<{ id: string; text: string; kind: string; product: string | null; action_note: string | null }>(
-      "select id, text, kind, product, action_note from customer_requests where status = 'open' and action_needed order by created_at limit 5"),
+      "select id, text, kind, product, action_note from customer_requests where status = 'open' and action_needed and kind not in ('lead','idea') order by created_at limit 5"),
+    isAdmin ? q<{ id: string; kind: string; contact_name: string | null; title: string | null; interest: string | null; name: string | null }>(
+      "select r.id, r.kind, r.contact_name, r.title, r.interest, u.name from customer_requests r left join users u on u.id = r.user_id where r.kind in ('lead','idea') and r.stage = 'new' order by r.created_at desc limit 6") : [],
     isAdmin ? q<{ id: string; name: string; date: string }>("select a.id, u.name, a.date::text as date from absences a join users u on u.id = a.user_id where a.status = 'requested' order by a.date") : [],
     q<{ id: string; title: string; status: string; name: string | null }>(
       `select c.id, c.title, c.status, u.name from content_items c left join users u on u.id = c.owner_id
@@ -129,13 +131,19 @@ export default async function Today() {
       </section>
 
       {/* ── Attentieregels ── */}
-      {(openActions.length > 0 || absenceReq.length > 0 || waiting.length > 0 || remindReflect || (!isAdmin && onb && onb.total > 0 && onb.done < onb.total) || (isAdmin && openQuestions.length > 0)) && (
+      {(openActions.length > 0 || newLeads.length > 0 || absenceReq.length > 0 || waiting.length > 0 || remindReflect || (!isAdmin && onb && onb.total > 0 && onb.done < onb.total) || (isAdmin && openQuestions.length > 0)) && (
         <div className="grid gap-2 sm:grid-cols-2">
           {isAdmin && openQuestions.length > 0 && (
             <Alert href="/app/questions" tone="amber"><b>{openQuestions.length} {openQuestions.length === 1 ? tr("offene Frage", "open vraag") : tr("offene Fragen", "open vragen")}</b> · {openQuestions.slice(0, 2).map((x) => `${x.name}: ${x.title}`).join(" · ")}</Alert>
           )}
+          {isAdmin && newLeads.length > 0 && (
+            <Alert href="/app/journal?tab=lead" tone="amber">
+              <b>{newLeads.filter((x) => x.kind === "lead").length > 0 && `${newLeads.filter((x) => x.kind === "lead").length} ${newLeads.filter((x) => x.kind === "lead").length === 1 ? tr("neuer Lead", "nieuwe lead") : tr("neue Leads", "nieuwe leads")}`}{newLeads.some((x) => x.kind === "lead") && newLeads.some((x) => x.kind === "idea") && " · "}{newLeads.filter((x) => x.kind === "idea").length > 0 && `${newLeads.filter((x) => x.kind === "idea").length} ${newLeads.filter((x) => x.kind === "idea").length === 1 ? tr("neue Idee", "nieuw idee") : tr("neue Ideen", "nieuwe ideeën")}`}</b>
+              <span className="mt-0.5 block text-stone-600">{newLeads.slice(0, 3).map((x) => x.kind === "lead" ? `${x.contact_name || "?"}${x.interest && LEAD_INTEREST[x.interest] ? ` (${lbl(user.lang, LEAD_INTEREST[x.interest])})` : ""}` : `${tr("Idee", "Idee")}: ${x.title || ""}`).join(" · ")}</span>
+            </Alert>
+          )}
           {openActions.length > 0 && (
-            <Alert href="/app/journal" tone="amber">
+            <Alert href="/app/journal?tab=question" tone="amber">
               <b>{openActions.length} {openActions.length === 1 ? tr("Kundenfrage wartet auf eine Aktion", "klantvraag wacht op actie") : tr("Kundenfragen warten auf eine Aktion", "klantvragen wachten op actie")}</b>
               <span className="mt-0.5 block text-stone-600">{openActions.slice(0, 2).map((x) => `${lbl(user.lang, REQUEST_KIND[x.kind])}: ${x.product || x.text}`).join(" · ")}</span>
             </Alert>

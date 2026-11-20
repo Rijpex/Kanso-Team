@@ -47,6 +47,45 @@ export const REQUEST_KIND: Record<string, L> = {
   wish: { de: "Wunsch / gesucht", nl: "Wens / gezocht", color: "bg-amber-100 text-amber-900" },
   complaint: { de: "Beschwerde", nl: "Klacht", color: "bg-rose-100 text-rose-900" },
   quote: { de: "Kundensatz", nl: "Klantzin", color: "bg-stone-100 text-stone-700" },
+  idea: { de: "Idee", nl: "Idee", color: "bg-violet-100 text-violet-900" },
+};
+/** Lead: woran hat der Kunde Interesse? */
+export const LEAD_INTEREST: Record<string, L> = {
+  kueche: { de: "Outdoor-Küche", nl: "Buitenkeuken" },
+  pergola: { de: "Pergola", nl: "Pergola" },
+  kamado: { de: "Kamado / Grill", nl: "Kamado / grill" },
+  einrichtung: { de: "Einrichtung / Terrasse", nl: "Inrichting / terras" },
+  sonstiges: { de: "Sonstiges", nl: "Overig" },
+};
+/** Lead: was ist als Nächstes vereinbart? */
+export const LEAD_NEXT: Record<string, L> = {
+  call: { de: "Rückruf durch Bas oder Lea", nl: "Terugbellen door Bas of Lea" },
+  appointment: { de: "Beratungstermin vereinbaren", nl: "Adviesafspraak inplannen" },
+  info: { de: "Infos / Katalog zuschicken", nl: "Info / catalogus sturen" },
+  visit: { de: "Kommt selbst noch mal vorbei", nl: "Komt zelf nog eens langs" },
+};
+export const LEAD_STAGE: Record<string, L> = {
+  new: { de: "Neu", nl: "Nieuw", color: "bg-emerald-100 text-emerald-900" },
+  contacted: { de: "Kontaktiert", nl: "Contact gehad", color: "bg-sky-100 text-sky-900" },
+  appointment: { de: "Termin steht", nl: "Afspraak staat", color: "bg-indigo-100 text-indigo-900" },
+  offer: { de: "Angebot raus", nl: "Offerte verstuurd", color: "bg-amber-100 text-amber-900" },
+  won: { de: "Auftrag", nl: "Opdracht", color: "bg-brand text-white" },
+  lost: { de: "Kein Auftrag", nl: "Geen opdracht", color: "bg-stone-200 text-stone-600" },
+};
+export const IDEA_AREA: Record<string, L> = {
+  praesentation: { de: "Warenpräsentation", nl: "Presentatie" },
+  schaufenster: { de: "Schaufenster", nl: "Etalage" },
+  sortiment: { de: "Sortiment / Produkt", nl: "Assortiment / product" },
+  verkauf: { de: "Verkauf / Ablauf", nl: "Verkoop / werkwijze" },
+  marketing: { de: "Marketing / Aktion", nl: "Marketing / actie" },
+  sonstiges: { de: "Sonstiges", nl: "Overig" },
+};
+export const IDEA_STAGE: Record<string, L> = {
+  new: { de: "Neu", nl: "Nieuw", color: "bg-violet-100 text-violet-900" },
+  discuss: { de: "Besprechen wir", nl: "Bespreken we", color: "bg-amber-100 text-amber-900" },
+  doing: { de: "Machen wir", nl: "Doen we", color: "bg-emerald-100 text-emerald-900" },
+  later: { de: "Später", nl: "Later", color: "bg-stone-100 text-stone-700" },
+  no: { de: "Nicht jetzt", nl: "Niet nu", color: "bg-stone-200 text-stone-600" },
 };
 export const IDEA_STATUS: Record<string, L> = {
   idea: { de: "Idee", nl: "Idee", color: "bg-stone-100 text-stone-700" },

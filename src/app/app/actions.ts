@@ -581,18 +581,55 @@ export async function countOnline(fd: FormData) {
 }
 export async function saveCustomerRequest(fd: FormData) {
   const u = await requireUser();
-  const text = s(fd, "text");
   const date = isDate(s(fd, "date")) ? s(fd, "date") : null;
+  const kind = ["question", "wish", "complaint", "quote", "lead", "idea"].includes(s(fd, "kind")) ? s(fd, "kind") : "question";
+  // Lead: Freitext darf leer sein, wenn Name + Kontakt da sind; Idee: Titel reicht
+  const title = opt(fd, "title");
+  const contact = opt(fd, "contact_name");
+  const text = s(fd, "text") || (kind === "idea" ? title : kind === "lead" ? contact : "") || "";
   if (!text || !date) return;
-  const kind = ["question", "wish", "complaint", "quote", "lead"].includes(s(fd, "kind")) ? s(fd, "kind") : "question";
+  if (kind === "lead" && !contact) return;
   // Schnell-Eingabe auf "Heute" hat kein Häkchen: Fragen/Wünsche bleiben dann offen, Kundensätze nicht
   const action = fd.has("action_needed") || fd.has("id") ? s(fd, "action_needed") === "on" : kind !== "quote";
   const id = opt(fd, "id");
-  const vals = [date, kind, text, opt(fd, "product"), opt(fd, "answer"), action, opt(fd, "action_note")];
-  if (id) await q("update customer_requests set date=$1, kind=$2, text=$3, product=$4, answer=$5, action_needed=$6, action_note=$7 where id=$8", [...vals, id]);
-  else await q("insert into customer_requests (date, kind, text, product, answer, action_needed, action_note, status, user_id) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)", [...vals, action ? "open" : "done", u.id]);
+  const pickKey = (v: string | null, keys: string[]) => (v && keys.includes(v) ? v : null);
+  const vals = [
+    date, kind, text, opt(fd, "product"), opt(fd, "answer"), action, opt(fd, "action_note"),
+    contact, opt(fd, "phone"), opt(fd, "email"),
+    pickKey(opt(fd, "interest"), ["kueche", "pergola", "kamado", "einrichtung", "sonstiges"]),
+    opt(fd, "budget"), opt(fd, "timing"),
+    pickKey(opt(fd, "next_step"), ["call", "appointment", "info", "visit"]),
+    title, opt(fd, "link"),
+  ];
+  let reqId = id;
+  if (id) await q(`update customer_requests set date=$1, kind=$2, text=$3, product=$4, answer=$5, action_needed=$6, action_note=$7,
+      contact_name=$8, phone=$9, email=$10, interest=$11, budget=$12, timing=$13, next_step=$14, title=$15, link=$16 where id=$17`, [...vals, id]);
+  else {
+    const row = await q1<{ id: string }>(`insert into customer_requests (date, kind, text, product, answer, action_needed, action_note,
+      contact_name, phone, email, interest, budget, timing, next_step, title, link, status, user_id)
+      values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) returning id`, [...vals, action || kind === "lead" || kind === "idea" ? "open" : "done", u.id]);
+    reqId = row?.id ?? null;
+  }
   revalidatePath("/app", "layout");
-  redirect(back(fd, "/app/journal"));
+  // Neue Idee: direkt weiter zum Eintrag, damit Fotos/Skizzen angehängt werden können
+  if (!id && kind === "idea" && reqId) redirect(`/app/journal?tab=idea&edit=${reqId}&saved=1`);
+  redirect(back(fd, `/app/journal?tab=${kind === "lead" || kind === "idea" ? kind : "question"}`));
+}
+/** Status eines Leads (neu → kontaktiert → Termin → Angebot → Auftrag) oder einer Idee (neu → besprechen → machen) */
+export async function setRequestStage(fd: FormData) {
+  const u = await requireUser();
+  const id = s(fd, "id");
+  const stage = s(fd, "stage");
+  const row = await q1<{ kind: string }>("select kind from customer_requests where id = $1", [id]);
+  if (!row) return;
+  const allowed = row.kind === "lead" ? ["new", "contacted", "appointment", "offer", "won", "lost"] : ["new", "discuss", "doing", "later", "no"];
+  if (!allowed.includes(stage)) return;
+  // Leads und Ideen bewerten nur Bas und Lea; der Verkäufer darf seinen Lead auf "kontaktiert" setzen
+  if (u.role !== "admin" && !(row.kind === "lead" && stage === "contacted")) return;
+  const closed = ["won", "lost", "doing", "later", "no"].includes(stage);
+  await q("update customer_requests set stage = $2, stage_note = $3, status = $4, done_by = case when $4 = 'done' then $5::uuid else done_by end, done_at = case when $4 = 'done' then now() else done_at end where id = $1",
+    [id, stage, opt(fd, "stage_note"), closed ? "done" : "open", u.id]);
+  revalidatePath("/app", "layout");
 }
 export async function toggleCustomerRequest(fd: FormData) {
   const u = await requireUser();

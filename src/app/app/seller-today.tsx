@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { User } from "@/lib/server/auth";
 import { q } from "@/lib/server/db";
-import { internHours } from "@/lib/server/queries";
-import { EVENT_KIND, REQUEST_KIND, SHIFT_KIND, T, pick } from "@/lib/i18n";
+import { internHours, requestActivity } from "@/lib/server/queries";
+import { isNewFor, requestTitle, stageOptions, tabOf } from "@/lib/requests";
+import { EVENT_KIND, REQUEST_KIND, SHIFT_KIND, T, lbl, pick } from "@/lib/i18n";
 import { addDays, hm, longDate, shortDate, today, weekday } from "@/lib/dates";
 import { openingOn } from "@/lib/hours";
 import { Avatar, Badge } from "@/components/ui";
@@ -16,17 +17,19 @@ export async function SellerToday({ user }: { user: User }) {
   const tr = T(user.lang);
   const d = today();
   const tomorrow = addDays(d, 1);
-  const [shifts, tomorrowShifts, events, mine, hours, pages] = await Promise.all([
+  const [shifts, tomorrowShifts, events, mine, hours, pages, { act, myLast }] = await Promise.all([
     q<{ user_id: string; name: string; color: string; kind: string; start_time: string | null; end_time: string | null; note: string | null }>(
       "select s.user_id, u.name, u.color, s.kind, s.start_time, s.end_time, s.note from shifts s join users u on u.id = s.user_id where s.date = $1 and u.active and s.kind <> 'off' order by u.created_at", [d]),
     q<{ name: string }>("select u.name from shifts s join users u on u.id = s.user_id where s.date = $1 and u.active and s.kind = 'shop' order by u.created_at", [tomorrow]),
     q<{ id: string; title: string; date: string; start_time: string | null; kind: string }>(
       "select id, title, date, start_time, kind from events where coalesce(end_date, date) >= $1 and date <= $2 order by date, start_time nulls first limit 6", [d, addDays(d, 14)]),
-    q<{ id: string; date: string; kind: string; text: string; product: string | null; status: string; action_needed: boolean; contact_name: string | null; title: string | null }>(
-      "select id, date::text as date, kind, text, product, status, action_needed, contact_name, title from customer_requests where user_id = $1 order by created_at desc limit 8", [user.id]),
+    q<{ id: string; date: string; kind: string; text: string; product: string | null; status: string; action_needed: boolean; contact_name: string | null; title: string | null; stage: string; stage_note: string | null; stage_at: string | null; stage_by: string | null; user_id: string | null; created_at: string }>(
+      "select id, date::text as date, kind, text, product, status, action_needed, contact_name, title, stage, stage_note, stage_at::text as stage_at, stage_by, user_id, created_at::text as created_at from customer_requests where user_id = $1 order by created_at desc limit 12", [user.id]),
     internHours(d),
     q<{ slug: string; title_de: string; title_nl: string | null }>("select slug, title_de, title_nl from kb_pages where category = 'verkauf' order by position, title_de"),
+    requestActivity(user.id),
   ]);
+  const fresh = mine.map((r) => ({ r, why: isNewFor(user, r, act.get(r.id), myLast.get(r.id)) })).filter((x) => x.why);
   const my = shifts.find((s) => s.user_id === user.id);
   const open = openingOn(d)[weekday(d)];
   const openTomorrow = openingOn(tomorrow)[weekday(tomorrow)];
@@ -84,17 +87,41 @@ export async function SellerToday({ user }: { user: User }) {
             </div>
           </section>
 
+          {fresh.length > 0 && (
+            <section className="card !bg-amber-50 ring-amber-200">
+              <h2 className="mb-2">{tr("Neu für dich", "Nieuw voor jou")} <span className="text-sm font-normal text-stone-500">· {fresh.length}</span></h2>
+              <ul className="space-y-2 text-sm">
+                {fresh.map(({ r, why }) => {
+                  const a = act.get(r.id);
+                  return (
+                    <li key={r.id}>
+                      <Link href={`/app/journal/${r.id}`} className="block rounded-xl bg-white p-3 ring-1 ring-amber-200 hover:ring-brand">
+                        <div className="flex flex-wrap items-center gap-2"><Badge l={REQUEST_KIND[r.kind]} lang={user.lang} /><b>{requestTitle(r)}</b>{tabOf(r.kind) !== "question" && <Badge l={stageOptions(r.kind)[r.stage] || stageOptions(r.kind).new} lang={user.lang} />}</div>
+                        <p className="mt-1 text-stone-700">{why === "reply" && a ? <><b>{a.last_name}:</b> {(a.last_body || "").slice(0, 140)}{(a.last_body || "").length > 140 ? "…" : ""}</> : <>{tr("Status geändert", "Status gewijzigd")}{r.stage_note ? ` – ${r.stage_note}` : ""}</>}</p>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+
           {mine.length > 0 && (
             <section className="card">
-              <h2 className="mb-2">{tr("Deine letzten Einträge", "Jouw laatste invoer")} {openLeads.length > 0 && <span className="text-sm font-normal text-stone-500">· {openLeads.length} {tr("offen", "open")}</span>}</h2>
+              <h2 className="mb-2">{tr("Deine Einträge", "Jouw invoer")} {openLeads.length > 0 && <span className="text-sm font-normal text-stone-500">· {openLeads.length} {tr("offen", "open")}</span>}</h2>
               <ul className="divide-y divide-sand-200 text-sm">
-                {mine.map((r) => (
-                  <li key={r.id} className="flex items-start gap-2 py-1.5">
-                    <Badge l={REQUEST_KIND[r.kind]} lang={user.lang} />
-                    <Link href={`/app/journal?edit=${r.id}`} className="min-w-0 flex-1 hover:underline">{r.kind === "lead" ? <b>{r.contact_name || r.text}</b> : r.kind === "idea" ? <b>{r.title || r.text}</b> : <>{r.product && <b>{r.product} · </b>}{r.text}</>}</Link>
-                    <span className="shrink-0 text-xs text-stone-400">{shortDate(r.date, user.lang)}{r.status === "done" && " ✓"}</span>
-                  </li>
-                ))}
+                {mine.map((r) => {
+                  const a = act.get(r.id);
+                  return (
+                    <li key={r.id}>
+                      <Link href={`/app/journal/${r.id}`} className="flex items-start gap-2 py-2 hover:bg-sand-50">
+                        <Badge l={REQUEST_KIND[r.kind]} lang={user.lang} />
+                        <span className="min-w-0 flex-1"><b>{requestTitle(r)}</b>{tabOf(r.kind) !== "question" && <> · <span className="text-stone-500">{lbl(user.lang, stageOptions(r.kind)[r.stage] || stageOptions(r.kind).new)}</span></>}{a && <span className="text-stone-400"> · {a.n} {a.n === 1 ? tr("Antwort", "antwoord") : tr("Antworten", "antwoorden")}</span>}</span>
+                        <span className="shrink-0 text-xs text-stone-400">{shortDate(r.date, user.lang)}{r.status === "done" && " ✓"}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           )}

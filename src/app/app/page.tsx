@@ -60,7 +60,11 @@ export default async function Today() {
     q<{ id: string; text: string; kind: string; product: string | null; action_note: string | null }>(
       "select id, text, kind, product, action_note from customer_requests where status = 'open' and action_needed and kind not in ('lead','idea') order by created_at limit 5"),
     isAdmin ? q<{ id: string; kind: string; contact_name: string | null; title: string | null; interest: string | null; name: string | null }>(
-      "select r.id, r.kind, r.contact_name, r.title, r.interest, u.name from customer_requests r left join users u on u.id = r.user_id where r.kind in ('lead','idea') and r.stage = 'new' order by r.created_at desc limit 6") : [],
+      `select r.id, r.kind, r.contact_name, r.title, r.interest, u.name from customer_requests r left join users u on u.id = r.user_id
+       where r.status = 'open' and ((r.kind in ('lead','idea') and r.stage = 'new' and not exists (select 1 from comments c join users cu on cu.id = c.user_id where c.request_id = r.id and cu.role = 'admin'))
+          or exists (select 1 from comments c join users cu on cu.id = c.user_id where c.request_id = r.id and cu.role <> 'admin'
+                     and c.created_at > coalesce((select max(c2.created_at) from comments c2 join users cu2 on cu2.id = c2.user_id where c2.request_id = r.id and cu2.role = 'admin'), '1970-01-01')))
+       order by r.created_at desc limit 6`) : [],
     isAdmin ? q<{ id: string; name: string; date: string }>("select a.id, u.name, a.date::text as date from absences a join users u on u.id = a.user_id where a.status = 'requested' order by a.date") : [],
     q<{ id: string; title: string; status: string; name: string | null }>(
       `select c.id, c.title, c.status, u.name from content_items c left join users u on u.id = c.owner_id
@@ -138,8 +142,8 @@ export default async function Today() {
           )}
           {isAdmin && newLeads.length > 0 && (
             <Alert href="/app/journal?tab=lead" tone="amber">
-              <b>{newLeads.filter((x) => x.kind === "lead").length > 0 && `${newLeads.filter((x) => x.kind === "lead").length} ${newLeads.filter((x) => x.kind === "lead").length === 1 ? tr("neuer Lead", "nieuwe lead") : tr("neue Leads", "nieuwe leads")}`}{newLeads.some((x) => x.kind === "lead") && newLeads.some((x) => x.kind === "idea") && " · "}{newLeads.filter((x) => x.kind === "idea").length > 0 && `${newLeads.filter((x) => x.kind === "idea").length} ${newLeads.filter((x) => x.kind === "idea").length === 1 ? tr("neue Idee", "nieuw idee") : tr("neue Ideen", "nieuwe ideeën")}`}</b>
-              <span className="mt-0.5 block text-stone-600">{newLeads.slice(0, 3).map((x) => x.kind === "lead" ? `${x.contact_name || "?"}${x.interest && LEAD_INTEREST[x.interest] ? ` (${lbl(user.lang, LEAD_INTEREST[x.interest])})` : ""}` : `${tr("Idee", "Idee")}: ${x.title || ""}`).join(" · ")}</span>
+              <b>{newLeads.length} {newLeads.length === 1 ? tr("Eintrag aus dem Laden wartet auf dich", "invoer uit de winkel wacht op jou") : tr("Einträge aus dem Laden warten auf dich", "invoer uit de winkel wacht op jou")}</b>
+              <span className="mt-0.5 block text-stone-600">{newLeads.slice(0, 3).map((x) => x.kind === "lead" ? `${tr("Lead", "Lead")}: ${x.contact_name || "?"}${x.interest && LEAD_INTEREST[x.interest] ? ` (${lbl(user.lang, LEAD_INTEREST[x.interest])})` : ""}` : x.kind === "idea" ? `${tr("Idee", "Idee")}: ${x.title || ""}` : `${lbl(user.lang, REQUEST_KIND[x.kind])}: ${x.name || ""}`).join(" · ")}</span>
             </Alert>
           )}
           {openActions.length > 0 && (

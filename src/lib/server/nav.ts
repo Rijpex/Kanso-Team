@@ -18,7 +18,8 @@ export async function navItems(user: { id: string; role: string; lang: "de" | "n
   }
   const openQ = user.role === "admin" ? (await q1<{ n: number }>("select count(*)::int as n from questions where status = 'open'"))?.n ?? 0 : 0;
   const review = user.role === "admin" ? (await q1<{ n: number }>("select count(*)::int as n from tasks where status = 'review'"))?.n ?? 0 : 0;
-  const newLeads = user.role === "admin" ? (await q1<{ n: number }>("select count(*)::int as n from customer_requests where kind in ('lead','idea') and stage = 'new'"))?.n ?? 0 : 0;
+  const newLeads = user.role === "admin" ? (await q1<{ n: number }>(`select count(*)::int as n from customer_requests r where r.status = 'open' and ((r.kind in ('lead','idea') and r.stage = 'new' and not exists (select 1 from comments c join users cu on cu.id = c.user_id where c.request_id = r.id and cu.role = 'admin'))
+  or exists (select 1 from comments c join users cu on cu.id = c.user_id where c.request_id = r.id and cu.role <> 'admin' and c.created_at > coalesce((select max(c2.created_at) from comments c2 join users cu2 on cu2.id = c2.user_id where c2.request_id = r.id and cu2.role = 'admin'), '1970-01-01')))`))?.n ?? 0 : 0;
   const pendingAbs = user.role === "admin" ? (await q1<{ n: number }>("select count(*)::int as n from absences where status = 'requested'"))?.n ?? 0 : 0;
   const G = { shop: tr("Laden", "Winkel"), proj: tr("Projekte", "Projecten"), me: user.role === "admin" ? tr("Praktikantinnen", "Stagiairs") : tr("Mein Praktikum", "Mijn stage"), admin: tr("Verwaltung", "Beheer") };
   const items: NavItem[] = [

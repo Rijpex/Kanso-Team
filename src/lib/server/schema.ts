@@ -1,6 +1,6 @@
 /** Databaseschema. Alles is idempotent: opnieuw draaien kan altijd. */
 /** Ophogen bij elke schemawijziging: de app werkt de database dan zelf bij. */
-export const SCHEMA_VERSION = 23;
+export const SCHEMA_VERSION = 24;
 
 export const SCHEMA_SQL = `
 create extension if not exists pgcrypto;
@@ -491,6 +491,11 @@ alter table customer_requests add column if not exists link text;
 alter table customer_requests add column if not exists stage_note text;
 alter table files add column if not exists request_id uuid references customer_requests(id) on delete cascade;
 create index if not exists files_request_idx on files (request_id);
+-- v24: Antworten/Rückfragen zu Leads, Kundenfragen und Ideen; wann und von wem der Status zuletzt gesetzt wurde
+alter table comments add column if not exists request_id uuid references customer_requests(id) on delete cascade;
+create index if not exists comments_request_idx on comments (request_id, created_at);
+alter table customer_requests add column if not exists stage_at timestamptz;
+alter table customer_requests add column if not exists stage_by uuid references users(id) on delete set null;
 do $$
 begin
   if not exists (select 1 from settings where key = 'mig_v10_roster') then

@@ -4,28 +4,27 @@ import { q } from "@/lib/server/db";
 import { IDEA_AREA, IDEA_STAGE, LEAD_INTEREST, LEAD_NEXT, LEAD_STAGE, REQUEST_KIND, T, lbl } from "@/lib/i18n";
 import { shortDate, today } from "@/lib/dates";
 import { Badge, Empty, PageHeader } from "@/components/ui";
-import { AutoSubmitSelect, ConfirmSubmit, Submit } from "@/components/client";
+import { AutoSubmitSelect, Submit } from "@/components/client";
 import { FileUpload } from "@/components/FileUpload";
-import { deleteCustomerRequest, deleteFile, saveCustomerRequest, setRequestStage, toggleCustomerRequest } from "../actions";
+import { requestActivity } from "@/lib/server/queries";
+import { TABS, type Tab, isNewFor, requestTitle, stageOptions, tabOf } from "@/lib/requests";
+import { saveCustomerRequest, setRequestStage } from "../actions";
 
 type R = {
-  id: string; date: string; kind: string; text: string; product: string | null; answer: string | null; action_needed: boolean; action_note: string | null; status: string; name: string | null; user_id: string | null;
+  id: string; date: string; kind: string; text: string; product: string | null; answer: string | null; action_needed: boolean; action_note: string | null; status: string; name: string | null; user_id: string | null; created_at: string;
   contact_name: string | null; phone: string | null; email: string | null; interest: string | null; budget: string | null; timing: string | null; next_step: string | null;
-  stage: string; stage_note: string | null; title: string | null; link: string | null;
+  stage: string; stage_note: string | null; stage_at: string | null; stage_by: string | null; title: string | null; link: string | null; nfiles: number;
 };
-type F = { id: string; request_id: string; name: string; mime_type: string | null; uploaded_by: string | null };
-type Tab = "lead" | "question" | "idea";
-const TABS: Tab[] = ["lead", "question", "idea"];
-const tabOf = (kind: string): Tab => (kind === "lead" ? "lead" : kind === "idea" ? "idea" : "question");
 
 export default async function CustomerRequests({ searchParams }: { searchParams: { edit?: string; all?: string; tab?: string; new?: string; saved?: string } }) {
   const user = await requireUser();
   const tr = T(user.lang);
   const isAdmin = user.role === "admin";
   const showAll = searchParams.all === "1";
-  const [rows, files, online] = await Promise.all([
-    q<R>(`select r.*, u.name from customer_requests r left join users u on u.id = r.user_id order by (r.status = 'open') desc, r.date desc, r.created_at desc limit ${showAll ? 1000 : 150}`),
-    q<F>("select id, request_id, name, mime_type, uploaded_by from files where request_id is not null order by created_at"),
+  const [rows, { act, myLast }, online] = await Promise.all([
+    q<R>(`select r.*, r.created_at::text as created_at, r.stage_at::text as stage_at, u.name, (select count(*)::int from files f where f.request_id = r.id) as nfiles
+      from customer_requests r left join users u on u.id = r.user_id order by (r.status = 'open') desc, r.date desc, r.created_at desc limit ${showAll ? 1000 : 150}`),
+    requestActivity(user.id),
     q<{ week: string; n: number }>("select date_trunc('week', date)::date::text as week, count(*)::int as n from journal where kind = 'online' group by 1 order by 1 desc limit 8"),
   ]);
   const editing = searchParams.edit ? rows.find((r) => r.id === searchParams.edit) : undefined;
@@ -35,6 +34,7 @@ export default async function CustomerRequests({ searchParams }: { searchParams:
   const open = inTab.filter((r) => r.status === "open");
   const done = inTab.filter((r) => r.status !== "open");
   const counts = Object.fromEntries(TABS.map((t) => [t, rows.filter((r) => tabOf(r.kind) === t && r.status === "open").length]));
+  const attn = (t: Tab) => rows.filter((r) => tabOf(r.kind) === t && r.status === "open" && attention(r)).length;
   const max = Math.max(1, ...online.map((o) => o.n));
   const href = (t: Tab, extra = "") => `/app/journal?tab=${t}${extra}`;
   const tabLabel: Record<Tab, string> = { lead: tr("Leads", "Leads"), question: tr("Kundenfragen", "Klantvragen"), idea: tr("Ideen", "Ideeën") };
@@ -56,91 +56,55 @@ export default async function CustomerRequests({ searchParams }: { searchParams:
     </div>
   );
 
-  const StageSelect = ({ r }: { r: R }) => {
-    const opts = r.kind === "lead" ? LEAD_STAGE : IDEA_STAGE;
-    if (!isAdmin) return r.kind === "lead" && r.stage === "new" && r.user_id === user.id
-      ? <form action={setRequestStage} className="inline"><input type="hidden" name="id" value={r.id} /><input type="hidden" name="stage" value="contacted" /><button className="btn-ghost btn-sm">{tr("Hab ich kontaktiert", "Ik heb contact gehad")}</button></form>
-      : null;
-    return (
-      <form action={setRequestStage} className="flex flex-wrap items-center gap-1.5">
-        <input type="hidden" name="id" value={r.id} />
-        <AutoSubmitSelect name="stage" defaultValue={r.stage || "new"} className="input !w-auto !py-1 text-xs">{Object.entries(opts).map(([k, l]) => <option key={k} value={k}>{lbl(user.lang, l)}</option>)}</AutoSubmitSelect>
-      </form>
-    );
+  /** Braucht der Eintrag meine Aufmerksamkeit? Admin: neu und noch keine Reaktion vom Team, oder letzte Nachricht von jemand anderem. Sonst: Antwort/Status von jemand anderem. */
+  const attention = (r: R): string | null => {
+    const a = act.get(r.id);
+    const fresh = isNewFor(user, r, a, myLast.get(r.id));
+    if (fresh === "reply") return tr(`Antwort von ${a?.last_name || "…"}`, `Antwoord van ${a?.last_name || "…"}`);
+    if (fresh === "stage") return tr("Status geändert", "Status gewijzigd");
+    if (isAdmin && tabOf(r.kind) !== "question" && r.stage === "new" && !a && r.user_id !== user.id) return tr("Neu – noch keine Reaktion", "Nieuw – nog geen reactie");
+    return null;
   };
-
-  const Files = ({ r, edit }: { r: R; edit?: boolean }) => {
-    const mine = files.filter((f) => f.request_id === r.id);
-    if (!mine.length && !edit) return null;
-    return (
-      <div className="mt-2">
-        {mine.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {mine.map((f) => (
-              <div key={f.id} className="group relative">
-                <a href={`/api/files/${f.id}`} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-lg bg-sand-100 ring-1 ring-sand-200">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {f.mime_type?.startsWith("image/") ? <img src={`/api/files/${f.id}`} alt={f.name} className="h-24 w-24 object-cover sm:h-28 sm:w-28" /> : <span className="flex h-24 w-24 items-center justify-center px-2 text-center text-xs text-stone-600 sm:h-28 sm:w-28">{f.name}</span>}
-                </a>
-                {(isAdmin || f.uploaded_by === user.id) && edit && <form action={deleteFile} className="absolute -right-1 -top-1"><input type="hidden" name="id" value={f.id} /><ConfirmSubmit className="h-5 w-5 rounded-full bg-white text-xs text-stone-500 shadow ring-1 ring-sand-300 hover:text-red-600" confirm="?">×</ConfirmSubmit></form>}
-              </div>
-            ))}
-          </div>
-        )}
-        {edit && <div className="mt-2"><FileUpload requestId={r.id} accept="image/*,.pdf" label={tr("Foto, Skizze oder PDF anhängen", "Foto, schets of pdf toevoegen")} hint={tr("Handyfoto reicht – direkt aus der Kamera.", "Een foto met je telefoon is genoeg.")} /></div>}
-      </div>
-    );
-  };
+  const sortAttention = (list: R[]) => [...list].sort((x, y) => Number(!!attention(y)) - Number(!!attention(x)));
 
   const Item = ({ r }: { r: R }) => {
     const kindTab = tabOf(r.kind);
-    const stageL = kindTab === "lead" ? LEAD_STAGE[r.stage] : kindTab === "idea" ? IDEA_STAGE[r.stage] : undefined;
+    const stages = kindTab !== "question" ? stageOptions(r.kind) : null;
+    const a = act.get(r.id);
+    const att = attention(r);
+    const detail = kindTab === "lead"
+      ? [r.budget && `${tr("Budget", "Budget")} ${r.budget}`, r.timing, r.next_step && LEAD_NEXT[r.next_step] && `→ ${lbl(user.lang, LEAD_NEXT[r.next_step])}`].filter(Boolean).join(" · ")
+      : "";
+    const body = kindTab === "lead" ? (r.text !== r.contact_name ? r.text : "") : kindTab === "idea" ? (r.text !== r.title ? r.text : "") : r.kind === "quote" ? `„${r.text}“` : r.text;
     return (
-      <li className={`rounded-xl bg-white p-3 ring-1 ring-sand-200 sm:p-4 ${r.status === "done" ? "opacity-75" : ""}`}>
-        <div className="flex items-start gap-3">
-          {kindTab === "question" && (
-            <form action={toggleCustomerRequest} className="pt-0.5"><input type="hidden" name="id" value={r.id} />
-              <button className={`h-5 w-5 rounded-md border text-xs ${r.status === "done" ? "border-brand bg-brand text-white" : "border-sand-300 bg-white hover:border-brand"}`} title={tr(r.status === "done" ? "Wieder öffnen" : "Erledigt", r.status === "done" ? "Weer openen" : "Afgehandeld")}>{r.status === "done" ? "✓" : ""}</button>
-            </form>
-          )}
-          <div className="min-w-0 flex-1 text-sm">
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              {kindTab === "lead" && <span className="text-base font-semibold">{r.contact_name || r.text}</span>}
-              {kindTab === "idea" && <span className="text-base font-semibold">{r.title || r.text}</span>}
-              {kindTab === "question" && <Badge l={REQUEST_KIND[r.kind]} lang={user.lang} />}
-              {kindTab === "lead" && r.interest && <Badge l={{ ...LEAD_INTEREST[r.interest], color: "bg-sand-100 text-stone-700" }} lang={user.lang} />}
-              {kindTab === "idea" && r.product && <span className="badge bg-sand-100 text-stone-700">{IDEA_AREA[r.product] ? lbl(user.lang, IDEA_AREA[r.product]) : r.product}</span>}
-              {kindTab === "question" && r.product && <span className="font-medium">{r.product}</span>}
-              {stageL && <Badge l={stageL} lang={user.lang} />}
-              <span className="text-xs text-stone-400">{shortDate(r.date, user.lang)}{r.name ? ` · ${r.name}` : ""}</span>
-            </div>
-            {kindTab === "lead" && (r.phone || r.email) && (
-              <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
-                {r.phone && <a href={`tel:${r.phone.replace(/[^\d+]/g, "")}`} className="font-medium text-brand underline">☎ {r.phone}</a>}
-                {r.email && <a href={`mailto:${r.email}`} className="text-brand underline">{r.email}</a>}
-              </p>
-            )}
-            {kindTab === "lead" && !r.phone && !r.email && <p className="mt-1 text-xs text-amber-800">{tr("Keine Kontaktdaten – bitte nachtragen, sonst können wir nicht nachfassen.", "Geen contactgegevens – graag aanvullen, anders kunnen we niet opvolgen.")}</p>}
-            {(kindTab !== "lead" || r.text !== r.contact_name) && (kindTab !== "idea" || r.text !== r.title) && <p className={`mt-1 whitespace-pre-line ${r.kind === "quote" ? "italic" : ""}`}>{r.kind === "quote" ? `„${r.text}“` : r.text}</p>}
-            {kindTab === "lead" && (r.budget || r.timing || r.next_step) && (
-              <p className="mt-1 text-stone-600">
-                {r.budget && <span>{tr("Budget", "Budget")}: {r.budget}</span>}{r.budget && (r.timing || r.next_step) && " · "}
-                {r.timing && <span>{tr("Wann", "Wanneer")}: {r.timing}</span>}{r.timing && r.next_step && " · "}
-                {r.next_step && LEAD_NEXT[r.next_step] && <span className="font-medium">→ {lbl(user.lang, LEAD_NEXT[r.next_step])}</span>}
-              </p>
-            )}
-            {r.link && <p className="mt-1 truncate"><a href={/^https?:/.test(r.link) ? r.link : `https://${r.link}`} target="_blank" rel="noreferrer" className="text-brand underline">{r.link}</a></p>}
-            {r.answer && <p className="mt-1 text-stone-600"><span className="text-xs uppercase tracking-wide text-stone-400">{tr("Geantwortet", "Geantwoord")}: </span>{r.answer}</p>}
-            {r.action_needed && kindTab === "question" && <p className="mt-1 rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-900">→ {r.action_note || tr("Daraus sollten wir etwas machen.", "Hier moeten we iets mee doen.")}</p>}
-            {r.stage_note && <p className="mt-1 text-xs text-stone-500">{r.stage_note}</p>}
-            <Files r={r} />
-            {kindTab !== "question" && <div className="mt-2"><StageSelect r={r} /></div>}
+      <li className={`rounded-xl bg-white ring-1 transition hover:ring-brand ${att ? "ring-amber-300" : "ring-sand-200"} ${r.status === "done" ? "opacity-75" : ""}`}>
+        <Link href={`/app/journal/${r.id}`} className="block p-3 sm:p-4">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            {kindTab === "question" ? <Badge l={REQUEST_KIND[r.kind]} lang={user.lang} /> : <span className="text-base font-semibold">{requestTitle(r)}</span>}
+            {kindTab === "lead" && r.interest && LEAD_INTEREST[r.interest] && <Badge l={{ ...LEAD_INTEREST[r.interest], color: "bg-sand-100 text-stone-700" }} lang={user.lang} />}
+            {kindTab === "idea" && r.product && <span className="badge bg-sand-100 text-stone-700">{IDEA_AREA[r.product] ? lbl(user.lang, IDEA_AREA[r.product]) : r.product}</span>}
+            {kindTab === "question" && r.product && <span className="font-medium">{r.product}</span>}
+            {stages && <Badge l={stages[r.stage] || stages.new} lang={user.lang} />}
+            {att && <span className="badge bg-amber-100 text-amber-900">● {att}</span>}
+            <span className="ml-auto text-xs text-stone-400">{shortDate(r.date, user.lang)}{r.name ? ` · ${r.name}` : ""}</span>
           </div>
-          <div className="flex shrink-0 gap-1 text-xs">
-            {(isAdmin || r.user_id === user.id) && <Link href={`/app/journal?edit=${r.id}`} className="btn-ghost btn-sm">{tr("Ändern", "Wijzig")}</Link>}
-            {isAdmin && <form action={deleteCustomerRequest}><input type="hidden" name="id" value={r.id} /><ConfirmSubmit className="px-2 text-stone-300 hover:text-red-600" confirm="?">×</ConfirmSubmit></form>}
+          {kindTab === "lead" && <p className="mt-1 text-sm">{r.phone ? <span className="font-medium text-brand">☎ {r.phone}</span> : r.email ? <span className="text-brand">{r.email}</span> : <span className="text-amber-800">{tr("Keine Kontaktdaten", "Geen contactgegevens")}</span>}{detail && <span className="text-stone-600"> · {detail}</span>}</p>}
+          {body && <p className={`mt-1 line-clamp-2 text-sm text-stone-700 ${r.kind === "quote" ? "italic" : ""}`}>{body}</p>}
+          {kindTab === "question" && r.action_needed && r.status === "open" && <p className="mt-1 text-xs text-amber-900">→ {r.action_note || tr("Daraus sollten wir etwas machen.", "Hier moeten we iets mee doen.")}</p>}
+          {r.stage_note && <p className="mt-1 text-xs text-stone-500">{r.stage_note}</p>}
+          <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-stone-400">
+            {a && <span>{a.n} {a.n === 1 ? tr("Antwort", "antwoord") : tr("Antworten", "antwoorden")} · {tr("zuletzt", "laatst")} {a.last_name}: <span className="text-stone-500">{(a.last_body || "").slice(0, 60)}{(a.last_body || "").length > 60 ? "…" : ""}</span></span>}
+            {r.nfiles > 0 && <span>📎 {r.nfiles}</span>}
+            {!a && <span>{tr("Öffnen zum Antworten", "Open om te antwoorden")} →</span>}
           </div>
-        </div>
+        </Link>
+        {isAdmin && stages && r.status === "open" && (
+          <form action={setRequestStage} className="flex items-center gap-2 border-t border-sand-100 px-3 py-2 text-xs sm:px-4">
+            <input type="hidden" name="id" value={r.id} />
+            <span className="text-stone-400">{tr("Status", "Status")}:</span>
+            <AutoSubmitSelect name="stage" defaultValue={r.stage || "new"} className="input !w-auto !py-1 text-xs">{Object.entries(stages).map(([k, l]) => <option key={k} value={k}>{lbl(user.lang, l)}</option>)}</AutoSubmitSelect>
+          </form>
+        )}
       </li>
     );
   };
@@ -152,7 +116,7 @@ export default async function CustomerRequests({ searchParams }: { searchParams:
       <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
         {TABS.map((t) => (
           <Link key={t} href={href(t)} className={chip(tab === t && !editing) + " shrink-0"}>
-            {tabLabel[t]}{counts[t] > 0 && <span className={`ml-1.5 rounded-full px-1.5 text-xs ${tab === t ? "bg-white/20" : "bg-sand-100 text-stone-500"}`}>{counts[t]}</span>}
+            {tabLabel[t]}{counts[t] > 0 && <span className={`ml-1.5 rounded-full px-1.5 text-xs ${tab === t ? "bg-white/20" : "bg-sand-100 text-stone-500"}`}>{counts[t]}</span>}{attn(t) > 0 && <span className="ml-1 inline-block h-2 w-2 rounded-full bg-amber-500" title={tr("Neu für dich", "Nieuw voor jou")} />}
           </Link>
         ))}
       </div>
@@ -167,7 +131,6 @@ export default async function CustomerRequests({ searchParams }: { searchParams:
       {showForm && (
         <section className="card mb-5" id="form">
           <h2 className="mb-1">{editing ? tr("Eintrag ändern", "Invoer wijzigen") : newLabel[tab]}</h2>
-          {searchParams.saved === "1" && editing?.kind === "idea" && <p className="mb-2 rounded-md bg-emerald-50 px-2 py-1 text-sm text-emerald-900">{tr("Gespeichert. Magst du noch ein Foto oder eine Skizze anhängen?", "Opgeslagen. Wil je nog een foto of schets toevoegen?")}</p>}
           {!editing && <p className="mb-3 text-xs text-stone-500">{intro[tab]}</p>}
           <form action={saveCustomerRequest} className="space-y-3 text-sm" key={editing?.id || `new-${tab}-${rows.length}`}>
             {editing && <input type="hidden" name="id" value={editing.id} />}
@@ -215,18 +178,18 @@ export default async function CustomerRequests({ searchParams }: { searchParams:
                 <div><label className="label">{tr("Worum geht es?", "Waar gaat het over?")}</label><Radios name="product" options={IDEA_AREA} value={editing?.product || "praesentation"} /></div>
                 <div><label className="label">{tr("Beschreibung", "Beschrijving")}</label><textarea name="text" className="input" rows={4} defaultValue={editing && editing.text !== editing.title ? editing.text : ""} placeholder={tr("Was genau, warum (was bringt es Kunden oder Umsatz), was braucht es dafür (Material, Zeit, Kosten)?", "Wat precies, waarom (wat levert het klanten of omzet op), wat is ervoor nodig (materiaal, tijd, kosten)?")} /></div>
                 <div><label className="label">{tr("Link (optional)", "Link (optioneel)")}</label><input name="link" className="input" defaultValue={editing?.link || ""} placeholder="https://…" /></div>
-                {editing ? <Files r={editing} edit /> : <p className="text-xs text-stone-500">{tr("Nach dem Speichern kannst du Fotos oder eine Skizze anhängen.", "Na het opslaan kun je foto's of een schets toevoegen.")}</p>}
+                {editing ? <FileUpload requestId={editing.id} accept="image/*,.pdf" label={tr("Foto, Skizze oder PDF anhängen", "Foto, schets of pdf toevoegen")} hint={tr("Handyfoto reicht – direkt aus der Kamera.", "Een foto met je telefoon is genoeg.")} /> : <p className="text-xs text-stone-500">{tr("Nach dem Speichern kannst du Fotos oder eine Skizze anhängen.", "Na het opslaan kun je foto's of een schets toevoegen.")}</p>}
               </>
             )}
 
-            <div className="flex gap-2 pt-1"><Submit>{editing ? tr("Speichern", "Opslaan") : tr("Speichern", "Opslaan")}</Submit><Link href={href(tab)} className="btn-ghost">{editing ? tr("Fertig", "Klaar") : tr("Abbrechen", "Annuleren")}</Link></div>
+            <div className="flex gap-2 pt-1"><Submit>{editing ? tr("Speichern", "Opslaan") : tr("Speichern", "Opslaan")}</Submit><Link href={editing ? `/app/journal/${editing.id}` : href(tab)} className="btn-ghost">{tr("Abbrechen", "Annuleren")}</Link></div>
           </form>
         </section>
       )}
 
       <h2 className="mb-2">{tab === "lead" ? tr("Offene Leads", "Open leads") : tab === "idea" ? tr("Neue und offene Ideen", "Nieuwe en open ideeën") : tr("Offen – daraus etwas machen", "Open – hier iets mee doen")} <span className="text-sm font-normal text-stone-400">{open.length}</span></h2>
       {!open.length && <Empty>{tab === "lead" ? tr("Noch kein offener Lead. Sobald jemand Interesse an einem Projekt zeigt: Name und Telefonnummer notieren.", "Nog geen open lead. Zodra iemand interesse toont in een project: naam en telefoonnummer noteren.") : tab === "idea" ? tr("Noch keine Idee. Alles, was dir im Laden auffällt, ist willkommen.", "Nog geen idee. Alles wat je in de winkel opvalt is welkom.") : tr("Nichts offen. Sobald eine Frage aufkommt, die wir nicht sofort beantworten können: hier eintragen.", "Niets open. Zodra een vraag opkomt die we niet direct kunnen beantwoorden: hier invoeren.")}</Empty>}
-      <ul className="space-y-2">{open.map((r) => <Item key={r.id} r={r} />)}</ul>
+      <ul className="space-y-2">{sortAttention(open).map((r) => <Item key={r.id} r={r} />)}</ul>
 
       <h2 className="mb-2 mt-6">{tab === "lead" ? tr("Abgeschlossen", "Afgerond") : tab === "idea" ? tr("Entschieden", "Besloten") : tr("Erledigt / nur notiert", "Afgehandeld / alleen genoteerd")} <span className="text-sm font-normal text-stone-400">{done.length}</span></h2>
       {!done.length && <p className="text-sm text-stone-500">{tr("Noch nichts.", "Nog niets.")}</p>}

@@ -1,4 +1,5 @@
 import "server-only";
+import type { Activity } from "@/lib/requests";
 import { q, q1 } from "./db";
 import { addDays, monday, weekday } from "@/lib/dates";
 import { shiftMinutes } from "@/lib/hours";
@@ -149,4 +150,18 @@ export async function internDays(date: string): Promise<DayRow[]> {
       counts: r.date <= date && (!r.start_date || r.date >= r.start_date),
     }))
     .sort((a, b) => (a.date < b.date ? 1 : -1));
+}
+
+/** Antworten an Leads/Kundenfragen/Ideen: letzte Antwort je Eintrag und wann ich selbst zuletzt geschrieben habe. */
+export async function requestActivity(userId: string) {
+  const [acts, mine] = await Promise.all([
+    q<Activity>(`select c.request_id, count(*)::int as n, max(c.created_at)::text as last_at,
+        (array_agg(c.user_id order by c.created_at desc))[1] as last_by,
+        (array_agg(u.name order by c.created_at desc))[1] as last_name,
+        (array_agg(u.role order by c.created_at desc))[1] as last_role,
+        (array_agg(c.body order by c.created_at desc))[1] as last_body
+      from comments c left join users u on u.id = c.user_id where c.request_id is not null group by c.request_id`),
+    q<{ request_id: string; at: string }>("select request_id, max(created_at)::text as at from comments where user_id = $1 and request_id is not null group by request_id", [userId]),
+  ]);
+  return { act: new Map(acts.map((a) => [a.request_id, a])), myLast: new Map(mine.map((m) => [m.request_id, m.at])) };
 }

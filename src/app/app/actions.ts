@@ -327,8 +327,9 @@ export async function addComment(fd: FormData) {
   const taskId = opt(fd, "task_id");
   const questionId = opt(fd, "question_id");
   const ideaId = opt(fd, "idea_id");
-  if (!taskId && !questionId && !ideaId) return;
-  await q("insert into comments (task_id, question_id, idea_id, user_id, body) values ($1,$2,$3,$4,$5)", [taskId, questionId, ideaId, u.id, body]);
+  const requestId = opt(fd, "request_id");
+  if (!taskId && !questionId && !ideaId && !requestId) return;
+  await q("insert into comments (task_id, question_id, idea_id, request_id, user_id, body) values ($1,$2,$3,$4,$5,$6)", [taskId, questionId, ideaId, requestId, u.id, body]);
   if (taskId) await q("update tasks set updated_at = now() where id = $1", [taskId]);
   if (questionId && u.role === "admin") await q("update questions set status = 'answered' where id = $1", [questionId]);
   if (questionId && u.role !== "admin") await q("update questions set status = 'open' where id = $1", [questionId]);
@@ -611,8 +612,8 @@ export async function saveCustomerRequest(fd: FormData) {
     reqId = row?.id ?? null;
   }
   revalidatePath("/app", "layout");
-  // Neue Idee: direkt weiter zum Eintrag, damit Fotos/Skizzen angehängt werden können
-  if (!id && kind === "idea" && reqId) redirect(`/app/journal?tab=idea&edit=${reqId}&saved=1`);
+  // Neuer Eintrag: direkt zur Detailseite (Bestätigung, Fotos anhängen, Antworten); Schnell-Eingabe auf "Heute" bleibt auf Heute
+  if (reqId && (!id || kind === "idea") && !(fd.get("back") === "/app" && !id)) redirect(`/app/journal/${reqId}${id ? "" : "?saved=1"}`);
   redirect(back(fd, `/app/journal?tab=${kind === "lead" || kind === "idea" ? kind : "question"}`));
 }
 /** Status eines Leads (neu → kontaktiert → Termin → Angebot → Auftrag) oder einer Idee (neu → besprechen → machen) */
@@ -627,7 +628,7 @@ export async function setRequestStage(fd: FormData) {
   // Leads und Ideen bewerten nur Bas und Lea; der Verkäufer darf seinen Lead auf "kontaktiert" setzen
   if (u.role !== "admin" && !(row.kind === "lead" && stage === "contacted")) return;
   const closed = ["won", "lost", "doing", "later", "no"].includes(stage);
-  await q("update customer_requests set stage = $2, stage_note = $3, status = $4, done_by = case when $4 = 'done' then $5::uuid else done_by end, done_at = case when $4 = 'done' then now() else done_at end where id = $1",
+  await q("update customer_requests set stage = $2, stage_note = coalesce($3, stage_note), stage_at = now(), stage_by = $5, status = $4, done_by = case when $4 = 'done' then $5::uuid else done_by end, done_at = case when $4 = 'done' then now() else done_at end where id = $1",
     [id, stage, opt(fd, "stage_note"), closed ? "done" : "open", u.id]);
   revalidatePath("/app", "layout");
 }
